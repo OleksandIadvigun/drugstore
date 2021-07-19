@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd
+      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.2.xsd">
+    <changeSet  author="alex"  id="1">
+        <createTable   tableName="test">
+            <column  name="NAME"  type="VARCHAR2(15)"/>
+            <column  name="JOB"  type="VARCHAR2(255)"/>
+            <column  name="SAL"  type="NUMBER(255)"/>
+        </createTable>
+    </changeSet>
+<!--    <changeSet  author="lb-generated"  id="1185214997195-2">-->
+<!--        <createTable  name="DEPT">-->
+<!--            <column  name="DEPTNO"  type="INTEGER"/>-->
+<!--            <column  name="DNAME"  type="VARCHAR2(15)"/>-->
+<!--            <column  name="LOC"  type="VARCHAR2(255)"/>-->
+<!--        </createTable>-->
+<!--    </changeSet>-->
+<!--    <changeSet  author="lb-generated"  id="1185214997195-3">-->
+<!--        <createView fullDefinition="false" viewName="myView2">SELECT "DEPT".DEPTNO,-->
+<!--            "DEPT".DNAME-->
+<!--            FROM "DEPT";</createView>-->
+<!--    </changeSet>-->
+<!--    <changeSet  author="lb-generated"  id="1185214997195-4">-->
+<!--        <pro:createFunction functionName="myFunction" path="objects/function/myFunction.sql" relativeToChangelogFile="true"/>-->
+<!--    </changeSet>-->
+</databaseChangeLog>
