@@ -5,26 +5,35 @@
         xmlns:pro="http://www.liquibase.org/xml/ns/pro"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd
       http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.2.xsd">
-<!--    <changeSet  author="alex"  id="1">-->
-<!--        <createTable   tableName="test">-->
-<!--            <column  name="NAME"  type="VARCHAR2(15)"/>-->
-<!--            <column  name="JOB"  type="VARCHAR2(255)"/>-->
-<!--            <column  name="SAL"  type="NUMBER(255)"/>-->
-<!--        </createTable>-->
-<!--    </changeSet>-->
-<!--    <changeSet  author="lb-generated"  id="1185214997195-2">-->
-<!--        <createTable  name="DEPT">-->
-<!--            <column  name="DEPTNO"  type="INTEGER"/>-->
-<!--            <column  name="DNAME"  type="VARCHAR2(15)"/>-->
-<!--            <column  name="LOC"  type="VARCHAR2(255)"/>-->
-<!--        </createTable>-->
-<!--    </changeSet>-->
-<!--    <changeSet  author="lb-generated"  id="1185214997195-3">-->
-<!--        <createView fullDefinition="false" viewName="myView2">SELECT "DEPT".DEPTNO,-->
-<!--            "DEPT".DNAME-->
-<!--            FROM "DEPT";</createView>-->
-<!--    </changeSet>-->
-<!--    <changeSet  author="lb-generated"  id="1185214997195-4">-->
-<!--        <pro:createFunction functionName="myFunction" path="objects/function/myFunction.sql" relativeToChangelogFile="true"/>-->
-<!--    </changeSet>-->
+    <changeSet  author="VZ"  id="1">
+        <createTable   tableName="product">
+            <column  name="id"  type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column  name="name"  type="VARCHAR(50)"/>
+            <column  name="quantity"  type="INT"/>
+            <column  name="price"  type="Decimal(11,2)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="VZ">
+        <insert tableName="Product">
+            <column name="id" value="1"/>
+            <column name="name" value="paracetamol"/>
+            <column name="quantity" value="100"/>
+            <column name="price" value="10.5"/>
+        </insert>
+        <insert tableName="Product">
+            <column name="id" value="2"/>
+            <column name="name" value="aspirin"/>
+            <column name="quantity" value="20"/>
+            <column name="price" value="5.7"/>
+        </insert>
+        <insert tableName="Product">
+            <column name="id" value="3"/>
+            <column name="name" value="decatylen"/>
+            <column name="quantity" value="45"/>
+            <column name="price" value="2.1"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
