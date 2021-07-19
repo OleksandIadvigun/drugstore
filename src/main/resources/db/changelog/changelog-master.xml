@@ -5,13 +5,13 @@
         xmlns:pro="http://www.liquibase.org/xml/ns/pro"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd
       http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.2.xsd">
-    <changeSet  author="alex"  id="1">
-        <createTable   tableName="test">
-            <column  name="NAME"  type="VARCHAR2(15)"/>
-            <column  name="JOB"  type="VARCHAR2(255)"/>
-            <column  name="SAL"  type="NUMBER(255)"/>
-        </createTable>
-    </changeSet>
+<!--    <changeSet  author="alex"  id="1">-->
+<!--        <createTable   tableName="test">-->
+<!--            <column  name="NAME"  type="VARCHAR2(15)"/>-->
+<!--            <column  name="JOB"  type="VARCHAR2(255)"/>-->
+<!--            <column  name="SAL"  type="NUMBER(255)"/>-->
+<!--        </createTable>-->
+<!--    </changeSet>-->
 <!--    <changeSet  author="lb-generated"  id="1185214997195-2">-->
 <!--        <createTable  name="DEPT">-->
 <!--            <column  name="DEPTNO"  type="INTEGER"/>-->
