@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.persistence.entity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -30,5 +31,6 @@ public class Order {
             inverseJoinColumns = @JoinColumn(name = "product_id"))
     private List<Product> productList;
 
-
+    @Column(name = "total")
+    private BigDecimal total;
 }
