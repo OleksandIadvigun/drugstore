@@ -10,11 +10,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
+import lombok.Builder;
 import lombok.Data;
 
 @Entity
 @Data
 @Table(name = "product")
+@Builder
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
