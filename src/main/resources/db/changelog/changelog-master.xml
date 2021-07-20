@@ -5,14 +5,15 @@
         xmlns:pro="http://www.liquibase.org/xml/ns/pro"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd
       http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.2.xsd">
-    <changeSet  author="VZ"  id="1">
-        <createTable   tableName="product">
-            <column  name="id"  type="BIGINT" autoIncrement="true">
+
+    <changeSet author="VZ" id="1">
+        <createTable tableName="product">
+            <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
             </column>
-            <column  name="name"  type="VARCHAR(50)"/>
-            <column  name="quantity"  type="INT"/>
-            <column  name="price"  type="Decimal(11,2)"/>
+            <column name="name" type="VARCHAR(50)"/>
+            <column name="quantity" type="INT"/>
+            <column name="price" type="Decimal(11,2)"/>
         </createTable>
     </changeSet>
 
@@ -36,20 +37,27 @@
             <column name="price" value="2.1"/>
         </insert>
     </changeSet>
-    <changeSet  author="VZ"  id="3">
-        <createTable   tableName="order">
-            <column  name="id"  type="BIGINT" autoIncrement="true">
+
+    <changeSet author="VZ" id="3">
+        <createTable tableName="order">
+            <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
             </column>
-            <column  name="total"  type="Decimal(11,2)"/>
+            <column name="total" type="Decimal(11,2)"/>
         </createTable>
     </changeSet>
 
-    <changeSet  author="VZ"  id="4">
-        <createTable   tableName="order_product">
-            <column  name="order_id"  type="BIGINT" />
-            <column  name="product_id"  type="BIGINT" />
-            <column  name="quantity"  type="INT" />
+    <changeSet author="VZ" id="4">
+        <createTable tableName="order_product">
+            <column name="order_id" type="BIGINT">
+                <constraints foreignKeyName="fk_order_id" references="order(id)"/>
+            </column>
+
+            <column name="product_id" type="BIGINT">
+                <constraints foreignKeyName="fk_product_id" references="product(id)"/>
+            </column>
+
+            <column name="quantity" type="INT"/>
         </createTable>
     </changeSet>
 
@@ -77,4 +85,5 @@
             <column name="quantity" value="4"/>
         </insert>
     </changeSet>
+
 </databaseChangeLog>
