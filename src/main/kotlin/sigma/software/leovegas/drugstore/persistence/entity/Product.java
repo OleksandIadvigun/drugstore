@@ -2,6 +2,7 @@ package sigma.software.leovegas.drugstore.persistence.entity;
 
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,6 +37,6 @@ public class Product {
     @Column(name = "price")
     private BigDecimal price;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "productList")
     private List<Order> orderList;
 }
