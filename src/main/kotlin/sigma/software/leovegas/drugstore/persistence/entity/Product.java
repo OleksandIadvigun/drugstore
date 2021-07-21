@@ -37,6 +37,4 @@ public class Product {
     @Column(name = "price")
     private BigDecimal price;
 
-    @ManyToMany(mappedBy = "productList")
-    private List<Order> orderList;
 }

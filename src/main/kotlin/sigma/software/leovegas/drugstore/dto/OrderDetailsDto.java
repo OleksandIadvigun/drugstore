@@ -1,8 +1,6 @@
 package sigma.software.leovegas.drugstore.dto;
 
-
 import java.math.BigDecimal;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +10,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderDto {
-
+public class OrderDetailsDto {
     private Long id;
 
-    private List<OrderDetailsDto> orderDetailsDtoList;
+    private Long productId;
 
-    private BigDecimal total;
+    private String name;
+
+    private BigDecimal price;
+
+    private Integer quantity;
 
 }

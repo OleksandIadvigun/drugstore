@@ -1,17 +1,14 @@
 package sigma.software.leovegas.drugstore.persistence.entity;
 
 import java.math.BigDecimal;
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -22,21 +19,21 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @Data
-@Table(name = "order")
+@Table(name = "order_details")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order {
-
-
+public class OrderDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @OneToMany( cascade = CascadeType.ALL)
-    @JoinColumn(name = "order_id")
-    private List<OrderDetails> orderDetailsList;
+    @ManyToOne
+    @JoinColumn(name="product_id")
+    private Product product;
 
-    @Column(name = "total")
-    private BigDecimal total;
+    @Column(name = "quantity")
+    private Integer quantity;
+
+
 }
