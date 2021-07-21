@@ -49,8 +49,8 @@ public class OrderService {
         Order order = new Order();
         order.setOrderDetailsList(OrderDetailsMapper.toEntity(orderDetailsDtoList));
         order.setTotal(calculateTotalValue(orderDetailsDtoList));
-
-        return OrderMapper.toRestDto(orderRepository.save(order));
+        Order orderToSave = orderRepository.save(order);
+        return OrderMapper.toRestDto(orderToSave);
     }
 
     public OrderDto updateOrder(Long id, List<OrderDetailsDto> orderDetailsDtoList) throws OrderNotFoundException, InsufficientProductAmountException {
@@ -60,7 +60,8 @@ public class OrderService {
         }
         order.setOrderDetailsList(OrderDetailsMapper.toEntity(orderDetailsDtoList));
         order.setTotal(calculateTotalValue(orderDetailsDtoList));
-        return OrderMapper.toRestDto(orderRepository.save(order));
+        Order orderToSave = orderRepository.save(order);
+        return OrderMapper.toRestDto(orderToSave);
 
     }
 
