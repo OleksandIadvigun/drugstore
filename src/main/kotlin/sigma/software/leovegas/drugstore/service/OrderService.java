@@ -41,7 +41,7 @@ public class OrderService {
         orderRepository.deleteById(id);
         return order;
     }
-
+    @Transactional
     public OrderDto postOrder(List<OrderDetailsDto> orderDetailsDtoList) throws InsufficientProductAmountException {
         if (orderDetailsDtoList.isEmpty()) {
             throw new InsufficientProductAmountException();
@@ -52,7 +52,7 @@ public class OrderService {
         Order orderToSave = orderRepository.save(order);
         return OrderMapper.toRestDto(orderToSave);
     }
-
+    @Transactional
     public OrderDto updateOrder(Long id, List<OrderDetailsDto> orderDetailsDtoList) throws OrderNotFoundException, InsufficientProductAmountException {
         Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
         if (orderDetailsDtoList.isEmpty()) {

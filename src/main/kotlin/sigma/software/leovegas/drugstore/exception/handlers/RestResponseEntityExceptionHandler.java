@@ -50,6 +50,6 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return handleExceptionInternal(ex, apiExceptionModel,
-                headers, HttpStatus.FORBIDDEN, request);
+                headers, HttpStatus.BAD_REQUEST, request);
     }
 }
