@@ -32,7 +32,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     private ProductDto update(@PathVariable Long id, @RequestBody ProductDto productDto){
         return service.update(id, productDto);
     }
