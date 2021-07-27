@@ -6,6 +6,4 @@ class OrderNotFoundException(id:Long): Exception(
 class InsufficientAmountOfProductForOrderException(): Exception(
     "You have to add minimum one product to create the order")
 
-
-
 class ResourceNotFoundException(message: String?) : RuntimeException(message)
