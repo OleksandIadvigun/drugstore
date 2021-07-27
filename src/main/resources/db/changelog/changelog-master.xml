@@ -13,7 +13,7 @@
             </column>
             <column name="name" type="VARCHAR(50)"/>
             <column name="quantity" type="INT"/>
-            <column name="price" type="Decimal(11,2)"/>
+            <column name="price" type="Decimal(11,1)"/>
         </createTable>
     </changeSet>
 
@@ -43,7 +43,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="total" type="Decimal(11,2)"/>
+            <column name="total" type="Decimal(11,1)"/>
         </createTable>
     </changeSet>
 
@@ -65,7 +65,11 @@
     <changeSet id="5" author="VZ">
         <insert tableName="order">
             <column name="id" value="1"/>
-            <column name="total" value="51.3"/>
+            <column name="total" value="31.5"/>
+        </insert>
+        <insert tableName="order">
+            <column name="id" value="2"/>
+            <column name="total" value="11.4"/>
         </insert>
     </changeSet>
 
@@ -78,15 +82,9 @@
         </insert>
         <insert tableName="order_details">
             <column name="id" value="2"/>
-            <column name="order_id" value="1"/>
+            <column name="order_id" value="2"/>
             <column name="product_id" value="2"/>
             <column name="quantity" value="2"/>
-        </insert>
-        <insert tableName="order_details">
-            <column name="id" value="3"/>
-            <column name="order_id" value="1"/>
-            <column name="product_id" value="3"/>
-            <column name="quantity" value="4"/>
         </insert>
     </changeSet>
 
