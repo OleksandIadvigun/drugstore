@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd
-      http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.2.xsd">
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
 
     <changeSet author="VZ" id="1">
         <createTable tableName="product">
@@ -13,7 +11,7 @@
             </column>
             <column name="name" type="VARCHAR(50)"/>
             <column name="quantity" type="INT"/>
-            <column name="price" type="Decimal(11,1)"/>
+            <column name="price" type="Decimal(11,2)"/>
         </createTable>
     </changeSet>
 
@@ -22,19 +20,19 @@
             <column name="id" value="1"/>
             <column name="name" value="paracetamol"/>
             <column name="quantity" value="100"/>
-            <column name="price" value="10.5"/>
+            <column name="price" value="10.50"/>
         </insert>
         <insert tableName="Product">
             <column name="id" value="2"/>
             <column name="name" value="aspirin"/>
             <column name="quantity" value="20"/>
-            <column name="price" value="5.7"/>
+            <column name="price" value="5.70"/>
         </insert>
         <insert tableName="Product">
             <column name="id" value="3"/>
             <column name="name" value="decatylen"/>
             <column name="quantity" value="45"/>
-            <column name="price" value="2.1"/>
+            <column name="price" value="2.10"/>
         </insert>
     </changeSet>
 
@@ -43,7 +41,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="total" type="Decimal(11,1)"/>
+            <column name="total" type="Decimal(11,2)"/>
         </createTable>
     </changeSet>
 
@@ -65,11 +63,11 @@
     <changeSet id="5" author="VZ">
         <insert tableName="order">
             <column name="id" value="1"/>
-            <column name="total" value="31.5"/>
+            <column name="total" value="31.50"/>
         </insert>
         <insert tableName="order">
             <column name="id" value="2"/>
-            <column name="total" value="11.4"/>
+            <column name="total" value="11.40"/>
         </insert>
     </changeSet>
 

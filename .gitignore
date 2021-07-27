@@ -1,5 +1,5 @@
-HELP.md
 target/
+!mvnw*
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -19,7 +19,6 @@ target/
 *.iml
 *.ipr
 *.cmd
-mvnw
 
 ### NetBeans ###
 /nbproject/private/

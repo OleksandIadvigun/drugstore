@@ -16,8 +16,9 @@
     <description>Spring Boot drugstore project</description>
     <properties>
         <java.version>1.8</java.version>
-        <kotlin.version>1.5.30-M1</kotlin.version>
-        <wiremock.version>2.27.2</wiremock.version>
+        <kotlin.version>1.5.21</kotlin.version>
+        <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
+        <spring-cloud-contract-wiremock.version>3.0.3</spring-cloud-contract-wiremock.version>
     </properties>
     <dependencies>
         <dependency>
@@ -56,12 +57,6 @@
             <artifactId>kotlin-reflect</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock</artifactId>
-            <version>${wiremock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
@@ -75,7 +70,6 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
@@ -88,12 +82,21 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-contract-wiremock</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-contract-wiremock</artifactId>
+                <version>${spring-cloud-contract-wiremock.version}</version>
+                <type>jar</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <build>
         <defaultGoal>clean package</defaultGoal>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
@@ -183,5 +186,17 @@
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${versions-maven-plugin.version}</version>
+                    <configuration><!--suppress UnresolvedMavenProperty -->
+                        <rulesUri>file:///${maven.multiModuleProjectDirectory}/.mvn/versions.xml</rulesUri>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>
