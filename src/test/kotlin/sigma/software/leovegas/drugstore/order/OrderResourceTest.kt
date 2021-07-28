@@ -23,7 +23,7 @@ import sigma.software.leovegas.drugstore.product.ProductRepository
 
 @DisplayName("OrderResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-class OrderResourceTest(
+class OrderResourceTest (
     @Autowired val restTemplate: TestRestTemplate,
     @Autowired val transactionTemplate: TransactionTemplate,
     @Autowired val orderRepository: OrderRepository,
@@ -100,7 +100,6 @@ class OrderResourceTest(
     @Test
     fun `should get orders`() {
 
-
         // when
         val response = restTemplate
             .exchange("/orders", GET, null, respTypeRef<List<OrderResponse>>())
@@ -135,7 +134,7 @@ class OrderResourceTest(
         val httpEntity = HttpEntity(
             OrderRequest(
                 listOf(
-                    OrderDetailsRequest(product.id, 5)
+                    OrderDetailsRequest(product.id!!, 5)
                 )
             )
         )

@@ -7,9 +7,9 @@ import kotlin.test.assertEquals
 
 class ProductConvertersTest {
     //given
-    private val product = Product(name = "test", price = BigDecimal.TEN)
-    private val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
-    private val productRequest = ProductRequest(name = "test", price = BigDecimal.TEN)
+    private val product = Product(name = "test", price = BigDecimal.TEN,quantity = 0)
+    private val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN,quantity = 0)
+    private val productRequest = ProductRequest(name = "test", price = BigDecimal.TEN,quantity = 0)
 
     @Test
     fun `should convert to ProductResponse`() {

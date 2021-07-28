@@ -29,7 +29,7 @@ class ProductResourceTest(
     fun `should create product`() {
         // given
         val httpEntity = HttpEntity(
-            Product(
+            ProductRequest(
                 name = "test product",
                 price = BigDecimal.TEN,
                 quantity = 5
@@ -57,7 +57,7 @@ class ProductResourceTest(
             quantity = 2
         )
         val httpEntity = HttpEntity(
-            Product(
+            ProductRequest(
                 name = "test product edited",
                 price = BigDecimal.TEN,
                 quantity = 5
@@ -84,13 +84,8 @@ class ProductResourceTest(
 
     @Test
     fun `should get products`() {
-        //given
-        val httpEntity = HttpEntity(
-            Product()
-        )
-
         // when
-        val response = restTemplate.exchange("/products", GET, httpEntity, respTypeRef<List<ProductResponse>>())
+        val response = restTemplate.exchange("/products", GET, null, respTypeRef<List<ProductResponse>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -108,16 +103,13 @@ class ProductResourceTest(
             price = BigDecimal.TEN.setScale(2),
             quantity = 2
         )
-        val httpEntity = HttpEntity(
-            Product()
-        )
 
         // when
         val savedProduct = transactionalTemplate.execute {
             service.create(newProduct)
         } ?: kotlin.test.fail("result is expected")
         val response = restTemplate.exchange(
-            "/products/${savedProduct.id}", HttpMethod.GET, httpEntity, respTypeRef<ProductResponse>()
+            "/products/${savedProduct.id}", HttpMethod.GET, null, respTypeRef<ProductResponse>()
         )
 
         // then
@@ -139,16 +131,13 @@ class ProductResourceTest(
             price = BigDecimal.ONE,
             quantity = 2
         )
-        val httpEntity = HttpEntity(
-            Product()
-        )
 
         // when
         val savedProduct = transactionalTemplate.execute {
             service.create(newProduct)
         } ?: kotlin.test.fail("result is expected")
         val response = restTemplate.exchange(
-            "/products/${savedProduct.id}", HttpMethod.DELETE, httpEntity, respTypeRef<ProductResponse>()
+            "/products/${savedProduct.id}", HttpMethod.DELETE, null, respTypeRef<ProductResponse>()
         )
 
         // then
@@ -156,7 +145,7 @@ class ProductResourceTest(
 
         // and
         assertThrows<ResourceNotFoundException> {
-            service.getOne(savedProduct.id)
+            service.getOne(savedProduct.id!!)
         }
     }
 }

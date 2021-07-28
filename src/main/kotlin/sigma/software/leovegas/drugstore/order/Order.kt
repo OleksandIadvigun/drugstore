@@ -22,9 +22,9 @@ data class Order(
 
     @JoinColumn(name = "order_id")
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    var orderDetailsList: List<OrderDetails>? = listOf(),
+    var orderDetailsList: List<OrderDetails>,
 
     @Column(name = "total")
-    var total: BigDecimal? = null,
+    var total: BigDecimal,
 )
 

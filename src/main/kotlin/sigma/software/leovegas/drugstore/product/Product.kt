@@ -14,17 +14,16 @@ data class Product(
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
-    var id: Long = 0,
+    val id: Long? = null,
 
     @Column(name = "name")
-    var name: String = "",
+    var name: String,
 
     @Column(name = "quantity")
-    var quantity: Int = 0,
+    var quantity: Int,
 
     @Column(name = "price")
-
-    var price: BigDecimal? = null
+    var price: BigDecimal
 
 )
 

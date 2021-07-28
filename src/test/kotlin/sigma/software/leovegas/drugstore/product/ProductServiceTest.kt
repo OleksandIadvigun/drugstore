@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 
 @SpringBootTest
 @AutoConfigureTestDatabase
-class ProductKotlinServiceTest(@Autowired val service: ProductService) {
+class ProductServiceTest(@Autowired val service: ProductService) {
     //given
     val productRequest = ProductRequest(
         name = "test",
@@ -43,7 +43,7 @@ class ProductKotlinServiceTest(@Autowired val service: ProductService) {
         val saved = service.create(productRequest)
 
         //when
-        val actual = service.getOne(saved.id)
+        val actual = service.getOne(saved.id!!)
 
         //then
         assertNotNull(actual)
@@ -81,7 +81,7 @@ class ProductKotlinServiceTest(@Autowired val service: ProductService) {
 
 
         //when
-        val actual = service.update(saved.id, productRequest)
+        val actual = service.update(saved.id!!, productRequest)
 
         //then
         assertNotNull(actual)
@@ -101,11 +101,11 @@ class ProductKotlinServiceTest(@Autowired val service: ProductService) {
         val product = service.create(productRequest)
 
         //when
-        service.delete(product.id)
+        service.delete(product.id!!)
 
         //then
         assertThrows<ResourceNotFoundException> {
-            service.getOne(product.id)
+            service.getOne(product.id!!)
         }
     }
 }

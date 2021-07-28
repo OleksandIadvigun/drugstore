@@ -19,10 +19,10 @@ data class OrderDetails(
     @Column(name = "id")
     val id: Long? = null,
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "product_id")
-    val product: Product? = null,
+    val product: Product,
 
     @Column(name = "quantity")
-    val quantity: Int? = null,
+    val quantity: Int,
 )

@@ -21,15 +21,14 @@ class OrderService @Autowired constructor(
                     .orElseThrow { OrderNotFoundException(id) }
                 OrderResponse(
                     id=order.id,
-                    total =order.total ?: BigDecimal.ZERO,
+                    total =order.total ,
                     orderDetailsList= order.orderDetailsList
-                        .orEmpty()
                         .map {
                             OrderDetailsResponse(
-                                it.product?.id ?: -1,
-                                it.product?.name ?: "invalid",
-                                it.product?.price ?: BigDecimal.ZERO,
-                                it.quantity ?: -1
+                                it.product.id,
+                                it.product.name,
+                                it.product.price,
+                                it.quantity
                             )
                         }
                 )
@@ -67,21 +66,21 @@ class OrderService @Autowired constructor(
 
     private fun calculateTotal(orderDetailsList: List<OrderDetails>): BigDecimal {
         return orderDetailsList.map {
-            it.product?.price!!
-                .multiply(it.quantity?.toBigDecimal())
+            it.product.price
+                .multiply(it.quantity.toBigDecimal())
         }.reduce { total, productValue -> total.add(productValue) }
     }
 
     private fun makeFullOrderDetailList(orderRequest: OrderRequest): MutableList<OrderDetails> {
         val requestMap = orderRequest.orderDetailsList.associate { it.productId to it.quantity }
         val orderDetailsList = mutableListOf<OrderDetails>()
-        var i: Int = 0
+        var i = 0
         val products = productRepository.findAllById(orderRequest.orderDetailsList.map { it.productId })
         for (orderDetails in orderRequest.orderDetailsList) {
             orderDetailsList.add(
                 OrderDetails(
                     product = products[i],
-                    quantity = requestMap[products[i].id]
+                    quantity = requestMap[products[i].id]!!
                 )
             )
             i++
