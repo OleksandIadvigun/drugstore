@@ -68,6 +68,7 @@ class ProductServiceTest(@Autowired val service: ProductService) {
             quantity = 5,
         )
 
+        //and
         val productResponse = ProductResponse(
             name = "test",
             price = BigDecimal("25.50"),
@@ -98,11 +99,14 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         // and
         val saved = service.create(productRequest)
         val randomName = Math.random().toString()
-        productRequest.name = randomName
-
+        val updatedProductRequest = ProductRequest(
+            name = randomName,
+            price = BigDecimal("25.50"),
+            quantity = 5,
+        )
 
         // when
-        val actual = service.update(saved.id!!, productRequest)
+        val actual = service.update(saved.id!!, updatedProductRequest)
 
         // then
         assertNotNull(actual)
@@ -144,6 +148,22 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         // then
         assertThrows<ResourceNotFoundException> {
             service.getOne(product.id!!)
+        }
+    }
+
+    @Test
+    fun `if field price is more than 10000000 should return NotCorrectRequestException`() {
+
+        // given
+        val productRequest = ProductRequest(
+            name = "test",
+            price = BigDecimal("20000000"),
+            quantity = 5,
+        )
+
+        // then
+        assertThrows<NotCorrectRequestException> {
+            service.update(1L, productRequest)
         }
     }
 }

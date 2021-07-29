@@ -59,6 +59,11 @@ class ProductResourceTest(
             price = BigDecimal.ONE,
             quantity = 2
         )
+
+        val savedProduct = transactionalTemplate.execute {
+            service.create(newProduct)
+        } ?: kotlin.test.fail("result is expected")
+
         val httpEntity = HttpEntity(
             ProductRequest(
                 name = "test product edited",
@@ -68,9 +73,6 @@ class ProductResourceTest(
         )
 
         // when
-        val savedProduct = transactionalTemplate.execute {
-            service.create(newProduct)
-        } ?: kotlin.test.fail("result is expected")
         val response = restTemplate.exchange(
             "/api/v1/products/${savedProduct.id}", HttpMethod.PUT, httpEntity, respTypeRef<ProductResponse>()
         )

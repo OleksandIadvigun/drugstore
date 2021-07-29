@@ -17,13 +17,13 @@ data class Product(
     val id: Long? = null,
 
     @Column(name = "name")
-    var name: String,
+    val name: String,
 
     @Column(name = "quantity")
-    var quantity: Int,
+    val quantity: Int,
 
     @Column(name = "price")
-    var price: BigDecimal
+    val price: BigDecimal
 
 )
 

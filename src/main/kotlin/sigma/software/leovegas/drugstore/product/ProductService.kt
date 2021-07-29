@@ -1,8 +1,7 @@
 package sigma.software.leovegas.drugstore.product
 
-import javax.transaction.Transactional
-import org.springframework.beans.BeanUtils
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 @Service
 @Transactional
@@ -15,6 +14,7 @@ class ProductService(private val repo: ProductRepository) {
     fun getAll(): MutableList<ProductResponse> = repo.findAll().convertToProductResponseList()
 
     fun create(productRequest: ProductRequest): ProductResponse {
+        productRequest.validate()
         return repo.save(productRequest.convertToProduct()).convertToProductResponse()
     }
 
@@ -25,10 +25,9 @@ class ProductService(private val repo: ProductRepository) {
     }
 
     fun update(id: Long, productRequest: ProductRequest): ProductResponse {
-        val product =
-            repo.findById(id).orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
-        BeanUtils.copyProperties(productRequest, product, "id")
-        return product.convertToProductResponse()
+        productRequest.validate()
+        repo.findById(id).orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
+        return repo.save(productRequest.convertToProduct().copy(id = id)).convertToProductResponse()
     }
 
     fun delete(id: Long) {
