@@ -38,7 +38,6 @@ class ThinkBeforeDoingTest @Autowired constructor(val restTemplate: TestRestTemp
                 price = BigDecimal.valueOf(10.50), quantity = 3
             )
         )
-        total = BigDecimal.valueOf(31.50)
     }
 
     @Test

@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.order
 
-import java.math.BigDecimal
 import sigma.software.leovegas.drugstore.product.Product
 
 fun Order.toOrderResponse(): OrderResponse =
@@ -9,15 +8,13 @@ fun Order.toOrderResponse(): OrderResponse =
         orderDetailsList
             .map {
                 it.toOrderDetailsResponse()
-            },
-    total = total
+            }
     )
 
 fun OrderResponse.toEntity(): Order =
     Order(
         id = id,
-        orderDetailsList = orderDetailsList.toEntity(),
-        total = total
+        orderDetailsList = orderDetailsList.toEntity()
     )
 
 fun List<Order>.toOrderResponseList(): List<OrderResponse> {
@@ -28,7 +25,7 @@ fun OrderDetails.toOrderDetailsResponse(): OrderDetailsResponse =
     OrderDetailsResponse(
         product.id,
         product.name,
-        product.price ?: BigDecimal.ZERO,
+        product.price,
         quantity
     )
 

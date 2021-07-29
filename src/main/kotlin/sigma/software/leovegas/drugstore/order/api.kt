@@ -9,7 +9,6 @@ data class OrderRequest(
 data class OrderResponse(
     val id: Long? = null,
     val orderDetailsList: List<OrderDetailsResponse>,
-    val total: BigDecimal
 )
 
 data class OrderDetailsRequest(
@@ -22,4 +21,9 @@ data class OrderDetailsResponse(
     val name: String,
     val price: BigDecimal,
     val quantity: Int
+)
+
+data class OrderInvoice(
+    val orderId: Long?,
+    val total: BigDecimal
 )

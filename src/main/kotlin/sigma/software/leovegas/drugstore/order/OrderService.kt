@@ -1,7 +1,7 @@
 package sigma.software.leovegas.drugstore.order
 
 import java.math.BigDecimal
-import java.util.Optional
+import java.util.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,15 +14,14 @@ class OrderService @Autowired constructor(
     private val productRepository: ProductRepository
 ) {
 
-    fun getOrderById(id: Long?): OrderResponse =
+    fun getOrderById(id: Long): OrderResponse =
         Optional.ofNullable(id).orElseThrow { OrderNotFoundException(id) }
             .run {
                 val order = orderRepository.findById(this)
                     .orElseThrow { OrderNotFoundException(id) }
                 OrderResponse(
-                    id=order.id,
-                    total =order.total ,
-                    orderDetailsList= order.orderDetailsList
+                    id = order.id,
+                    orderDetailsList = order.orderDetailsList
                         .map {
                             OrderDetailsResponse(
                                 it.product.id,
@@ -42,33 +41,37 @@ class OrderService @Autowired constructor(
     fun createOrder(orderRequest: OrderRequest): OrderResponse =
         orderRequest.orderDetailsList.run {
             if (this.isEmpty()) throw InsufficientAmountOfProductForOrderException()
-            val orderDetailsList = makeFullOrderDetailList(orderRequest)
             val orderToSave = Order(
-                orderDetailsList = orderDetailsList,
-                total = calculateTotal(orderDetailsList)
+                orderDetailsList = makeFullOrderDetailList(orderRequest)
             )
             orderRepository.save(orderToSave).toOrderResponse()
         }
 
-    fun updateOrder(id: Long?, orderRequest: OrderRequest): OrderResponse {
+    fun updateOrder(id: Long, orderRequest: OrderRequest): OrderResponse {
         val orderToChange = getOrderById(id).toEntity()
         if (orderRequest.orderDetailsList.isEmpty()) {
             throw InsufficientAmountOfProductForOrderException()
         }
-        val orderDetailsList = makeFullOrderDetailList(orderRequest)
-
-        orderToChange.orderDetailsList = orderDetailsList
-        orderToChange.total = calculateTotal(orderDetailsList)
+        orderToChange.orderDetailsList = makeFullOrderDetailList(orderRequest)
         val changedOrder = orderRepository.save(orderToChange)
         return changedOrder.toOrderResponse()
 
     }
 
-    private fun calculateTotal(orderDetailsList: List<OrderDetails>): BigDecimal {
-        return orderDetailsList.map {
-            it.product.price
-                .multiply(it.quantity.toBigDecimal())
-        }.reduce { total, productValue -> total.add(productValue) }
+    fun deleteOrder(id: Long) {
+        val orderToDelete = getOrderById(id).toEntity()
+        orderRepository.delete(orderToDelete)
+    }
+
+    fun getInvoice(id: Long): OrderInvoice {
+        val order = getOrderById(id)
+        return OrderInvoice(
+            order.id,
+            order.orderDetailsList
+                .map { it.price.multiply(BigDecimal(it.quantity)) }
+                .reduce(BigDecimal::plus).setScale(2)
+        )
+
     }
 
     private fun makeFullOrderDetailList(orderRequest: OrderRequest): MutableList<OrderDetails> {
@@ -88,8 +91,5 @@ class OrderService @Autowired constructor(
         return orderDetailsList
     }
 
-    fun deleteOrder(id: Long?) {
-        val orderToDelete = getOrderById(id).toEntity()
-        orderRepository.delete(orderToDelete)
-    }
+
 }

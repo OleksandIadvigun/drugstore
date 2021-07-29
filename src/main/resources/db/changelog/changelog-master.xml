@@ -86,4 +86,9 @@
         </insert>
     </changeSet>
 
+    <changeSet id="7" author="VZ">
+        <dropColumn tableName="order">
+            <column name="total"/>
+        </dropColumn>
+    </changeSet>
 </databaseChangeLog>

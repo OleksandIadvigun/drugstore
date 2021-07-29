@@ -48,23 +48,20 @@ class OrderServiceTest @Autowired constructor(
                             product = product,
                             quantity = 3
                         )
-                    ),
-                    total = BigDecimal(30.00).setScale(2) //price * orderDetails.quantity
+                    )
                 )
             )
         }?.toOrderResponse() ?: fail("result is expected")
 
 
         // when
-        val orderActual =transactionTemplate.execute {
-            orderService.getOrderById(orderCreated.id)
+        val orderActual = transactionTemplate.execute {
+            orderService.getOrderById(orderCreated.id!!)
         }
 
         // then
         assertThat(orderActual?.id).isEqualTo(orderCreated.id)
         assertThat(orderActual?.orderDetailsList).isEqualTo(orderCreated.orderDetailsList)
-        assertThat(orderActual?.total).isEqualTo(orderCreated.total)
-
     }
 
     @Test
@@ -120,7 +117,6 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(created.id).isNotNull
-        assertThat(created.total).isEqualTo(BigDecimal("30.00"))
     }
 
     @Test
@@ -136,7 +132,6 @@ class OrderServiceTest @Autowired constructor(
                             quantity = 3
                         )
                     ),
-                    total = BigDecimal(30.00).setScale(2) //price * orderDetails.quantity
                 )
             )
         }?.toOrderResponse() ?: fail("result is expected")
@@ -146,7 +141,7 @@ class OrderServiceTest @Autowired constructor(
         }
 
         assertThrows<InsufficientAmountOfProductForOrderException> {
-            orderService.updateOrder(orderToUpdate.id, OrderRequest(emptyList()))
+            orderService.updateOrder(orderToUpdate.id!!, OrderRequest(emptyList()))
         }
     }
 
@@ -163,7 +158,6 @@ class OrderServiceTest @Autowired constructor(
                             quantity = 3
                         )
                     ),
-                    total = BigDecimal(30.00).setScale(2) //price * orderDetails.quantity
                 )
             )
         }?.toOrderResponse() ?: fail("result is expected")
@@ -180,12 +174,11 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val changedOrder = transactionTemplate.execute {
-            orderService.updateOrder(orderToChange.id, orderRequest)
+            orderService.updateOrder(orderToChange.id!!, orderRequest)
         } ?: fail("result is expected")
 
         // then
         assertThat(changedOrder.orderDetailsList[0].quantity).isEqualTo(orderRequest.orderDetailsList[0].quantity)
-        assertThat(changedOrder.total).isEqualTo(BigDecimal("40.00")) //product.price * quantity
     }
 
     @Test
@@ -201,21 +194,46 @@ class OrderServiceTest @Autowired constructor(
                             quantity = 3
                         )
                     ),
-                    total = BigDecimal(30.00).setScale(2) //price * orderDetails.quantity
                 )
             )
         }?.toOrderResponse() ?: fail("result is expected")
 
         // when
         transactionTemplate.execute {
-            orderService.deleteOrder(orderToChange.id)
+            orderService.deleteOrder(orderToChange.id!!)
         } ?: fail("result is expected")
 
         // then
         assertThrows<OrderNotFoundException> {
             transactionTemplate.execute {
-                orderService.getOrderById(orderToChange.id)
+                orderService.getOrderById(orderToChange.id!!)
             }
         }
+    }
+
+    @Test
+    fun `should get invoice`(){
+
+        //give
+        val order = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderDetailsList = listOf(
+                        OrderDetails(
+                            product = product,
+                            quantity = 3
+                        )
+                    ),
+                )
+            )
+        } ?: fail("result is expected")
+
+        //when
+        val orderInvoice = transactionTemplate.execute {
+            orderService.getInvoice(order.id!!)
+        } ?: fail("result is expected")
+
+        // then
+        assertThat(orderInvoice.total).isEqualTo(BigDecimal("30.00")) // quantity(3) * price(10.00)
     }
 }

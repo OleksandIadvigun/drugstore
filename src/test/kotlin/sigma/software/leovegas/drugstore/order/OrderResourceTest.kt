@@ -23,7 +23,7 @@ import sigma.software.leovegas.drugstore.product.ProductRepository
 
 @DisplayName("OrderResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-class OrderResourceTest (
+class OrderResourceTest(
     @Autowired val restTemplate: TestRestTemplate,
     @Autowired val transactionTemplate: TransactionTemplate,
     @Autowired val orderRepository: OrderRepository,
@@ -76,8 +76,7 @@ class OrderResourceTest (
                             product = product,
                             quantity = 3
                         )
-                    ),
-                    total = BigDecimal(30.00).setScale(2) //price * orderDetails.quantity
+                    )
                 )
             )
         }?.toOrderResponse() ?: fail("result is expected")
@@ -92,7 +91,6 @@ class OrderResourceTest (
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isEqualTo(orderCreated.id)
-        assertThat(body.total).isEqualTo(orderCreated.total)
         assertThat(body.orderDetailsList).isEqualTo(orderCreated.orderDetailsList)
 
     }
@@ -124,8 +122,7 @@ class OrderResourceTest (
                             product = product,
                             quantity = 3
                         )
-                    ),
-                    total = BigDecimal(30.00).setScale(2) //price * orderDetails.quantity
+                    )
                 )
             )
         }?.toOrderResponse() ?: fail("result is expected")
@@ -151,7 +148,6 @@ class OrderResourceTest (
         assertThat(body).isNotNull
         assertThat(body.id).isEqualTo(orderCreated.id)
         assertThat(body.orderDetailsList[0].quantity).isEqualTo(httpEntity.body?.orderDetailsList?.get(0)?.quantity)
-        assertThat(body.total).isEqualTo(BigDecimal("50.00"))
     }
 
     @Test
@@ -167,7 +163,6 @@ class OrderResourceTest (
                             quantity = 3
                         )
                     ),
-                    total = BigDecimal(30.00).setScale(2) //price * orderDetails.quantity
                 )
             )
         }?.toOrderResponse() ?: fail("result is expected")
@@ -183,8 +178,38 @@ class OrderResourceTest (
         // and
         assertThrows<OrderNotFoundException> {
             transactionTemplate.execute {
-                orderService.getOrderById(orderCreated.id)
+                orderService.getOrderById(orderCreated.id!!)
             }
         }
+    }
+
+    @Test
+    fun `should get invoice`() {
+
+        //given
+        val order = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderDetailsList = listOf(
+                        OrderDetails(
+                            product = product,
+                            quantity = 3
+                        )
+                    ),
+                )
+            )
+        }?.toOrderResponse() ?: fail("result is expected")
+
+
+        // when
+        val response =  restTemplate
+            .exchange("/orders/${order.id}/invoice", GET, null, respTypeRef<OrderInvoice>())
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.total).isEqualTo(BigDecimal("30.00")) // quantity(3) * price(10.00)
     }
 }

@@ -40,4 +40,9 @@ class OrderResource (@Autowired private val orderService: OrderService) {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteOrder(@PathVariable("id") id: Long) =
         orderService.deleteOrder(id)
+
+    @GetMapping("/{id}/invoice")
+    @ResponseStatus(HttpStatus.OK)
+    fun getInvoice(@PathVariable("id") id: Long)  =
+        orderService.getInvoice(id)
 }

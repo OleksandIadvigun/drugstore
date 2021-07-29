@@ -1,8 +1,6 @@
 package sigma.software.leovegas.drugstore.order
 
-import java.math.BigDecimal
 import javax.persistence.CascadeType
-import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
@@ -22,9 +20,6 @@ data class Order(
 
     @JoinColumn(name = "order_id")
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    var orderDetailsList: List<OrderDetails>,
-
-    @Column(name = "total")
-    var total: BigDecimal,
+    var orderDetailsList: List<OrderDetails>
 )
 
