@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("api/v1/products")
 class ProductResource(private val service: ProductService) {
 
     @PostMapping

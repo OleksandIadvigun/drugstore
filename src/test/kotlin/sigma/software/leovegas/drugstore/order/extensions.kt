@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 data class OrderResponseBuilder(
     var id: Long = 0L,
-    var orderDetailsList: List<OrderDetailsResponse> = listOf(),
+    var orderItems: Set<OrderItem> = setOf(),
 )
 
 fun OrderResponseBuilder.build() =
-    OrderResponse(id, orderDetailsList)
+    OrderResponse(id, orderItems)
 
 fun ObjectMapper.json(block: OrderResponseBuilder.() -> Unit = {}): String =
     OrderResponseBuilder().run {
@@ -17,24 +17,24 @@ fun ObjectMapper.json(block: OrderResponseBuilder.() -> Unit = {}): String =
             .writeValueAsString(build())
     }
 
-data class OrderDetailsRequestBuilder(
+data class OrderItemBuilder(
     var productId: Long = 0L,
     var quantity: Int = 0,
 )
 
-fun OrderDetailsRequestBuilder.build() = OrderDetailsRequest(productId, quantity)
+fun OrderItemBuilder.build() = OrderItem(productId=productId, quantity = quantity)
 
-fun OrderDetailsRequest(block: OrderDetailsRequestBuilder.() -> Unit = {}): OrderDetailsRequest =
-    OrderDetailsRequestBuilder().run {
+fun OrderItem(block: OrderItemBuilder.() -> Unit = {}): OrderItem =
+    OrderItemBuilder().run {
         block(this)
         build()
     }
 
-fun ObjectMapper.json(vararg requests: OrderDetailsRequest) =
+fun ObjectMapper.json(vararg requests: OrderItem) =
     writerWithDefaultPrettyPrinter()
         .writeValueAsString(
             OrderRequest(
-                requests.toList()
+                requests.toSet()
             )
         )
 

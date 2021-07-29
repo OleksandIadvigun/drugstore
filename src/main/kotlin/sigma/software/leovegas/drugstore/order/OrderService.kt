@@ -1,7 +1,7 @@
 package sigma.software.leovegas.drugstore.order
 
 import java.math.BigDecimal
-import java.util.*
+import java.util.Optional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,15 +21,14 @@ class OrderService @Autowired constructor(
                     .orElseThrow { OrderNotFoundException(id) }
                 OrderResponse(
                     id = order.id,
-                    orderDetailsList = order.orderDetailsList
+                    orderItems = order.orderItems
                         .map {
-                            OrderDetailsResponse(
-                                it.product.id,
-                                it.product.name,
-                                it.product.price,
-                                it.quantity
+                            OrderItem(
+                                id = id,
+                                productId = it.productId,
+                                quantity = it.quantity
                             )
-                        }
+                        }.toSet()
                 )
             }
 
@@ -38,22 +37,15 @@ class OrderService @Autowired constructor(
         return orderList.toOrderResponseList()
     }
 
-    fun createOrder(orderRequest: OrderRequest): OrderResponse =
-        orderRequest.orderDetailsList.run {
-            if (this.isEmpty()) throw InsufficientAmountOfProductForOrderException()
-            val orderToSave = Order(
-                orderDetailsList = makeFullOrderDetailList(orderRequest)
-            )
-            orderRepository.save(orderToSave).toOrderResponse()
-        }
+    fun createOrder(orderRequest: OrderRequest): OrderResponse = orderRequest.run {
+        if (this.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+        orderRepository.save(this.toOrder()).toOrderResponse()
+    }
 
     fun updateOrder(id: Long, orderRequest: OrderRequest): OrderResponse {
-        val orderToChange = getOrderById(id).toEntity()
-        if (orderRequest.orderDetailsList.isEmpty()) {
-            throw InsufficientAmountOfProductForOrderException()
-        }
-        orderToChange.orderDetailsList = makeFullOrderDetailList(orderRequest)
-        val changedOrder = orderRepository.save(orderToChange)
+        if (!orderRepository.findById(id).isPresent) throw OrderNotFoundException(id)
+        if (orderRequest.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+        val changedOrder = orderRepository.save(Order(id, orderRequest.orderItems))
         return changedOrder.toOrderResponse()
 
     }
@@ -65,31 +57,15 @@ class OrderService @Autowired constructor(
 
     fun getInvoice(id: Long): OrderInvoice {
         val order = getOrderById(id)
-        return OrderInvoice(
-            order.id,
-            order.orderDetailsList
-                .map { it.price.multiply(BigDecimal(it.quantity)) }
-                .reduce(BigDecimal::plus).setScale(2)
-        )
-
-    }
-
-    private fun makeFullOrderDetailList(orderRequest: OrderRequest): MutableList<OrderDetails> {
-        val requestMap = orderRequest.orderDetailsList.associate { it.productId to it.quantity }
-        val orderDetailsList = mutableListOf<OrderDetails>()
-        var i = 0
-        val products = productRepository.findAllById(orderRequest.orderDetailsList.map { it.productId })
-        for (orderDetails in orderRequest.orderDetailsList) {
-            orderDetailsList.add(
-                OrderDetails(
-                    product = products[i],
-                    quantity = requestMap[products[i].id]!!
-                )
+        val productMap = order.orderItems.associate { it.productId to it.quantity }
+        val ids = productMap.keys
+        val total = productRepository.findProductsView(ids).map {
+            it.price.multiply(
+                BigDecimal(productMap.getValue(it.productId))
             )
-            i++
         }
-        return orderDetailsList
+            .reduce(BigDecimal::plus)
+            .setScale(2)
+        return OrderInvoice(order.id, total)
     }
-
-
 }

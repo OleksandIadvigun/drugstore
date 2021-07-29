@@ -4,7 +4,9 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
 
-    <changeSet author="VZ" id="1">
+    <!-- V20210729202901 where V means version 202107292029 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
+
+    <changeSet id="V20210730095001" author="VZ" >
         <createTable tableName="product">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -15,7 +17,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="2" author="VZ">
+    <changeSet id="V20210730095002" author="VZ">
         <insert tableName="Product">
             <column name="id" value="1"/>
             <column name="name" value="paracetamol"/>
@@ -36,7 +38,7 @@
         </insert>
     </changeSet>
 
-    <changeSet author="VZ" id="3">
+    <changeSet id="V20210730095003" author="VZ">
         <createTable tableName="order">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -45,7 +47,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet author="VZ" id="4">
+    <changeSet id="V20210730095004" author="VZ">
         <createTable tableName="order_details">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -60,7 +62,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="5" author="VZ">
+    <changeSet id="V20210730095005" author="VZ">
         <insert tableName="order">
             <column name="id" value="1"/>
             <column name="total" value="31.50"/>
@@ -71,7 +73,7 @@
         </insert>
     </changeSet>
 
-    <changeSet id="6" author="VZ">
+    <changeSet id="V20210730095006" author="VZ">
         <insert tableName="order_details">
             <column name="id" value="1"/>
             <column name="order_id" value="1"/>
@@ -86,9 +88,43 @@
         </insert>
     </changeSet>
 
-    <changeSet id="7" author="VZ">
+    <changeSet id="V20210730095007" author="VZ">
         <dropColumn tableName="order">
             <column name="total"/>
         </dropColumn>
+    </changeSet>
+
+    <changeSet id="V20210730095008" author="VZ">
+        <dropTable tableName="order_details"/>
+    </changeSet>
+
+    <changeSet id="V20210730095009" author="VZ">
+        <createTable tableName="order_item">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints foreignKeyName="fk_order_id" references="order(id)"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints foreignKeyName="fk_product_id" references="product(id)"/>
+            </column>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="V20210730095010" author="VZ">
+        <insert tableName="order_item">
+            <column name="id" value="1"/>
+            <column name="order_id" value="1"/>
+            <column name="product_id" value="1"/>
+            <column name="quantity" value="3"/>
+        </insert>
+        <insert tableName="order_item">
+            <column name="id" value="2"/>
+            <column name="order_id" value="2"/>
+            <column name="product_id" value="2"/>
+            <column name="quantity" value="2"/>
+        </insert>
     </changeSet>
 </databaseChangeLog>

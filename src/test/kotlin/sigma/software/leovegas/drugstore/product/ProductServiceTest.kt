@@ -7,45 +7,44 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal
+import org.junit.jupiter.api.DisplayName
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @SpringBootTest
 @AutoConfigureTestDatabase
+@DisplayName("ProductService test")
 class ProductServiceTest(@Autowired val service: ProductService) {
-    //given
-    val productRequest = ProductRequest(
-        name = "test",
-        price = BigDecimal("25.50"),
-        quantity = 5,
-    )
-
-    val productResponse = ProductResponse(
-        name = "test",
-        price = BigDecimal("25.50"),
-        quantity = 5
-    )
 
     @Test
     fun `should return List of productsResponse`() {
-        //when
+
+        // when
         val all = service.getAll()
 
-        //then
+        // then
         assertNotNull(all)
         assertTrue(all::class.qualifiedName == "java.util.ArrayList")
     }
 
     @Test
     fun `if exist should return productResponse`() {
-        //given
+
+        // given
+        val productRequest = ProductRequest(
+            name = "test",
+            price = BigDecimal("25.50"),
+            quantity = 5,
+        )
+
+        // and
         val saved = service.create(productRequest)
 
-        //when
+        // when
         val actual = service.getOne(saved.id!!)
 
-        //then
+        // then
         assertNotNull(actual)
         assertThat(actual.id).isEqualTo(saved.id)
         assertThat(actual.name).isEqualTo(saved.name)
@@ -61,10 +60,24 @@ class ProductServiceTest(@Autowired val service: ProductService) {
 
     @Test
     fun `should create product and return productResponse`() {
-        //when
+
+        // given
+        val productRequest = ProductRequest(
+            name = "test",
+            price = BigDecimal("25.50"),
+            quantity = 5,
+        )
+
+        val productResponse = ProductResponse(
+            name = "test",
+            price = BigDecimal("25.50"),
+            quantity = 5
+        )
+
+        // when
         val actual = service.create(productRequest)
 
-        //then
+        // then
         assertNotNull(actual)
         assertNotNull(actual.id)
         assertEquals(productResponse.name, actual.name)
@@ -74,22 +87,39 @@ class ProductServiceTest(@Autowired val service: ProductService) {
 
     @Test
     fun `when update should return updated productResponse`() {
-        //given
+
+        // given
+        val productRequest = ProductRequest(
+            name = "test",
+            price = BigDecimal("25.50"),
+            quantity = 5,
+        )
+
+        // and
         val saved = service.create(productRequest)
         val randomName = Math.random().toString()
         productRequest.name = randomName
 
 
-        //when
+        // when
         val actual = service.update(saved.id!!, productRequest)
 
-        //then
+        // then
         assertNotNull(actual)
         assertEquals(randomName, actual.name)
     }
 
     @Test
     fun `if updated product not exist should return ResourceNotFoundException`() {
+
+        // given
+        val productRequest = ProductRequest(
+            name = "test",
+            price = BigDecimal("25.50"),
+            quantity = 5,
+        )
+
+        //then
         assertThrows<ResourceNotFoundException> {
             service.update(Long.MAX_VALUE, productRequest)
         }
@@ -97,13 +127,21 @@ class ProductServiceTest(@Autowired val service: ProductService) {
 
     @Test
     fun `if exist should delete product`() {
-        //given
+
+        // given
+        val productRequest = ProductRequest(
+            name = "test",
+            price = BigDecimal("25.50"),
+            quantity = 5,
+        )
+
+        // and
         val product = service.create(productRequest)
 
-        //when
+        // when
         service.delete(product.id!!)
 
-        //then
+        // then
         assertThrows<ResourceNotFoundException> {
             service.getOne(product.id!!)
         }

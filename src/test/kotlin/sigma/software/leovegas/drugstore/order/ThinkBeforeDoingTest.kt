@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -24,7 +23,7 @@ class ThinkBeforeDoingTest @Autowired constructor(val restTemplate: TestRestTemp
     WireMockTest() {
 
     val requestJson = objectMapper.json(
-        OrderDetailsRequest {
+        OrderItem {
             productId = 1L
             quantity = 3
         },
@@ -32,10 +31,10 @@ class ThinkBeforeDoingTest @Autowired constructor(val restTemplate: TestRestTemp
 
     val responseJson = objectMapper.json {
         id = 1L
-        orderDetailsList = listOf(
-            OrderDetailsResponse(
-                productId = 1L, name = "paracetomol",
-                price = BigDecimal.valueOf(10.50), quantity = 3
+        orderItems = setOf(
+            OrderItem(
+                productId = 1L,
+                 quantity = 3
             )
         )
     }
@@ -58,8 +57,8 @@ class ThinkBeforeDoingTest @Autowired constructor(val restTemplate: TestRestTemp
         // given
         val httpEntity = HttpEntity(
             OrderRequest(
-                listOf(
-                    OrderDetailsRequest(1L, 3)
+                setOf(
+                    OrderItem(productId = 1L, quantity = 3)
                 )
             )
         )

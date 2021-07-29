@@ -1,46 +1,13 @@
 package sigma.software.leovegas.drugstore.order
 
-import sigma.software.leovegas.drugstore.product.Product
 
-fun Order.toOrderResponse(): OrderResponse =
-    OrderResponse(
-        id,
-        orderDetailsList
-            .map {
-                it.toOrderDetailsResponse()
-            }
-    )
+fun Order.toOrderResponse(): OrderResponse = OrderResponse(id, orderItems)
 
-fun OrderResponse.toEntity(): Order =
-    Order(
-        id = id,
-        orderDetailsList = orderDetailsList.toEntity()
-    )
+fun OrderResponse.toEntity(): Order = Order(id, orderItems)
 
-fun List<Order>.toOrderResponseList(): List<OrderResponse> {
-    return this.map(Order::toOrderResponse)
-}
+fun OrderRequest.toOrder(): Order = Order(orderItems= orderItems)
 
-fun OrderDetails.toOrderDetailsResponse(): OrderDetailsResponse =
-    OrderDetailsResponse(
-        product.id,
-        product.name,
-        product.price,
-        quantity
-    )
+fun List<Order>.toOrderResponseList(): List<OrderResponse> = this.map(Order::toOrderResponse)
 
-fun OrderDetailsResponse.toEntity(): OrderDetails =
-    OrderDetails(
-        product = Product(
-            id = productId,
-            name = name,
-            price = price,
-            quantity = 0
-        ),
-        quantity = quantity
-    )
 
-fun List<OrderDetailsResponse>.toEntity(): List<OrderDetails> {
-    return this.map(OrderDetailsResponse::toEntity)
-}
 

@@ -20,6 +20,6 @@ data class Order(
 
     @JoinColumn(name = "order_id")
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    var orderDetailsList: List<OrderDetails>
+    val orderItems: Set<OrderItem> = setOf()
 )
 

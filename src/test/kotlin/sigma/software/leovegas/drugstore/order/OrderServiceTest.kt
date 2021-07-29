@@ -3,6 +3,7 @@ package sigma.software.leovegas.drugstore.order
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,6 +17,7 @@ import kotlin.test.fail
 
 @AutoConfigureTestDatabase
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@DisplayName("OrderService test")
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
@@ -23,29 +25,27 @@ class OrderServiceTest @Autowired constructor(
     val orderRepository: OrderRepository
 ) {
 
-
-    // give
-    val product = transactionTemplate.execute {
-        productRepository.save(
-            Product(
-                name = "test product",
-                quantity = 5,
-                price = BigDecimal.TEN.setScale(2),
-            )
-        )
-    } ?: fail("result is expected")
-
-
     @Test
     fun `should get order by id `() {
 
-        // give
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     )
@@ -61,13 +61,16 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(orderActual?.id).isEqualTo(orderCreated.id)
-        assertThat(orderActual?.orderDetailsList).isEqualTo(orderCreated.orderDetailsList)
+        assertThat(orderActual?.orderItems!!.elementAt(0).productId)
+            .isEqualTo(orderCreated.orderItems.elementAt(0).productId)
+        assertThat(orderActual.orderItems.elementAt(0).quantity)
+            .isEqualTo(orderCreated.orderItems.elementAt(0).quantity)
     }
 
     @Test
     fun `if get order and not exist should throw OrderKotlinNotFoundException`() {
 
-        //give
+        // given
         val id = -15L //invalid id
 
         // then
@@ -77,11 +80,11 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `if change order and not exist should throw OrderKotlinNotFoundException`() {
 
-        //give
+        // given
         val id = -15L //invalid id
 
         // then
-        assertThrows<OrderNotFoundException> { orderService.updateOrder(id, OrderRequest(emptyList())) }
+        assertThrows<OrderNotFoundException> { orderService.updateOrder(id, OrderRequest(emptySet())) }
     }
 
     @Test
@@ -100,11 +103,22 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should create order`() {
 
-        // give
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val order = OrderRequest(
-            listOf(
-                OrderDetailsRequest(
-                    productId = product.id,
+            setOf(
+                OrderItem(
+                    productId = product.id!!,
                     quantity = 3
                 )
             )
@@ -122,13 +136,24 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should throw InsufficientAmountOfProductForOrderException to create order`() {
 
-        //give
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val orderToUpdate = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     ),
@@ -136,25 +161,36 @@ class OrderServiceTest @Autowired constructor(
             )
         }?.toOrderResponse() ?: fail("result is expected")
         // then
-        assertThrows<InsufficientAmountOfProductForOrderException> {
-            orderService.createOrder(OrderRequest(emptyList()))
+        assertThrows<InsufficientAmountOfOrderItemException> {
+            orderService.createOrder(OrderRequest(emptySet()))
         }
 
-        assertThrows<InsufficientAmountOfProductForOrderException> {
-            orderService.updateOrder(orderToUpdate.id!!, OrderRequest(emptyList()))
+        assertThrows<InsufficientAmountOfOrderItemException> {
+            orderService.updateOrder(orderToUpdate.id!!, OrderRequest(emptySet()))
         }
     }
 
     @Test
     fun `should update order`() {
 
-        // give
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val orderToChange = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     ),
@@ -162,11 +198,11 @@ class OrderServiceTest @Autowired constructor(
             )
         }?.toOrderResponse() ?: fail("result is expected")
 
-        //and
+        // and
         val orderRequest = OrderRequest(
-            orderDetailsList = listOf(
-                OrderDetailsRequest(
-                    productId = product.id,
+            orderItems = setOf(
+                OrderItem(
+                    productId = product.id!!,
                     quantity = 4
                 )
             )
@@ -178,19 +214,31 @@ class OrderServiceTest @Autowired constructor(
         } ?: fail("result is expected")
 
         // then
-        assertThat(changedOrder.orderDetailsList[0].quantity).isEqualTo(orderRequest.orderDetailsList[0].quantity)
+        assertThat(changedOrder.orderItems.elementAt(0).quantity)
+            .isEqualTo(orderRequest.orderItems.elementAt(0).quantity)
     }
 
     @Test
     fun `should delete order`() {
 
-        // give
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val orderToChange = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     ),
@@ -212,15 +260,26 @@ class OrderServiceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get invoice`(){
+    fun `should get invoice`() {
 
-        //give
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     ),
@@ -228,7 +287,7 @@ class OrderServiceTest @Autowired constructor(
             )
         } ?: fail("result is expected")
 
-        //when
+        // when
         val orderInvoice = transactionTemplate.execute {
             orderService.getInvoice(order.id!!)
         } ?: fail("result is expected")

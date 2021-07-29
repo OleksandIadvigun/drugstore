@@ -31,29 +31,34 @@ class OrderResourceTest(
     @Autowired val orderService: OrderService
 ) {
 
-    val product = transactionTemplate.execute {
-        productRepository.save(
-            Product(
-                name = "test product",
-                quantity = 5,
-                price = BigDecimal.TEN.setScale(2),
-            )
-        )
-    } ?: fail("result is expected")
-
     @Test
     fun `should create order`() {
+
         // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val httpEntity = HttpEntity(
             OrderRequest(
-                listOf(
-                    OrderDetailsRequest(1L, 3)
+                setOf(
+                    OrderItem(
+                        productId = product.id!!,
+                        quantity = product.quantity
+                    )
                 )
             )
         )
 
         // when
-        val response = restTemplate.exchange("/orders", POST, httpEntity, respTypeRef<OrderResponse>())
+        val response = restTemplate.exchange("/api/v1/orders", POST, httpEntity, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
@@ -61,19 +66,30 @@ class OrderResourceTest(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isNotNull
-        assertThat(body.orderDetailsList).hasSize(1)
+        assertThat(body.orderItems).hasSize(1)
     }
 
     @Test
     fun `should get order by id`() {
 
-        //given
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     )
@@ -83,7 +99,7 @@ class OrderResourceTest(
 
         // when
         val response = restTemplate
-            .exchange("/orders/${orderCreated.id}", GET, null, respTypeRef<OrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -91,7 +107,8 @@ class OrderResourceTest(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isEqualTo(orderCreated.id)
-        assertThat(body.orderDetailsList).isEqualTo(orderCreated.orderDetailsList)
+        assertThat(body.orderItems.elementAt(0).quantity).isEqualTo(orderCreated.orderItems.elementAt(0).quantity)
+        assertThat(body.orderItems.elementAt(0).productId).isEqualTo(orderCreated.orderItems.elementAt(0).productId)
 
     }
 
@@ -100,7 +117,7 @@ class OrderResourceTest(
 
         // when
         val response = restTemplate
-            .exchange("/orders", GET, null, respTypeRef<List<OrderResponse>>())
+            .exchange("/api/v1/orders", GET, null, respTypeRef<List<OrderResponse>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -113,13 +130,24 @@ class OrderResourceTest(
     @Test
     fun `should update order`() {
 
-        //given
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     )
@@ -130,15 +158,18 @@ class OrderResourceTest(
         // and
         val httpEntity = HttpEntity(
             OrderRequest(
-                listOf(
-                    OrderDetailsRequest(product.id!!, 5)
+                setOf(
+                    OrderItem(
+                        productId = product.id!!,
+                        quantity = product.quantity
+                    )
                 )
             )
         )
 
         // when
         val response = restTemplate
-            .exchange("/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<OrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
@@ -147,19 +178,31 @@ class OrderResourceTest(
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
         assertThat(body.id).isEqualTo(orderCreated.id)
-        assertThat(body.orderDetailsList[0].quantity).isEqualTo(httpEntity.body?.orderDetailsList?.get(0)?.quantity)
+        assertThat(body.orderItems.elementAt(0).quantity).
+        isEqualTo(httpEntity.body?.orderItems?.elementAt(0)?.quantity)
     }
 
     @Test
     fun `should delete order`() {
 
-        //given
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     ),
@@ -170,7 +213,7 @@ class OrderResourceTest(
 
         // when
         val response = restTemplate
-            .exchange("/orders/${orderCreated.id}", DELETE, null, respTypeRef<OrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.NO_CONTENT)
@@ -186,13 +229,24 @@ class OrderResourceTest(
     @Test
     fun `should get invoice`() {
 
-        //given
+        // given
+        val product = transactionTemplate.execute {
+            productRepository.save(
+                Product(
+                    name = "test product",
+                    quantity = 5,
+                    price = BigDecimal.TEN.setScale(2),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
-                    orderDetailsList = listOf(
-                        OrderDetails(
-                            product = product,
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = product.id!!,
                             quantity = 3
                         )
                     ),
@@ -202,14 +256,15 @@ class OrderResourceTest(
 
 
         // when
-        val response =  restTemplate
-            .exchange("/orders/${order.id}/invoice", GET, null, respTypeRef<OrderInvoice>())
+        val response = restTemplate
+            .exchange("/api/v1/orders/${order.id}/invoice", GET, null, respTypeRef<OrderInvoice>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
         val body = response.body ?: fail("body may not be null")
+        assertThat(body.orderId).isEqualTo((order.id))
         assertThat(body.total).isEqualTo(BigDecimal("30.00")) // quantity(3) * price(10.00)
     }
 }
