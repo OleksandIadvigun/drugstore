@@ -27,7 +27,6 @@ class ProductRepositoryTest @Autowired constructor(
         ).map {
             Product(
                 name = "${it.first} test name",
-                quantity = it.first,
                 price = it.second
             )
         }.map { p ->

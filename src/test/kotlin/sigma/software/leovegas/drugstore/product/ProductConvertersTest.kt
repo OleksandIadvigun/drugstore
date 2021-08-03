@@ -13,8 +13,8 @@ class ProductConvertersTest {
     fun `should convert to ProductResponse`() {
 
         // given
-        val product = Product(name = "test", price = BigDecimal.TEN, quantity = 0)
-        val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN, quantity = 0)
+        val product = Product(name = "test", price = BigDecimal.TEN)
+        val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
 
         // when
         val actual = product.convertToProductResponse()
@@ -27,8 +27,8 @@ class ProductConvertersTest {
     fun `should convert to Product`() {
 
         // given
-        val product = Product(name = "test", price = BigDecimal.TEN, quantity = 0)
-        val productRequest = ProductRequest(name = "test", price = BigDecimal.TEN, quantity = 0)
+        val product = Product(name = "test", price = BigDecimal.TEN)
+        val productRequest = ProductRequest(name = "test", price = BigDecimal.TEN)
 
         // when
         val actual = productRequest.convertToProduct()
@@ -41,8 +41,8 @@ class ProductConvertersTest {
     fun `should convert list of products to list of DTOs`() {
 
         // given
-         val product = Product(name = "test", price = BigDecimal.TEN, quantity = 0)
-         val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN, quantity = 0)
+         val product = Product(name = "test", price = BigDecimal.TEN)
+         val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
         val products = mutableListOf(product, product)
 
         // when

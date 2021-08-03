@@ -19,9 +19,6 @@ data class Product(
     @Column(name = "name")
     val name: String,
 
-    @Column(name = "quantity")
-    val quantity: Int,
-
     @Column(name = "price")
     val price: BigDecimal
 

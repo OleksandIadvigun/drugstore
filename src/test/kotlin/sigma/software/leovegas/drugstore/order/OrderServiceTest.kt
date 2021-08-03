@@ -28,16 +28,15 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should get order by id `() {
 
-        // given
-        val product = transactionTemplate.execute {
-            productRepository.save(
-                Product(
-                    name = "test product",
-                    quantity = 5,
-                    price = BigDecimal.TEN.setScale(2),
-                )
+    // give
+    val product = transactionTemplate.execute {
+        productRepository.save(
+            Product(
+                name = "test product",
+                price = BigDecimal.TEN.setScale(2),
             )
-        } ?: fail("result is expected")
+        )
+    } ?: fail("result is expected")
 
         // and
         val orderCreated = transactionTemplate.execute {
@@ -108,7 +107,6 @@ class OrderServiceTest @Autowired constructor(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -141,7 +139,6 @@ class OrderServiceTest @Autowired constructor(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -178,7 +175,6 @@ class OrderServiceTest @Autowired constructor(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -226,7 +222,6 @@ class OrderServiceTest @Autowired constructor(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -267,7 +262,6 @@ class OrderServiceTest @Autowired constructor(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )

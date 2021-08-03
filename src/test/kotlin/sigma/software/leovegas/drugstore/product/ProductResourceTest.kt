@@ -34,7 +34,6 @@ class ProductResourceTest(
             ProductRequest(
                 name = "test product",
                 price = BigDecimal.TEN,
-                quantity = 5
             )
         )
 
@@ -57,7 +56,6 @@ class ProductResourceTest(
         val newProduct = ProductRequest(
             name = "test",
             price = BigDecimal.ONE,
-            quantity = 2
         )
 
         val savedProduct = transactionalTemplate.execute {
@@ -68,7 +66,6 @@ class ProductResourceTest(
             ProductRequest(
                 name = "test product edited",
                 price = BigDecimal.TEN,
-                quantity = 5
             )
         )
 
@@ -84,7 +81,6 @@ class ProductResourceTest(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.name).isEqualTo(httpEntity.body?.name)
         assertThat(body.price).isEqualTo(httpEntity.body?.price)
-        assertThat(body.quantity).isEqualTo(httpEntity.body?.quantity)
     }
 
     @Test
@@ -108,7 +104,6 @@ class ProductResourceTest(
         val newProduct = ProductRequest(
             name = "test",
             price = BigDecimal.TEN.setScale(2),
-            quantity = 2
         )
 
         // when
@@ -127,7 +122,6 @@ class ProductResourceTest(
         assertThat(body.id).isEqualTo(savedProduct.id)
         assertThat(body.name).isEqualTo(savedProduct.name)
         assertThat(body.price).isEqualTo(savedProduct.price)
-        assertThat(body.quantity).isEqualTo(savedProduct.quantity)
     }
 
     @Test
@@ -137,7 +131,6 @@ class ProductResourceTest(
         val newProduct = ProductRequest(
             name = "test",
             price = BigDecimal.ONE,
-            quantity = 2
         )
 
         // when

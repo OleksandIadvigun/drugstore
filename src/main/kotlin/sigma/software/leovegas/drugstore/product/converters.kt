@@ -4,15 +4,13 @@ fun Product.convertToProductResponse(): ProductResponse =
     ProductResponse(
         id = id,
         name = name,
-        price = price,
-        quantity = quantity
+        price = price
     )
 
 fun ProductRequest.convertToProduct(): Product =
     Product(
         name = name,
-        price = price,
-        quantity = quantity
+        price = price
     )
 
 fun MutableList<Product>.convertToProductResponseList(): MutableList<ProductResponse> {

@@ -127,4 +127,21 @@
             <column name="quantity" value="2"/>
         </insert>
     </changeSet>
+
+    <changeSet id="V20210802143811" author="VZ">
+        <dropColumn tableName="product">
+            <column name="quantity"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="V20210802180112" author="OI" >
+        <createTable tableName="stock">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="product_id" type="BIGINT"/>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

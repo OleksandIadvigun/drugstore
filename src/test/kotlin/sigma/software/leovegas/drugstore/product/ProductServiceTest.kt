@@ -35,7 +35,6 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val productRequest = ProductRequest(
             name = "test",
             price = BigDecimal("25.50"),
-            quantity = 5,
         )
 
         // and
@@ -65,14 +64,12 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val productRequest = ProductRequest(
             name = "test",
             price = BigDecimal("25.50"),
-            quantity = 5,
         )
 
         //and
         val productResponse = ProductResponse(
             name = "test",
             price = BigDecimal("25.50"),
-            quantity = 5
         )
 
         // when
@@ -83,7 +80,6 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         assertNotNull(actual.id)
         assertEquals(productResponse.name, actual.name)
         assertEquals(productResponse.price, actual.price)
-        assertEquals(productResponse.quantity, actual.quantity)
     }
 
     @Test
@@ -93,7 +89,6 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val productRequest = ProductRequest(
             name = "test",
             price = BigDecimal("25.50"),
-            quantity = 5,
         )
 
         // and
@@ -102,7 +97,6 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val updatedProductRequest = ProductRequest(
             name = randomName,
             price = BigDecimal("25.50"),
-            quantity = 5,
         )
 
         // when
@@ -120,7 +114,6 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val productRequest = ProductRequest(
             name = "test",
             price = BigDecimal("25.50"),
-            quantity = 5,
         )
 
         //then
@@ -136,7 +129,6 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val productRequest = ProductRequest(
             name = "test",
             price = BigDecimal("25.50"),
-            quantity = 5,
         )
 
         // and
@@ -158,7 +150,6 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val productRequest = ProductRequest(
             name = "test",
             price = BigDecimal("20000000"),
-            quantity = 5,
         )
 
         // then

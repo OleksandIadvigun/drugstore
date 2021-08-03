@@ -39,7 +39,6 @@ class OrderResourceTest(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -51,7 +50,7 @@ class OrderResourceTest(
                 setOf(
                     OrderItem(
                         productId = product.id!!,
-                        quantity = product.quantity
+                        quantity = 3
                     )
                 )
             )
@@ -77,7 +76,6 @@ class OrderResourceTest(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -135,7 +133,6 @@ class OrderResourceTest(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -161,7 +158,7 @@ class OrderResourceTest(
                 setOf(
                     OrderItem(
                         productId = product.id!!,
-                        quantity = product.quantity
+                        quantity = 5
                     )
                 )
             )
@@ -190,7 +187,6 @@ class OrderResourceTest(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
@@ -234,7 +230,6 @@ class OrderResourceTest(
             productRepository.save(
                 Product(
                     name = "test product",
-                    quantity = 5,
                     price = BigDecimal.TEN.setScale(2),
                 )
             )
