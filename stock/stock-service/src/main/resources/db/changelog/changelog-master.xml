@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
+
+    <!-- V20210729202901 where V means version 202107292029 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
+
+    <changeSet id="V20210802180101" author="OI" >
+        <createTable tableName="stock">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="product_id" type="BIGINT"/>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
