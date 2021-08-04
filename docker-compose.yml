@@ -1,0 +1,26 @@
+version: "3"
+services:
+  product:
+    container_name: product_service
+    build:
+      args:
+        JDK_VERSION: 8
+      context: ./product/product-service
+      dockerfile: Dockerfile
+    image: drugstore/product
+    ports:
+      - "8081:8081"
+  order:
+    container_name: order_service
+    build:
+      args:
+        JDK_VERSION: 8
+      context: ./order/order-service
+      dockerfile: Dockerfile
+    image: drugstore/order
+    ports:
+      - "8082:8082"
+    links:
+      - "product:product_service"
+
+
