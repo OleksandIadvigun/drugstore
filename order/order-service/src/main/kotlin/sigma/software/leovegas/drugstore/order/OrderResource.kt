@@ -17,8 +17,8 @@ class OrderResource (private val orderService: OrderService) {
 
     @PostMapping(path = ["", "/"])
     @ResponseStatus(HttpStatus.CREATED)
-    fun createOrder(@RequestBody orderRequest: OrderRequest) =
-        orderService.createOrder(orderRequest)
+    fun createOrder(@RequestBody createOrderRequest: CreateOrderRequest) =
+        orderService.createOrder(createOrderRequest)
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -32,8 +32,8 @@ class OrderResource (private val orderService: OrderService) {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun updateOrder(@PathVariable("id") id: Long, @RequestBody orderRequest: OrderRequest) =
-        orderService.updateOrder(id, orderRequest)
+    fun updateOrder(@PathVariable("id") id: Long, @RequestBody updateOrderRequest: UpdateOrderRequest) =
+        orderService.updateOrder(id, updateOrderRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

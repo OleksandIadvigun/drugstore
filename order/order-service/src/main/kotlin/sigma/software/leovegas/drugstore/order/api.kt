@@ -1,17 +1,32 @@
 package sigma.software.leovegas.drugstore.order
 
-import java.math.BigDecimal
+import java.time.LocalDateTime
 
-data class OrderRequest(
-    val orderItems: Set<OrderItem>
+data class CreateOrderRequest(
+    val orderItems: Set<OrderItemDto>
+)
+data class UpdateOrderRequest(
+    val orderItems: Set<OrderItemDto>
 )
 
-data class OrderResponse(
+data class CreateOrderResponse(
     val id: Long? = null,
-    val orderItems: Set<OrderItem>,
+    val orderStatus: OrderStatus,
+    val createdAt: LocalDateTime? = null,
+    val updateAt: LocalDateTime? = null,
+    val orderItems: Set<OrderItemDto>,
 )
 
-data class OrderInvoice(
-    val orderId: Long?,
-    val total: BigDecimal
+data class UpdateOrderResponse(
+    val id: Long? = null,
+    val orderStatus: OrderStatus,
+    val createdAt: LocalDateTime? = null,
+    val updateAt: LocalDateTime? = null,
+    val orderItems: Set<OrderItemDto>,
 )
+
+data class OrderItemDto(
+    val productId: Long,
+    val quantity: Int,
+)
+

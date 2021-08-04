@@ -16,7 +16,7 @@ data class OrderItem(
     @Column(name = "id")
     val id: Long? = null,
 
-    @Column(name = "productId")
+    @Column(name = "product_id")
     val productId: Long,
 
     @Column(name = "quantity")

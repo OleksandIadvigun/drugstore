@@ -1,7 +1,5 @@
 package sigma.software.leovegas.drugstore.order
 
-
-import java.util.Optional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -12,39 +10,30 @@ class OrderService @Autowired constructor(
     private val orderRepository: OrderRepository,
 ) {
 
-    fun getOrderById(id: Long): OrderResponse =
-        Optional.ofNullable(id).orElseThrow { OrderNotFoundException(id) }
-            .run {
-                val order = orderRepository.findById(this)
-                    .orElseThrow { OrderNotFoundException(id) }
-                OrderResponse(
-                    id = order.id,
-                    orderItems = order.orderItems
-                        .map {
-                            OrderItem(
-                                id = id,
-                                productId = it.productId,
-                                quantity = it.quantity
-                            )
-                        }.toSet()
-                )
-            }
+    fun getOrderById(id: Long): CreateOrderResponse =
+        orderRepository.findById(id).orElseThrow { throw OrderNotFoundException(id) }.toCreateOrderResponse()
 
-    fun getOrders(): List<OrderResponse> {
+    fun getOrders(): List<CreateOrderResponse> {
         val orderList = orderRepository.findAll()
         return orderList.toOrderResponseList()
     }
 
-    fun createOrder(orderRequest: OrderRequest): OrderResponse = orderRequest.run {
+    fun createOrder(createOrderRequest: CreateOrderRequest): CreateOrderResponse = createOrderRequest.run {
         if (this.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
-        orderRepository.save(this.toOrder()).toOrderResponse()
+        orderRepository.save(this.toOrder()).toCreateOrderResponse()
     }
 
-    fun updateOrder(id: Long, orderRequest: OrderRequest): OrderResponse {
+    fun updateOrder(id: Long, updateOrderRequest: UpdateOrderRequest): UpdateOrderResponse {
         if (!orderRepository.findById(id).isPresent) throw OrderNotFoundException(id)
-        if (orderRequest.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
-        val changedOrder = orderRepository.save(Order(id, orderRequest.orderItems))
-        return changedOrder.toOrderResponse()
+        if (updateOrderRequest.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+        val changedOrder = orderRepository.save(
+            Order(
+                id = id,
+                orderStatus = updateOrderRequest.toOrder().orderStatus,
+                orderItems = updateOrderRequest.toOrder().orderItems
+            )
+        )
+        return changedOrder.toUpdateOrderResponse()
 
     }
 

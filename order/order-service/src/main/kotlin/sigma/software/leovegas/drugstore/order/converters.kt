@@ -1,13 +1,33 @@
 package sigma.software.leovegas.drugstore.order
 
+fun Order.toCreateOrderResponse(): CreateOrderResponse = CreateOrderResponse(
+    id, orderStatus, createdAt, updatedAt, orderItems.toOrderItemViewSet()
+)
+fun Order.toUpdateOrderResponse(): UpdateOrderResponse = UpdateOrderResponse(
+    id, orderStatus, createdAt, updatedAt, orderItems.toOrderItemViewSet()
+)
 
-fun Order.toOrderResponse(): OrderResponse = OrderResponse(id, orderItems)
+fun CreateOrderResponse.toEntity(): Order = Order(id, orderStatus, createdAt, updateAt, orderItems.toOrderItemSet())
 
-fun OrderResponse.toEntity(): Order = Order(id, orderItems)
+fun CreateOrderRequest.toOrder(): Order = Order(
+    orderItems = orderItems.toOrderItemSet(),
+    orderStatus = OrderStatus.CREATED
+)
+fun UpdateOrderRequest.toOrder(): Order = Order(
+    orderItems = orderItems.toOrderItemSet(),
+    orderStatus = OrderStatus.UPDATED
+)
 
-fun OrderRequest.toOrder(): Order = Order(orderItems= orderItems)
+fun List<Order>.toOrderResponseList(): List<CreateOrderResponse> = this.map(Order::toCreateOrderResponse)
 
-fun List<Order>.toOrderResponseList(): List<OrderResponse> = this.map(Order::toOrderResponse)
+fun OrderItem.toOrderItemView(): OrderItemDto = OrderItemDto(productId = productId, quantity = quantity)
+
+fun Set<OrderItem>.toOrderItemViewSet(): Set<OrderItemDto> = this.map(OrderItem::toOrderItemView).toSet()
+
+fun Set<OrderItemDto>.toOrderItemSet(): Set<OrderItem> = this.map(OrderItemDto::toOrderItem).toSet()
+
+fun OrderItemDto.toOrderItem(): OrderItem = OrderItem(productId = productId, quantity = quantity)
+
 
 
 

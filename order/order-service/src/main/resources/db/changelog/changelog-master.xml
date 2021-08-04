@@ -3,27 +3,20 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
-
+<!---->
     <!-- V20210729202901 where V means version 202107292029 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
-
-
+<!---->
     <changeSet id="V20210804154901" author="VZ">
         <createTable tableName="order">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="total" type="Decimal(11,2)"/>
+            <column name="order_status" type="VARCHAR(15)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
     <changeSet id="V20210804154902" author="VZ">
-        <insert tableName="order">
-            <column name="id" value="1"/>
-        </insert>
-        <insert tableName="order">
-            <column name="id" value="2"/>
-        </insert>
-    </changeSet>
-    <changeSet id="V20210804154903" author="VZ">
         <createTable tableName="order_item">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true"/>
@@ -35,20 +28,5 @@
             </column>
             <column name="quantity" type="INT"/>
         </createTable>
-    </changeSet>
-
-    <changeSet id="V20210804154904" author="VZ">
-        <insert tableName="order_item">
-            <column name="id" value="1"/>
-            <column name="order_id" value="1"/>
-            <column name="product_id" value="1"/>
-            <column name="quantity" value="3"/>
-        </insert>
-        <insert tableName="order_item">
-            <column name="id" value="2"/>
-            <column name="order_id" value="2"/>
-            <column name="product_id" value="2"/>
-            <column name="quantity" value="2"/>
-        </insert>
     </changeSet>
 </databaseChangeLog>

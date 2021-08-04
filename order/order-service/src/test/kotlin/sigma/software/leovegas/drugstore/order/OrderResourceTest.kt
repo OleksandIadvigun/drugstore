@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.order
 
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -33,9 +32,9 @@ class OrderResourceTest(
 
         // given
         val httpEntity = HttpEntity(
-            OrderRequest(
+            CreateOrderRequest(
                 setOf(
-                    OrderItem(
+                    OrderItemDto(
                         productId = 1L,
                         quantity = 3
                     )
@@ -44,7 +43,7 @@ class OrderResourceTest(
         )
 
         // when
-        val response = restTemplate.exchange("/api/v1/orders", POST, httpEntity, respTypeRef<OrderResponse>())
+        val response = restTemplate.exchange("/api/v1/orders", POST, httpEntity, respTypeRef<CreateOrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
@@ -70,11 +69,11 @@ class OrderResourceTest(
                     )
                 )
             )
-        }?.toOrderResponse() ?: fail("result is expected")
+        }?.toCreateOrderResponse() ?: fail("result is expected")
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<OrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<CreateOrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -90,9 +89,23 @@ class OrderResourceTest(
     @Test
     fun `should get orders`() {
 
+        // given
+        val orderCreated = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1L,
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        }?.toCreateOrderResponse() ?: fail("result is expected")
+
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders", GET, null, respTypeRef<List<OrderResponse>>())
+            .exchange("/api/v1/orders", GET, null, respTypeRef<List<CreateOrderResponse>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -117,13 +130,13 @@ class OrderResourceTest(
                     )
                 )
             )
-        }?.toOrderResponse() ?: fail("result is expected")
+        }?.toUpdateOrderResponse() ?: fail("result is expected")
 
         // and
         val httpEntity = HttpEntity(
-            OrderRequest(
+            UpdateOrderRequest(
                 setOf(
-                    OrderItem(
+                    OrderItemDto(
                         productId = 1L,
                         quantity = 5
                     )
@@ -133,7 +146,7 @@ class OrderResourceTest(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<OrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<UpdateOrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
@@ -142,8 +155,7 @@ class OrderResourceTest(
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
         assertThat(body.id).isEqualTo(orderCreated.id)
-        assertThat(body.orderItems.elementAt(0).quantity).
-        isEqualTo(httpEntity.body?.orderItems?.elementAt(0)?.quantity)
+        assertThat(body.orderItems.elementAt(0).quantity).isEqualTo(httpEntity.body?.orderItems?.elementAt(0)?.quantity)
     }
 
     @Test
@@ -161,12 +173,11 @@ class OrderResourceTest(
                     ),
                 )
             )
-        }?.toOrderResponse() ?: fail("result is expected")
-
+        }?.toCreateOrderResponse() ?: fail("result is expected")
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<OrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<CreateOrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.NO_CONTENT)
