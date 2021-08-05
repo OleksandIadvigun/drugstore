@@ -1,7 +1,7 @@
 package sigma.software.leovegas.drugstore.product
 
-import org.springframework.stereotype.Service
 import javax.transaction.Transactional
+import org.springframework.stereotype.Service
 
 @Service
 @Transactional

@@ -3,9 +3,13 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
-<!---->
-    <!-- V20210729202901 where V means version 202107292029 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
-<!---->
+    <!--
+    V20210729202901
+      where:
+        - V means version
+        - 202107292029 means YYYYmmDDHHMM
+        - 01 sequence number with scale of 2 digits
+    -->
     <changeSet id="V20210804154901" author="VZ">
         <createTable tableName="order">
             <column name="id" type="BIGINT" autoIncrement="true">

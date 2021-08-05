@@ -1,10 +1,10 @@
 package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
+import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 @DisplayName("Product converters test")
 class ProductConvertersTest {

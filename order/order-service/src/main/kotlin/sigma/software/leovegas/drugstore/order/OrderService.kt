@@ -1,17 +1,20 @@
 package sigma.software.leovegas.drugstore.order
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
+import sigma.software.leovegas.drugstore.order.OrderStatus.UPDATED
+import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderResponse
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderResponse
 
 @Service
 @Transactional
-class OrderService @Autowired constructor(
-    private val orderRepository: OrderRepository,
-) {
+class OrderService(private val orderRepository: OrderRepository) {
 
     fun getOrderById(id: Long): CreateOrderResponse =
-        orderRepository.findById(id).orElseThrow { throw OrderNotFoundException(id) }.toCreateOrderResponse()
+        orderRepository.findById(id).orElseThrow { throw OrderNotFoundException(id) }.toCreateOrderResponseDTO()
 
     fun getOrders(): List<CreateOrderResponse> {
         val orderList = orderRepository.findAll()
@@ -19,23 +22,25 @@ class OrderService @Autowired constructor(
     }
 
     fun createOrder(createOrderRequest: CreateOrderRequest): CreateOrderResponse = createOrderRequest.run {
-        if (this.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
-        orderRepository.save(this.toOrder()).toCreateOrderResponse()
+        if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+        val entity = toEntity().copy(orderStatus = CREATED) // NOTE: business logic must be placed in services!
+        val created = orderRepository.save(entity)
+        created.toCreateOrderResponseDTO()
     }
 
-    fun updateOrder(id: Long, updateOrderRequest: UpdateOrderRequest): UpdateOrderResponse {
-        if (!orderRepository.findById(id).isPresent) throw OrderNotFoundException(id)
-        if (updateOrderRequest.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
-        val changedOrder = orderRepository.save(
-            Order(
-                id = id,
-                orderStatus = updateOrderRequest.toOrder().orderStatus,
-                orderItems = updateOrderRequest.toOrder().orderItems
-            )
-        )
-        return changedOrder.toUpdateOrderResponse()
-
-    }
+    fun updateOrder(id: Long, updateOrderRequest: UpdateOrderRequest): UpdateOrderResponse =
+        updateOrderRequest.run {
+            if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+            val toUpdate = orderRepository
+                .findById(id)
+                .orElseThrow { OrderNotFoundException(id) }
+                .copy(
+                    orderStatus = UPDATED, // NOTE: business logic must be placed in services!
+                    orderItems = orderItems.toEntities(),
+                )
+            val updated = orderRepository.save(toUpdate)
+            updated.toUpdateOrderResponseDTO()
+        }
 
     fun deleteOrder(id: Long) {
         val orderToDelete = getOrderById(id).toEntity()

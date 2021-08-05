@@ -1,7 +1,5 @@
 package sigma.software.leovegas.drugstore.stock
 
-import java.lang.RuntimeException
-
 class StockNotFoundException(id: Long?) : RuntimeException(
     "Stock with id $id is not found!"
 )

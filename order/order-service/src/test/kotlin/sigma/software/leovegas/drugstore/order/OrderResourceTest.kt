@@ -17,6 +17,11 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
+import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderResponse
+import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderResponse
 
 @DisplayName("OrderResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -33,8 +38,8 @@ class OrderResourceTest(
         // given
         val httpEntity = HttpEntity(
             CreateOrderRequest(
-                setOf(
-                    OrderItemDto(
+                listOf(
+                    OrderItemDTO(
                         productId = 1L,
                         quantity = 3
                     )
@@ -69,7 +74,7 @@ class OrderResourceTest(
                     )
                 )
             )
-        }?.toCreateOrderResponse() ?: fail("result is expected")
+        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
 
         // when
         val response = restTemplate
@@ -101,7 +106,7 @@ class OrderResourceTest(
                     )
                 )
             )
-        }?.toCreateOrderResponse() ?: fail("result is expected")
+        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
 
         // when
         val response = restTemplate
@@ -130,13 +135,13 @@ class OrderResourceTest(
                     )
                 )
             )
-        }?.toUpdateOrderResponse() ?: fail("result is expected")
+        }?.toUpdateOrderResponseDTO() ?: fail("result is expected")
 
         // and
         val httpEntity = HttpEntity(
             UpdateOrderRequest(
-                setOf(
-                    OrderItemDto(
+                listOf(
+                    OrderItemDTO(
                         productId = 1L,
                         quantity = 5
                     )
@@ -173,7 +178,7 @@ class OrderResourceTest(
                     ),
                 )
             )
-        }?.toCreateOrderResponse() ?: fail("result is expected")
+        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
 
         // when
         val response = restTemplate

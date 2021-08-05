@@ -13,6 +13,8 @@ import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
 import javax.persistence.Table
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 
@@ -30,24 +32,28 @@ enum class OrderStatus {
 data class Order(
 
     @Id
+    @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
+    @Column(name = "id", nullable = false, updatable = false)
     val id: Long? = null,
 
-    @Column(name="order_status")
+    @NotEmpty
     @Enumerated(EnumType.STRING)
+    @Column(name = "order_status", nullable = false)
     val orderStatus: OrderStatus = OrderStatus.NONE,
 
-    @Column(name="created_at")
-    @CreationTimestamp
-    val createdAt: LocalDateTime? = null,
-
-    @Column(name="updated_at")
-    @UpdateTimestamp
-    val updatedAt: LocalDateTime? =null,
-
+    @NotEmpty // TODO: FIXME: Make sure its not possible to save an order without order items (write test)
     @JoinColumn(name = "order_id")
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    val orderItems: Set<OrderItem> = setOf()
-)
+    val orderItems: Set<OrderItem> = setOf(),
 
+    @NotNull
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
+    val createdAt: LocalDateTime? = null,
+
+    @NotNull
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    val updatedAt: LocalDateTime? = null,
+)
