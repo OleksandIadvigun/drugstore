@@ -12,7 +12,7 @@
     -->
     <changeSet id="V20210804154901" author="VZ">
         <createTable tableName="order">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
             <column name="order_status" type="VARCHAR(15)"/>
@@ -22,7 +22,7 @@
     </changeSet>
     <changeSet id="V20210804154902" author="VZ">
         <createTable tableName="order_item">
-            <column name="id" type="BIGINT" autoIncrement="true">
+            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
             <column name="order_id" type="BIGINT">

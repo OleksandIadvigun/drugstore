@@ -15,8 +15,8 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 
 @AutoConfigureTestDatabase
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 @DisplayName("OrderService test")
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
@@ -24,16 +24,49 @@ class OrderServiceTest @Autowired constructor(
 ) {
 
     @Test
+    fun `should create order`() {
+
+        // given
+        val order = CreateOrderRequest(
+            listOf(
+                OrderItemDTO(
+                    productId = 1L,
+                    quantity = 3
+                )
+            )
+        )
+
+        // when
+        val created = transactionTemplate.execute {
+            orderService.createOrder(order)
+        } ?: fail("result is expected")
+
+        // then
+        assertThat(created.id).isNotNull
+    }
+
+    @Test
+    fun `should not create order without orderItems`() {
+
+        // when
+        val exception = assertThrows<InsufficientAmountOfOrderItemException> {
+            orderService.createOrder(CreateOrderRequest(listOf()))
+        }
+
+        // then
+        assertThat(exception.message).contains("You have to add minimum one order item to make the order")
+    }
+
+    @Test
     fun `should get order by id `() {
 
         // given
-
-        val orderCreated = transactionTemplate.execute {
+        val created = transactionTemplate.execute {
             orderRepository.save(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productId = 1,
                             quantity = 3
                         )
                     )
@@ -42,40 +75,22 @@ class OrderServiceTest @Autowired constructor(
         }?.toCreateOrderResponseDTO() ?: fail("result is expected")
 
         // when
-        val orderActual = transactionTemplate.execute {
-            orderService.getOrderById(orderCreated.id!!)
-        }
+        val actual = orderService.getOrderById(created.id)
 
         // then
-        assertThat(orderActual?.id).isEqualTo(orderCreated.id)
-        assertThat(orderActual?.orderItems!!.elementAt(0).productId)
-            .isEqualTo(orderCreated.orderItems.elementAt(0).productId)
-        assertThat(orderActual.orderItems.elementAt(0).quantity)
-            .isEqualTo(orderCreated.orderItems.elementAt(0).quantity)
+        assertThat(actual.id).isEqualTo(created.id)
+        assertThat(actual.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(actual.orderItems.iterator().next().quantity).isEqualTo(3)
     }
 
     @Test
-    fun `if get order and not exist should throw OrderKotlinNotFoundException`() {
+    fun `should not get non existing order`() {
 
         // given
-        val id = -15L //invalid id
-
-        // then
-        assertThrows<OrderNotFoundException> { orderService.getOrderById(id) }
-    }
-
-    @Test
-    fun `should not update non existing order`() {
-        // given
-        val nonExitingId = -15L
-
-        // and
-        val request = UpdateOrderRequest(listOf(OrderItemDTO()))
+        val nonExistingId = -15L
 
         // when
-        val exception = assertThrows<OrderNotFoundException> {
-            orderService.updateOrder(nonExitingId, request)
-        }
+        val exception = assertThrows<OrderNotFoundException> { orderService.getOrderById(nonExistingId) }
 
         // then
         assertThat(exception.message).contains("Order", "was not found")
@@ -121,54 +136,6 @@ class OrderServiceTest @Autowired constructor(
     }
 
     @Test
-    fun `should create order`() {
-
-        // given
-        val order = CreateOrderRequest(
-            listOf(
-                OrderItemDTO(
-                    productId = 1L,
-                    quantity = 3
-                )
-            )
-        )
-
-        // when
-        val created = transactionTemplate.execute {
-            orderService.createOrder(order)
-        } ?: fail("result is expected")
-
-        // then
-        assertThat(created.id).isNotNull
-    }
-
-    @Test
-    fun `should throw InsufficientAmountOfProductForOrderException to create order`() {
-
-        // given
-        val orderToUpdate = transactionTemplate.execute {
-            orderRepository.save(
-                Order(
-                    orderItems = setOf(
-                        OrderItem(
-                            productId = 1L,
-                            quantity = 3
-                        )
-                    ),
-                )
-            )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
-        // then
-        assertThrows<InsufficientAmountOfOrderItemException> {
-            orderService.createOrder(CreateOrderRequest(listOf()))
-        }
-
-        assertThrows<InsufficientAmountOfOrderItemException> {
-            orderService.updateOrder(orderToUpdate.id, UpdateOrderRequest(listOf()))
-        }
-    }
-
-    @Test
     fun `should update order`() {
 
         // given
@@ -197,12 +164,55 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val changedOrder = transactionTemplate.execute {
-            orderService.updateOrder(orderToChange.id!!, updateOrderRequest)
+            orderService.updateOrder(orderToChange.id, updateOrderRequest)
         } ?: fail("result is expected")
 
         // then
-        assertThat(changedOrder.orderItems.elementAt(0).quantity)
-            .isEqualTo(updateOrderRequest.orderItems.elementAt(0).quantity)
+        assertThat(changedOrder.orderItems.iterator().next().quantity)
+            .isEqualTo(4)
+    }
+
+    @Test
+    fun `should not update order without orderItems`() {
+
+        // given
+        val orderToUpdate = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1L,
+                            quantity = 3
+                        )
+                    ),
+                )
+            )
+        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+
+        // when
+        val exception = assertThrows<InsufficientAmountOfOrderItemException> {
+            orderService.updateOrder(orderToUpdate.id, UpdateOrderRequest(listOf()))
+        }
+
+        // then
+        assertThat(exception.message).contains("You have to add minimum one order item to make the order")
+    }
+
+    @Test
+    fun `should not update non existing order`() {
+        // given
+        val nonExitingId = -15L
+
+        // and
+        val request = UpdateOrderRequest(listOf(OrderItemDTO()))
+
+        // when
+        val exception = assertThrows<OrderNotFoundException> {
+            orderService.updateOrder(nonExitingId, request)
+        }
+
+        // then
+        assertThat(exception.message).contains("Order", "was not found")
     }
 
     @Test
@@ -224,14 +234,17 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         transactionTemplate.execute {
-            orderService.deleteOrder(orderToChange.id!!)
+            orderService.deleteOrder(orderToChange.id)
         } ?: fail("result is expected")
 
-        // then
-        assertThrows<OrderNotFoundException> {
+        // and
+        val exception = assertThrows<OrderNotFoundException> {
             transactionTemplate.execute {
-                orderService.getOrderById(orderToChange.id!!)
+                orderService.getOrderById(orderToChange.id)
             }
         }
+
+        // then
+        assertThat(exception.message).contains("Order", "was not found")
     }
 }

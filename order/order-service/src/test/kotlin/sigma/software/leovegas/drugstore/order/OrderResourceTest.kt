@@ -86,8 +86,8 @@ class OrderResourceTest(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isEqualTo(orderCreated.id)
-        assertThat(body.orderItems.elementAt(0).quantity).isEqualTo(orderCreated.orderItems.elementAt(0).quantity)
-        assertThat(body.orderItems.elementAt(0).productId).isEqualTo(orderCreated.orderItems.elementAt(0).productId)
+        assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
 
     }
 
@@ -95,6 +95,11 @@ class OrderResourceTest(
     fun `should get orders`() {
 
         // given
+        transactionTemplate.execute {
+            orderRepository.deleteAllInBatch()
+        }
+
+        // and
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
@@ -118,6 +123,7 @@ class OrderResourceTest(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
+        assertThat(body).hasSize(1)
     }
 
     @Test
@@ -159,8 +165,7 @@ class OrderResourceTest(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
-        assertThat(body.id).isEqualTo(orderCreated.id)
-        assertThat(body.orderItems.elementAt(0).quantity).isEqualTo(httpEntity.body?.orderItems?.elementAt(0)?.quantity)
+        assertThat(body.orderItems.iterator().next().quantity).isEqualTo(5)
     }
 
     @Test
@@ -184,14 +189,17 @@ class OrderResourceTest(
         val response = restTemplate
             .exchange("/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<CreateOrderResponse>())
 
+        // and
+        val exception = assertThrows<OrderNotFoundException> {
+            transactionTemplate.execute {
+                orderService.getOrderById(orderCreated.id)
+            }
+        }
+
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.NO_CONTENT)
 
         // and
-        assertThrows<OrderNotFoundException> {
-            transactionTemplate.execute {
-                orderService.getOrderById(orderCreated.id!!)
-            }
-        }
+        assertThat(exception.message).contains("Order","not found")
     }
 }

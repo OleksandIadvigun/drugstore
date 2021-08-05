@@ -30,8 +30,8 @@ class OrderResource(private val orderService: OrderService) {
     fun getOrderById(@PathVariable("id") id: Long) =
         orderService.getOrderById(id)
 
-    @GetMapping(path = ["", "/"])
     @ResponseStatus(HttpStatus.OK)
+    @GetMapping(path = ["", "/"])
     fun getOrders() =
         orderService.getOrders()
 
