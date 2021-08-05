@@ -1,9 +1,9 @@
 package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
+import org.assertj.core.api.Assertions.fail
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -11,25 +11,53 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.product.api.ProductRequest
+import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @SpringBootTest
 @AutoConfigureTestDatabase
 @DisplayName("ProductService test")
-class ProductServiceTest(@Autowired val service: ProductService) {
+class ProductServiceTest @Autowired constructor(
+    val service: ProductService,
+    val transactionTemplate: TransactionTemplate,
+    val repository: ProductRepository
+) {
 
     @Test
-    fun `should return List of productsResponse`() {
+    fun `should get products`() {
+
+        // given
+        transactionTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // and
+        transactionTemplate.execute {
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "test1",
+                        price = BigDecimal("20.00")
+                    ),
+                    Product(
+                        name = "test2",
+                        price = BigDecimal("40.00")
+                    )
+                )
+            )
+        }
 
         // when
         val all = service.getAll()
 
         // then
         assertNotNull(all)
-        assertTrue(all::class.qualifiedName == "java.util.ArrayList")
+        assertThat(all).hasSize(2)
     }
 
     @Test
-    fun `if exist should return productResponse`() {
+    fun `should get product by id`() {
 
         // given
         val productRequest = ProductRequest(
@@ -38,10 +66,12 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         )
 
         // and
-        val saved = service.create(productRequest)
+        val saved = transactionTemplate.execute {
+            repository.save(productRequest.toEntity()).toProductResponse()
+        } ?: fail("result is expected")
 
         // when
-        val actual = service.getOne(saved.id!!)
+        val actual = service.getOne(saved.id)
 
         // then
         assertNotNull(actual)
@@ -51,14 +81,22 @@ class ProductServiceTest(@Autowired val service: ProductService) {
     }
 
     @Test
-    fun `if not exist should return ResourceNotFoundException`() {
-        assertThrows<ResourceNotFoundException> {
-            service.getOne(Long.MAX_VALUE)
+    fun `should not get not exist product`() {
+
+        // given
+        val id = Long.MAX_VALUE
+
+        // when
+        val exception = assertThrows<ResourceNotFoundException> {
+            service.getOne(id)
         }
+
+        //then
+        assertThat(exception.message).isEqualTo("This product with id: $id doesn't exist!")
     }
 
     @Test
-    fun `should create product and return productResponse`() {
+    fun `should create product`() {
 
         // given
         val productRequest = ProductRequest(
@@ -83,7 +121,7 @@ class ProductServiceTest(@Autowired val service: ProductService) {
     }
 
     @Test
-    fun `when update should return updated productResponse`() {
+    fun `should update product`() {
 
         // given
         val productRequest = ProductRequest(
@@ -92,7 +130,11 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         )
 
         // and
-        val saved = service.create(productRequest)
+        val saved = transactionTemplate.execute {
+            repository.save(productRequest.toEntity()).toProductResponse()
+        } ?: fail("result is expected")
+
+        // and
         val randomName = Math.random().toString()
         val updatedProductRequest = ProductRequest(
             name = randomName,
@@ -100,7 +142,7 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         )
 
         // when
-        val actual = service.update(saved.id!!, updatedProductRequest)
+        val actual = service.update(saved.id, updatedProductRequest)
 
         // then
         assertNotNull(actual)
@@ -108,22 +150,28 @@ class ProductServiceTest(@Autowired val service: ProductService) {
     }
 
     @Test
-    fun `if updated product not exist should return ResourceNotFoundException`() {
+    fun `should not update not existing product`() {
 
         // given
+        val id = Long.MAX_VALUE
+
+        // and
         val productRequest = ProductRequest(
             name = "test",
             price = BigDecimal("25.50"),
         )
 
-        //then
-        assertThrows<ResourceNotFoundException> {
+        // when
+        val exception = assertThrows<ResourceNotFoundException> {
             service.update(Long.MAX_VALUE, productRequest)
         }
+
+        // then
+        assertThat(exception.message).isEqualTo("This product with id: $id doesn't exist!")
     }
 
     @Test
-    fun `if exist should delete product`() {
+    fun `should delete product`() {
 
         // given
         val productRequest = ProductRequest(
@@ -135,26 +183,14 @@ class ProductServiceTest(@Autowired val service: ProductService) {
         val product = service.create(productRequest)
 
         // when
-        service.delete(product.id!!)
+        service.delete(product.id)
 
         // then
-        assertThrows<ResourceNotFoundException> {
-            service.getOne(product.id!!)
+        val exception = assertThrows<ResourceNotFoundException> {
+            service.getOne(product.id)
         }
-    }
 
-    @Test
-    fun `if field price is more than 10000000 should return NotCorrectRequestException`() {
-
-        // given
-        val productRequest = ProductRequest(
-            name = "test",
-            price = BigDecimal("20000000"),
-        )
-
-        // then
-        assertThrows<NotCorrectRequestException> {
-            service.update(1L, productRequest)
-        }
+        //and
+        assertThat(exception.message).isEqualTo("This product with id: ${product.id} doesn't exist!")
     }
 }

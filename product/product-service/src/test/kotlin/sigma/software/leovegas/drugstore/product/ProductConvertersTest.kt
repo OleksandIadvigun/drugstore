@@ -5,6 +5,8 @@ import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import sigma.software.leovegas.drugstore.product.api.ProductRequest
+import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @DisplayName("Product converters test")
 class ProductConvertersTest {
@@ -17,7 +19,7 @@ class ProductConvertersTest {
         val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
 
         // when
-        val actual = product.convertToProductResponse()
+        val actual = product.toProductResponse()
 
         // then
         assertEquals(productResponse, actual)
@@ -31,7 +33,7 @@ class ProductConvertersTest {
         val productRequest = ProductRequest(name = "test", price = BigDecimal.TEN)
 
         // when
-        val actual = productRequest.convertToProduct()
+        val actual = productRequest.toEntity()
 
         // then
         assertEquals(product, actual)
@@ -41,12 +43,12 @@ class ProductConvertersTest {
     fun `should convert list of products to list of DTOs`() {
 
         // given
-         val product = Product(name = "test", price = BigDecimal.TEN)
-         val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
+        val product = Product(name = "test", price = BigDecimal.TEN)
+        val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
         val products = mutableListOf(product, product)
 
         // when
-        val actual = products.convertToProductResponseList()
+        val actual = products.toProductResponseList()
 
         // then
         assertThat(actual).isEqualTo(

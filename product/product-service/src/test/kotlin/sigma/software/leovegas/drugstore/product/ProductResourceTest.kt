@@ -17,6 +17,8 @@ import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
+import sigma.software.leovegas.drugstore.product.api.ProductRequest
+import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @DisplayName("ProductResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -85,6 +87,16 @@ class ProductResourceTest(
 
     @Test
     fun `should get products`() {
+
+        // given
+        val newProduct = ProductRequest(
+            name = "test",
+            price = BigDecimal.ONE,
+        )
+
+        transactionalTemplate.execute {
+            service.create(newProduct)
+        } ?: kotlin.test.fail("result is expected")
 
         // when
         val response = restTemplate.exchange("/api/v1/products", GET, null, respTypeRef<List<ProductResponse>>())

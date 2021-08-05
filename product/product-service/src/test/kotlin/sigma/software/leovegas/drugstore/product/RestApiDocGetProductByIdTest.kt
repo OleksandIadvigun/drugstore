@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.product.api.ProductRequest
 
 @DisplayName("Get product by id REST API Doc test")
 class RestApiDocGetProductByIdTest(

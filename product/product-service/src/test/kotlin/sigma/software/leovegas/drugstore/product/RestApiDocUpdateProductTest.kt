@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.product.api.ProductRequest
 
 @DisplayName("Update order REST API Doc test")
 class RestApiDocUpdateProductTest(

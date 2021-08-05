@@ -19,6 +19,8 @@
         <module>drugstore-api</module>
         <module>order/order-api</module>
         <module>order/order-service</module>
+        <module>product/product-api</module>
+        <module>product/product-client</module>
         <module>product/product-service</module>
         <module>stock/stock-service</module>
     </modules>
@@ -50,12 +52,30 @@
                 <type>jar</type>
             </dependency>
             <dependency>
+                <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
+                <artifactId>product-api</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
+                <groupId>sigma.software.leovegas.drugstore.product.client</groupId>
+                <artifactId>product-client</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+            </dependency>
+            <!---->
+            <dependency>
+                <groupId>sigma.software.leovegas.drugstore.product.service</groupId>
+                <artifactId>product-service</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>kotlin-extensions</artifactId>
                 <version>${io.rest-assured}</version>
                 <type>jar</type>
             </dependency>
-            <!---->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-wiremock</artifactId>
