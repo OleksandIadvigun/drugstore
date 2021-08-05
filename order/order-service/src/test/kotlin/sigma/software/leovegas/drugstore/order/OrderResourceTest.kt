@@ -96,22 +96,32 @@ class OrderResourceTest(
 
         // given
         transactionTemplate.execute {
-            orderRepository.deleteAllInBatch()
+            orderRepository.deleteAll()
         }
 
         // and
         val orderCreated = transactionTemplate.execute {
-            orderRepository.save(
-                Order(
-                    orderItems = setOf(
-                        OrderItem(
-                            productId = 1L,
-                            quantity = 3
+            orderRepository.saveAll(
+                listOf(
+                    Order(
+                        orderItems = setOf(
+                            OrderItem(
+                                productId = 1,
+                                quantity = 2
+                            ),
+                        )
+                    ),
+                    Order(
+                        orderItems = setOf(
+                            OrderItem(
+                                productId = 3,
+                                quantity = 4
+                            ),
                         )
                     )
                 )
             )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+        }
 
         // when
         val response = restTemplate
@@ -123,7 +133,7 @@ class OrderResourceTest(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
-        assertThat(body).hasSize(1)
+        assertThat(body).hasSize(2)
     }
 
     @Test
