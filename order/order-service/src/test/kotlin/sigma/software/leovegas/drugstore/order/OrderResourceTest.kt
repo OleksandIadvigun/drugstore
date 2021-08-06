@@ -18,10 +18,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
-import sigma.software.leovegas.drugstore.order.api.CreateOrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
+import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderResponse
 
 @DisplayName("OrderResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -48,7 +47,7 @@ class OrderResourceTest(
         )
 
         // when
-        val response = restTemplate.exchange("/api/v1/orders", POST, httpEntity, respTypeRef<CreateOrderResponse>())
+        val response = restTemplate.exchange("/api/v1/orders", POST, httpEntity, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
@@ -74,11 +73,11 @@ class OrderResourceTest(
                     )
                 )
             )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO() ?: fail("result is expected")
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<CreateOrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -125,7 +124,7 @@ class OrderResourceTest(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders", GET, null, respTypeRef<List<CreateOrderResponse>>())
+            .exchange("/api/v1/orders", GET, null, respTypeRef<List<OrderResponse>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -151,7 +150,7 @@ class OrderResourceTest(
                     )
                 )
             )
-        }?.toUpdateOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO() ?: fail("result is expected")
 
         // and
         val httpEntity = HttpEntity(
@@ -167,7 +166,7 @@ class OrderResourceTest(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<UpdateOrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
@@ -193,11 +192,11 @@ class OrderResourceTest(
                     ),
                 )
             )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO() ?: fail("result is expected")
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<CreateOrderResponse>())
+            .exchange("/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<OrderResponse>())
 
         // and
         val exception = assertThrows<OrderNotFoundException> {

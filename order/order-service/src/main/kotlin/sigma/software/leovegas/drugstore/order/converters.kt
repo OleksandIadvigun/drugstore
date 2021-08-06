@@ -1,20 +1,19 @@
 package sigma.software.leovegas.drugstore.order
 
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
-import sigma.software.leovegas.drugstore.order.api.CreateOrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
+import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderResponse
 
 // CreateOrderRequest <-> Order entity
 
 fun CreateOrderRequest.toEntity(): Order =
     Order(orderItems = orderItems.toEntities())
 
-// CreateOrderResponse <-> Order entity
+// OrderResponse <-> Order entity
 
-fun Order.toCreateOrderResponseDTO(): CreateOrderResponse =
-    CreateOrderResponse(
+fun Order.toOrderResponseDTO(): OrderResponse =
+    OrderResponse(
         id = id ?: -1,
         orderStatus = orderStatus.toDTO(),
         orderItems = orderItems.toDTOs(),
@@ -22,7 +21,7 @@ fun Order.toCreateOrderResponseDTO(): CreateOrderResponse =
         updatedAt = updatedAt,
     )
 
-fun CreateOrderResponse.toEntity(): Order =
+fun OrderResponse.toEntity(): Order =
     Order(
         id = id,
         orderStatus = orderStatus.toEntity(),
@@ -31,18 +30,7 @@ fun CreateOrderResponse.toEntity(): Order =
         updatedAt = updatedAt,
     )
 
-// Order entity -> UpdateOrderResponse
-
-fun Order.toUpdateOrderResponseDTO(): UpdateOrderResponse =
-    UpdateOrderResponse(
-        id = id ?: -1,
-        orderStatus = orderStatus.toDTO(),
-        orderItems = orderItems.toDTOs(),
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-    )
-
-fun List<Order>.toOrderResponseList(): List<CreateOrderResponse> = this.map(Order::toCreateOrderResponseDTO)
+fun List<Order>.toOrderResponseList(): List<OrderResponse> = this.map(Order::toOrderResponseDTO)
 
 // OrderItem: set of entities <-> list of DTOs
 

@@ -72,7 +72,7 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO() ?: fail("result is expected")
 
         // when
         val actual = orderService.getOrderById(created.id)
@@ -150,7 +150,7 @@ class OrderServiceTest @Autowired constructor(
                     ),
                 )
             )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO() ?: fail("result is expected")
 
         // and
         val updateOrderRequest = UpdateOrderRequest(
@@ -187,7 +187,7 @@ class OrderServiceTest @Autowired constructor(
                     ),
                 )
             )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO() ?: fail("result is expected")
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
@@ -230,7 +230,7 @@ class OrderServiceTest @Autowired constructor(
                     ),
                 )
             )
-        }?.toCreateOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO() ?: fail("result is expected")
 
         // when
         transactionTemplate.execute {

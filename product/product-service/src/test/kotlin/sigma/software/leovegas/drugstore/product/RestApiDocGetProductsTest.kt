@@ -2,8 +2,6 @@ package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
 import org.hamcrest.Matchers
-import org.hamcrest.Matchers.not
-import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

@@ -15,15 +15,7 @@ data class UpdateOrderRequest(
 
 // Responses
 
-data class CreateOrderResponse(
-    val id: Long = -1,
-    val orderStatus: OrderStatusDTO = NONE,
-    val orderItems: List<OrderItemDTO> = listOf(),
-    val createdAt: LocalDateTime? = null,
-    val updatedAt: LocalDateTime? = null,
-)
-
-data class UpdateOrderResponse(
+data class OrderResponse(
     val id: Long = -1,
     val orderStatus: OrderStatusDTO = NONE,
     val orderItems: List<OrderItemDTO> = listOf(),
