@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
@@ -29,7 +30,7 @@ class RestApiDocGetProductByIdTest(
         // and
         val savedProduct = transactionTemplate.execute {
             productService.create(newProduct)
-        } ?: kotlin.test.fail("result is expected")
+        } ?: fail("result is expected")
 
         of("get-product-by-id")
             .pathParam("id", savedProduct.id)

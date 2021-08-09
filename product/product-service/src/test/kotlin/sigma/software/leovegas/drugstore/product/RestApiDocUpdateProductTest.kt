@@ -5,6 +5,7 @@ import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
@@ -30,8 +31,8 @@ class RestApiDocUpdateProductTest(
                     price = BigDecimal.ONE,
                 )
             )
-        } ?: kotlin.test.fail("result is expected")
-        println(savedProduct)
+        } ?: fail("result is expected")
+
         // and
         val orderJson = objectMapper
             .writerWithDefaultPrettyPrinter()
@@ -41,7 +42,6 @@ class RestApiDocUpdateProductTest(
                     price = BigDecimal.TEN
                 )
             )
-        println(orderJson)
 
         of("update-product")
             .`when`()

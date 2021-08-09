@@ -1,10 +1,10 @@
 package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
+import org.hibernate.validator.internal.util.Contracts.assertNotNull
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

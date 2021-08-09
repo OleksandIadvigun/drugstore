@@ -14,4 +14,32 @@
     <artifactId>product-client</artifactId>
     <description>Product client module</description>
     <name>${project.parent.artifactId}:${project.artifactId}</name>
+    <dependencies>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
+            <artifactId>product-api</artifactId>
+        </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.github.openfeign</groupId>
+        <artifactId>feign-jackson</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-contract-wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

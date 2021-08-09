@@ -62,7 +62,7 @@ class ProductResourceTest(
 
         val savedProduct = transactionalTemplate.execute {
             service.create(newProduct)
-        } ?: kotlin.test.fail("result is expected")
+        } ?: fail("result is expected")
 
         val httpEntity = HttpEntity(
             ProductRequest(
@@ -96,7 +96,7 @@ class ProductResourceTest(
 
         transactionalTemplate.execute {
             service.create(newProduct)
-        } ?: kotlin.test.fail("result is expected")
+        } ?: fail("result is expected")
 
         // when
         val response = restTemplate.exchange("/api/v1/products", GET, null, respTypeRef<List<ProductResponse>>())
@@ -121,7 +121,7 @@ class ProductResourceTest(
         // when
         val savedProduct = transactionalTemplate.execute {
             service.create(newProduct)
-        } ?: kotlin.test.fail("result is expected")
+        } ?: fail("result is expected")
         val response = restTemplate.exchange(
             "/api/v1/products/${savedProduct.id}", GET, null, respTypeRef<ProductResponse>()
         )
@@ -148,7 +148,7 @@ class ProductResourceTest(
         // when
         val savedProduct = transactionalTemplate.execute {
             service.create(newProduct)
-        } ?: kotlin.test.fail("result is expected")
+        } ?: fail("result is expected")
         val response = restTemplate.exchange(
             "/api/v1/products/${savedProduct.id}", HttpMethod.DELETE, null, respTypeRef<ProductResponse>()
         )
