@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
+
+    <!-- V20210729202901 where V means version 202107292029 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
+
+    <changeSet id="V202108180162101" author="OI" >
+        <createTable tableName="price_item">
+            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="product_id" type="BIGINT"/>
+            <column name="price" type="Decimal(11,2)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

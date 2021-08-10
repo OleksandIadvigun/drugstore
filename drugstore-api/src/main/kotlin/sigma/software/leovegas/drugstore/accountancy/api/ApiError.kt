@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.api
+package sigma.software.leovegas.drugstore.accountancy.api
 
 import java.time.LocalDateTime
 

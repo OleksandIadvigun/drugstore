@@ -3,7 +3,7 @@ package sigma.software.leovegas.drugstore.infrastructure.extensions
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import sigma.software.leovegas.drugstore.api.ApiError
+import sigma.software.leovegas.drugstore.accountancy.api.ApiError
 
 fun <T : Throwable> T.toBadRequestResult() = HttpStatus.BAD_REQUEST.run {
     ResponseEntity.status(this)
