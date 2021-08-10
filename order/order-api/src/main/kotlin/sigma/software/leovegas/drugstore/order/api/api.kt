@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.order.api
 
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.NONE
 
@@ -36,5 +37,16 @@ enum class OrderStatusDTO {
 
 data class OrderItemDTO(
     val productId: Long = -1,
+    val quantity: Int = -1,
+)
+
+data class OrderDetailsDTO(
+    val orderItemDetails: List<OrderItemDetailsDTO> = listOf(),
+    val total: BigDecimal = BigDecimal("-1"),
+)
+
+data class OrderItemDetailsDTO(
+    val name: String = "undefined",
+    val price: BigDecimal = BigDecimal("-1"),
     val quantity: Int = -1,
 )

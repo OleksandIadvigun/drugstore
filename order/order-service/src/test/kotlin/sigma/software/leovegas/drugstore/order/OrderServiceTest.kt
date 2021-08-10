@@ -1,5 +1,11 @@
 package sigma.software.leovegas.drugstore.order
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
@@ -7,21 +13,21 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @AutoConfigureTestDatabase
 @DisplayName("OrderService test")
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
-    val orderRepository: OrderRepository
-) {
+    val orderRepository: OrderRepository,
+    val objectMapper: ObjectMapper,
+) : WireMockTest() {
 
     @Test
     fun `should create order`() {
@@ -81,6 +87,56 @@ class OrderServiceTest @Autowired constructor(
         assertThat(actual.id).isEqualTo(created.id)
         assertThat(actual.orderItems.iterator().next().productId).isEqualTo(1)
         assertThat(actual.orderItems.iterator().next().quantity).isEqualTo(3)
+    }
+
+    @Test
+    fun `should get orderDetails`() {
+
+        // setup
+        stubFor(
+            get("/api/v1/products-by-ids/?ids=1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    listOf(
+                                        ProductResponse(
+                                            id = 1L,
+                                            name = "test1",
+                                            price = BigDecimal.TEN
+                                        )
+                                    )
+                                )
+                        )
+                )
+        )
+
+        // and
+        val order = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1L,
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val orderDetails = orderService.getOrderDetails(order.id ?: -1)
+
+        // then
+        assertThat(orderDetails.orderItemDetails).hasSize(1)
+        assertThat(orderDetails.orderItemDetails.iterator().next().name).isEqualTo("test1")
+        assertThat(orderDetails.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal.TEN)
+        assertThat(orderDetails.orderItemDetails.iterator().next().quantity).isEqualTo(3)
+        assertThat(orderDetails.total).isEqualTo(BigDecimal("30").setScale(2)) // price multiply quantity
     }
 
     @Test

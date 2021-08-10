@@ -15,6 +15,8 @@ class ProductService(private val repo: ProductRepository) {
 
     fun getAll(): List<ProductResponse> = repo.findAll().toProductResponseList()
 
+    fun getProductsByIds(ids: List<Long>): List<ProductResponse> = repo.findAllById(ids).toProductResponseList()
+
     fun create(productRequest: ProductRequest): ProductResponse = productRequest.run {
         repo.save(toEntity()).toProductResponse()
     }

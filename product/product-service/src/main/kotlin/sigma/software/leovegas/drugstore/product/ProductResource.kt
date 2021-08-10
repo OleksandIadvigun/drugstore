@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
@@ -21,28 +22,35 @@ import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @RestController
-@RequestMapping("/api/v1/products")
+@RequestMapping("/api/v1/")
 class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(CREATED)
-    @PostMapping(path = ["", "/"])
+    @PostMapping("products")
     fun create(@RequestBody product: ProductRequest): ProductResponse = service.create(product)
 
     @ResponseStatus(OK)
-    @GetMapping("/{id}")
+    @GetMapping("products/{id}")
     fun getOne(@PathVariable id: Long): ProductResponse = service.getOne(id)
 
     @ResponseStatus(OK)
-    @GetMapping(path = ["", "/"])
+    @GetMapping("products")
     fun getProducts(): List<ProductResponse> = service.getAll()
 
-    @PutMapping("/{id}")
+    @ResponseStatus(OK)
+    @GetMapping("products-by-ids")
+    fun getProductsByIds(@RequestParam("ids") ids: List<Long>): List<ProductResponse> {
+        return service.getProductsByIds(ids)
+    }
+
     @ResponseStatus(ACCEPTED)
+    @PutMapping("products/{id}")
     fun update(@PathVariable id: Long, @RequestBody product: ProductRequest): ProductResponse =
         service.update(id, product)
 
-    @DeleteMapping("/{id}")
+
     @ResponseStatus(NO_CONTENT)
+    @DeleteMapping("products/{id}")
     fun delete(@PathVariable id: Long) = service.delete(id)
 
     @ExceptionHandler(Throwable::class)

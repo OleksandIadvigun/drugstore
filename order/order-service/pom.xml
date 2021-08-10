@@ -13,7 +13,7 @@
     <name>${project.parent.artifactId}:${project.artifactId}</name>
     <groupId>sigma.software.leovegas.drugstore.order.service</groupId>
     <artifactId>order-service</artifactId>
-    <description>Order REST API service module</description>    
+    <description>Order REST API service module</description>
     <dependencies>
         <dependency>
             <groupId>sigma.software.leovegas.drugstore.api</groupId>
@@ -22,6 +22,10 @@
         <dependency>
             <groupId>sigma.software.leovegas.drugstore.order.api</groupId>
             <artifactId>order-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.product.client</groupId>
+            <artifactId>product-client</artifactId>
         </dependency>
         <!---->
         <dependency>
@@ -68,6 +72,11 @@
             <artifactId>kotlin-extensions</artifactId>
         </dependency>
         <!---->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-contract-wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

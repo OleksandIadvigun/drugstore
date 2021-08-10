@@ -26,6 +26,7 @@ class ProductResourceTest(
     @Autowired val restTemplate: TestRestTemplate,
     @Autowired val service: ProductService,
     @Autowired val transactionalTemplate: TransactionTemplate,
+    @Autowired val repository: ProductRepository,
 ) {
 
     @Test
@@ -89,14 +90,25 @@ class ProductResourceTest(
     fun `should get products`() {
 
         // given
-        val newProduct = ProductRequest(
-            name = "test",
-            price = BigDecimal.ONE,
-        )
-
         transactionalTemplate.execute {
-            service.create(newProduct)
-        } ?: fail("result is expected")
+            repository.deleteAll()
+        }
+
+        // and
+        transactionalTemplate.execute {
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "test1",
+                        price = BigDecimal("20.00")
+                    ),
+                    Product(
+                        name = "test2",
+                        price = BigDecimal("40.00")
+                    )
+                )
+            )
+        }
 
         // when
         val response = restTemplate.exchange("/api/v1/products", GET, null, respTypeRef<List<ProductResponse>>())
@@ -106,7 +118,50 @@ class ProductResourceTest(
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.size).isNotNull
+        assertThat(body).hasSize(2)
+    }
+
+    @Test
+    fun `should get products by ids`() {
+
+        // given
+        transactionalTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // and
+        val ids = transactionalTemplate.execute {
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "test1",
+                        price = BigDecimal("20.00")
+                    ),
+                    Product(
+                        name = "test2",
+                        price = BigDecimal("40.00")
+                    )
+                )
+            ).map { it.id ?: -1 }.toList()
+        } ?: listOf(-1L)
+
+        // when
+        val response = restTemplate
+            .exchange(
+                "/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}",
+                GET,
+                null,
+                respTypeRef<List<ProductResponse>>()
+            )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        val bodyByIds = response.body ?: fail("body may not be null")
+        assertThat(bodyByIds).isNotNull
+        assertThat(bodyByIds).hasSize(2)
+        assertThat(bodyByIds[0].id).isEqualTo(ids[0])
+        assertThat(bodyByIds[1].id).isEqualTo(ids[1])
     }
 
     @Test
@@ -158,7 +213,7 @@ class ProductResourceTest(
 
         // and
         assertThrows<ResourceNotFoundException> {
-            service.getOne(savedProduct.id!!)
+            service.getOne(savedProduct.id)
         }
     }
 }

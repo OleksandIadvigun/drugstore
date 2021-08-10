@@ -57,6 +57,39 @@ class ProductServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get products by ids`() {
+
+        // given
+        transactionTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // and
+        val ids  = transactionTemplate.execute {
+           repository.saveAll(
+                listOf(
+                    Product(
+                        name = "test1",
+                        price = BigDecimal("20.00")
+                    ),
+                    Product(
+                        name = "test2",
+                        price = BigDecimal("40.00")
+                    )
+                )
+            ).map { it.id }
+        }
+
+        // when
+        val products = service.getProductsByIds(ids as List<Long>)
+
+        // then
+        assertThat(products).hasSize(2)
+        assertThat(products[0].name).isEqualTo("test1")
+        assertThat(products[1].name).isEqualTo("test2")
+    }
+
+    @Test
     fun `should get product by id`() {
 
         // given

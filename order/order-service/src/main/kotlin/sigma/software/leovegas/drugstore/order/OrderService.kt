@@ -1,16 +1,24 @@
 package sigma.software.leovegas.drugstore.order
 
+import java.math.BigDecimal
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
 import sigma.software.leovegas.drugstore.order.OrderStatus.UPDATED
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
+import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.product.client.ProductClient
 
 @Service
 @Transactional
-class OrderService(private val orderRepository: OrderRepository) {
+class OrderService @Autowired constructor(
+    val orderRepository: OrderRepository,
+    val productClient: ProductClient,
+) {
 
     fun getOrderById(id: Long): OrderResponse =
         orderRepository.findById(id).orElseThrow { throw OrderNotFoundException(id) }.toOrderResponseDTO()
@@ -44,5 +52,23 @@ class OrderService(private val orderRepository: OrderRepository) {
     fun deleteOrder(id: Long) {
         val orderToDelete = getOrderById(id).toEntity()
         orderRepository.delete(orderToDelete)
+    }
+
+    fun getOrderDetails(id: Long): OrderDetailsDTO = id.run {
+        val orderById = getOrderById(this)
+        val productIdList = orderById.orderItems.map { it.productId }
+        val products = productClient.getProductsByIds(productIdList).associateBy { it.id }
+        val orderItemDetails = orderById.orderItems.map {
+            OrderItemDetailsDTO(
+                name = products[it.productId]?.name ?: "undefined",
+                price = products[it.productId]?.price ?: BigDecimal("-1"),
+                quantity = it.quantity
+            )
+        }
+        OrderDetailsDTO(
+            orderItemDetails = orderItemDetails,
+            total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
+                .setScale(2)
+        )
     }
 }

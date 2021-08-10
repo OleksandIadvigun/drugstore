@@ -16,7 +16,7 @@ class RestApiDocGetProductsTest(
     @Autowired val transactionTemplate: TransactionTemplate,
     @Autowired val productService: ProductService,
     @Autowired val productRepository: ProductRepository
-) :RestApiDocumentationTest() {
+) : RestApiDocumentationTest() {
 
 
     @Test
@@ -24,7 +24,7 @@ class RestApiDocGetProductsTest(
 
         // given
         transactionTemplate.execute {
-            productRepository.deleteAll()
+            productRepository.deleteAllInBatch()
         }
 
         // given
@@ -38,12 +38,10 @@ class RestApiDocGetProductsTest(
             productService.create(newProduct)
         } ?: fail("result is expected")
 
-
-            of("get-products").`when`()
-                .get("http://localhost:$port/api/v1/products")
-                .then()
-                .assertThat().statusCode(200)
-                .assertThat().body("size()", Matchers.`is`(1))
-
+        of("get-products").`when`()
+            .get("http://localhost:$port/api/v1/products")
+            .then()
+            .assertThat().statusCode(200)
+            .assertThat().body("size()", Matchers.`is`(1))
     }
 }

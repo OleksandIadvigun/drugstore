@@ -15,12 +15,19 @@ include::{snippets}/update-product/http-request.adoc[]
 .ProductResponse
 include::{snippets}/update-product/http-response.adoc[]
 
-=== Get product By ID
+=== Get product By Id
 .Request
 include::{snippets}/get-product-by-id/http-request.adoc[]
 
 .ProductResponse
 include::{snippets}/get-product-by-id/http-response.adoc[]
+
+=== Get product By Ids
+.Request
+include::{snippets}/get-products-by-ids/http-request.adoc[]
+
+.ProductResponse
+include::{snippets}/get-products-by-ids/http-response.adoc[]
 
 === Get products
 .Request

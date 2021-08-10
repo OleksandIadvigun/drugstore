@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.product
 
-// CreateProductRequest <-> Product entity
 
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
@@ -20,6 +19,4 @@ fun ProductRequest.toEntity(): Product =
         price = price
     )
 
-fun List<Product>.toProductResponseList(): List<ProductResponse> {
-    return this.map { it.toProductResponse() }.toMutableList()
-}
+fun List<Product>.toProductResponseList(): List<ProductResponse> = this.map (Product::toProductResponse)

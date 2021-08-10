@@ -9,11 +9,14 @@ import sigma.software.leovegas.drugstore.product.api.ProductResponse
 @Headers("Content-Type: application/json")
 interface ProductClient {
 
-    @RequestLine("POST api/v1/products")
-    fun createProduct(request: ProductRequest): ProductResponse
-
     @RequestLine("GET api/v1/products")
     fun getProducts(): List<ProductResponse>
+
+    @RequestLine("GET api/v1/products-by-ids/?ids={ids}")
+    fun getProductsByIds(@Param ids: List<Long>): List<ProductResponse>
+
+    @RequestLine("POST api/v1/products")
+    fun createProduct(request: ProductRequest): ProductResponse
 
     @RequestLine("GET api/v1/products/{id}")
     fun getProductById(@Param id: Long): ProductResponse
