@@ -277,4 +277,47 @@ class OrderResourceTest @Autowired constructor(
         // and
         assertThat(exception.message).contains("Order", "not found")
     }
+
+    @Test
+    fun `should return total buys from items sorted DESC by quantity `(){
+
+        // given
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
+        // and
+        transactionTemplate.execute {
+            orderRepository.saveAll(
+                mutableListOf<Order>(
+                    Order(
+                        orderItems = setOf(
+                            OrderItem(
+                                productId = 1L,
+                                quantity = 3
+                            )
+                        ),
+                    ),
+                    Order(
+                        orderItems = setOf(
+                            OrderItem(
+                                productId = 2L,
+                                quantity = 5
+                            )
+                        ),
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate
+            .exchange("/api/v1/orders/total-buys", GET, null, respTypeRef<Map<Long, Int>>())
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.body?.size).isEqualTo(2)
+        assertThat(response.body?.iterator()?.next()?.value).isEqualTo(5) // first should have the biggest value
+        assertThat(response.body?.get(1)).isEqualTo(3)
+    }
 }

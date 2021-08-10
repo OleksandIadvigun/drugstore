@@ -22,8 +22,10 @@
         <dependency>
             <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
             <artifactId>product-api</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.order.client</groupId>
+            <artifactId>order-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>

@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.product
 
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.ACCEPTED
 import org.springframework.http.HttpStatus.CREATED
@@ -35,7 +36,13 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(OK)
     @GetMapping("products")
-    fun getProducts(): List<ProductResponse> = service.getAll()
+    fun getProducts(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "5") size: Int,
+        @RequestParam(defaultValue = "") keyword: String,
+        @RequestParam(defaultValue = "default") sortField: String,
+        @RequestParam(defaultValue = "ASC") sortDirection: String
+    ): Page<ProductResponse> = service.getAll(page, size, keyword, sortField, sortDirection)
 
     @ResponseStatus(OK)
     @GetMapping("products-by-ids")

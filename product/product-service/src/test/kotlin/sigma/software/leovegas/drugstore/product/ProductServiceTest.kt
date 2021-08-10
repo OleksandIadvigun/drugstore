@@ -1,5 +1,10 @@
 package sigma.software.leovegas.drugstore.product
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -11,17 +16,22 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
-@SpringBootTest
 @AutoConfigureTestDatabase
+@AutoConfigureWireMock(port=8082)
 @DisplayName("ProductService test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductServiceTest @Autowired constructor(
     val service: ProductService,
     val transactionTemplate: TransactionTemplate,
-    val repository: ProductRepository
+    val repository: ProductRepository,
+    val objectMapper: ObjectMapper
 ) {
 
     @Test
@@ -33,27 +43,60 @@ class ProductServiceTest @Autowired constructor(
         }
 
         // and
+        var saved = mutableListOf<Product>()
         transactionTemplate.execute {
-            repository.saveAll(
+            saved = repository.saveAll(
                 listOf(
                     Product(
-                        name = "test1",
+                        name = "aspirin",
                         price = BigDecimal("20.00")
                     ),
                     Product(
                         name = "test2",
                         price = BigDecimal("40.00")
+                    ),
+                    Product(
+                        name = "some",
+                        price = BigDecimal("30.00")
+                    ),
+                    Product(
+                        name = "some2",
+                        price = BigDecimal("70.00")
                     )
                 )
             )
         }
 
+        //and
+        val responseExpected = mapOf<Long,Int>(saved[0].id!! to 5, saved[1].id!! to 2, saved[2].id!! to 9 )
+
+        // and
+        stubFor(
+            get("/api/v1/orders/total-buys")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(responseExpected)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
         // when
-        val all = service.getAll()
+        val all = service.getAll(0,5,"","default","DESC")
 
         // then
         assertNotNull(all)
-        assertThat(all).hasSize(2)
+        assertThat(all.totalElements).isEqualTo(4)
+        val t = all.content[0]
+        assertThat(all.content[0].totalBuys).isEqualTo(9)
+        assertThat(all.content[1].totalBuys).isEqualTo(5)
+        assertThat(all.content[2].totalBuys).isEqualTo(2)
+        assertThat(all.content[3].totalBuys).isEqualTo(0)
     }
 
     @Test

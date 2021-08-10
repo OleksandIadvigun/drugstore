@@ -1,6 +1,12 @@
 package sigma.software.leovegas.drugstore.product
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -10,16 +16,19 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
+@AutoConfigureWireMock(port=8082)
 @DisplayName("ProductResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class ProductResourceTest(
@@ -27,6 +36,7 @@ class ProductResourceTest(
     @Autowired val service: ProductService,
     @Autowired val transactionalTemplate: TransactionTemplate,
     @Autowired val repository: ProductRepository,
+    @Autowired val objectMapper: ObjectMapper
 ) {
 
     @Test
@@ -95,30 +105,165 @@ class ProductResourceTest(
         }
 
         // and
-        transactionalTemplate.execute {
-            repository.saveAll(
-                listOf(
-                    Product(
-                        name = "test1",
-                        price = BigDecimal("20.00")
-                    ),
-                    Product(
-                        name = "test2",
-                        price = BigDecimal("40.00")
-                    )
+        val savedProducts = transactionalTemplate.execute {
+            repository.saveAll(listOf(
+                Product(
+                    name = "test",
+                    price = BigDecimal("10.00"),
+                ),
+                Product(
+                    name = "aspirin",
+                    price = BigDecimal("40.00"),
+                ),
+                Product(
+                    name = "bca",
+                    price = BigDecimal("30.00"),
                 )
-            )
-        }
+            ))
+        } ?: fail("result is expected")
+
+        // and
+        stubFor(
+            get("/api/v1/orders/total-buys")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(mapOf(savedProducts[1].id to 5, savedProducts[0].id to 3))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
 
         // when
-        val response = restTemplate.exchange("/api/v1/products", GET, null, respTypeRef<List<ProductResponse>>())
+        val response = restTemplate.exchange("/api/v1/products", GET, null, respTypeRef<RestResponsePage<ProductResponse>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body).hasSize(2)
+        assertThat(body.content.size).isEqualTo(3)
+        assertThat(body.content[0].totalBuys).isEqualTo(5)
+        assertThat(body.content[0].price).isEqualTo(BigDecimal("40.00"))
+        assertThat(body.content[1].totalBuys).isEqualTo(3)
+        assertThat(body.content[2].totalBuys).isEqualTo(0)
+        assertThat(body.content[2].price).isEqualTo(BigDecimal("30.00"))
+    }
+
+    @Test
+    fun `should get products sorted by price descendent`() {
+
+        // given
+        transactionalTemplate.execute {
+            repository.deleteAll()
+        }
+
+        // and
+        val savedProducts = transactionalTemplate.execute {
+            repository.saveAll(listOf(
+                Product(
+                    name = "test",
+                    price = BigDecimal("10.00"),
+                ),
+                Product(
+                    name = "aspirin",
+                    price = BigDecimal("40.00"),
+                ),
+                Product(
+                    name = "bca",
+                    price = BigDecimal("30.00"),
+                )
+            ))
+        } ?: fail("result is expected")
+
+        // and
+        stubFor(
+            get("/api/v1/orders/total-buys")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(mapOf(savedProducts[0].id to 3, savedProducts[1].id to 5))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // when
+        val response = restTemplate.exchange("/api/v1/products?sortField=price&sortDirection=DESC", GET, null, respTypeRef<RestResponsePage<ProductResponse>>())
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.content.size).isEqualTo(3)
+        assertThat(body.content[0].price).isEqualTo(BigDecimal("40.00"))
+        assertThat(body.content[1].price).isEqualTo(BigDecimal("30.00"))
+        assertThat(body.content[2].price).isEqualTo(BigDecimal("10.00"))
+    }
+
+    @Test
+    fun `should get products sorted by creation date ascendent`() {
+
+        // given
+        transactionalTemplate.execute {
+            repository.deleteAll()
+        }
+
+        // and
+        val savedProducts = transactionalTemplate.execute {
+            repository.saveAll(listOf(
+                Product(
+                    name = "test",
+                    price = BigDecimal("10.00"),
+                ),
+                Product(
+                    name = "aspirin",
+                    price = BigDecimal("40.00"),
+                ),
+                Product(
+                    name = "bca",
+                    price = BigDecimal("30.00"),
+                )
+            ))
+        } ?: fail("result is expected")
+
+        // and
+        stubFor(
+            get("/api/v1/orders/total-buys")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(mapOf(savedProducts[1].id to 5, savedProducts[0].id to 3))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // when
+        val response = restTemplate.exchange("/api/v1/products?sortField=createdAt&sortDirection=ASC", GET, null, respTypeRef<RestResponsePage<ProductResponse>>())
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.content.size).isEqualTo(3)
+        assertThat(body.content[0].name).isEqualTo("test")
+        assertThat(body.content[1].name).isEqualTo("aspirin")
+        assertThat(body.content[2].name).isEqualTo("bca")
     }
 
     @Test
@@ -165,7 +310,7 @@ class ProductResourceTest(
     }
 
     @Test
-    fun `should get ONE product`() {
+    fun `should get product by id`() {
 
         // given
         val newProduct = ProductRequest(
@@ -192,7 +337,7 @@ class ProductResourceTest(
     }
 
     @Test
-    fun `should delete ONE product`() {
+    fun `should delete product by id`() {
 
         // given
         val newProduct = ProductRequest(
@@ -213,7 +358,7 @@ class ProductResourceTest(
 
         // and
         assertThrows<ResourceNotFoundException> {
-            service.getOne(savedProduct.id)
+            service.getOne(savedProduct.id ?: -1)
         }
     }
 }

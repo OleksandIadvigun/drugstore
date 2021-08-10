@@ -303,4 +303,58 @@ class OrderServiceTest @Autowired constructor(
         // then
         assertThat(exception.message).contains("Order", "was not found")
     }
+
+    @Test
+    fun `should get productId to quantity sorted by quantity`() {
+
+        // given
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        } ?: fail("result is expected")
+
+        // and
+        transactionTemplate.execute {
+            orderRepository.saveAll(
+                listOf(
+                    Order(
+                        orderItems = setOf(
+                            OrderItem(
+                                productId = 3,
+                                quantity = 2
+                            ),
+                        )
+                    ),
+                    Order(
+                        orderItems = setOf(
+                            OrderItem(
+                                productId = 5,
+                                quantity = 7
+                            ),
+                        )
+                    ),
+                    Order(
+                        orderItems = setOf(
+                            OrderItem(
+                                productId = 1,
+                                quantity = 4
+                            ),
+                            OrderItem(
+                                productId = 5,
+                                quantity = 2
+                            )
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val sortedItems = orderService.getProductsIdToQuantity()
+        // then
+        assertThat(sortedItems).hasSize(3)
+        assertThat(sortedItems.iterator().next().value).isEqualTo(9)
+        assertThat(sortedItems[1]).isEqualTo(4)
+        assertThat(sortedItems[3]).isEqualTo(2)
+        assertThat(sortedItems[5]).isEqualTo(9)
+    }
 }

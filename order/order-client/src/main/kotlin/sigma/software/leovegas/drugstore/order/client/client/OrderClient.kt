@@ -25,4 +25,7 @@ interface OrderClient {
 
     @RequestLine("GET /api/v1/orders")
     fun getOrders(): List<OrderResponse>
+
+    @RequestLine("GET /api/v1/orders/total-buys")
+    fun getProductsIdToQuantity(): Map<Long, Int>
 }

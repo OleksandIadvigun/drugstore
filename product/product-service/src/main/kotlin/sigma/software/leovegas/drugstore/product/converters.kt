@@ -10,7 +10,8 @@ fun Product.toProductResponse(): ProductResponse =
     ProductResponse(
         id = id ?: -1,
         name = name,
-        price = price
+        price = price,
+        createdAt = createdAt
     )
 
 fun ProductRequest.toEntity(): Product =

@@ -20,7 +20,6 @@ class RestApiDocUpdateProductTest(
     @Autowired val transactionTemplate: TransactionTemplate,
 ) : RestApiDocumentationTest() {
 
-
     @Test
     fun `should update product`() {
 
@@ -52,7 +51,5 @@ class RestApiDocUpdateProductTest(
             .assertThat().statusCode(202)
             .assertThat().body("name", equalTo("test product edited"))
             .assertThat().body("price", equalTo(10))
-
-
     }
 }

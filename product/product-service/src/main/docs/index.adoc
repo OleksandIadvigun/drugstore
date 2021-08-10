@@ -30,6 +30,13 @@ include::{snippets}/get-products-by-ids/http-request.adoc[]
 include::{snippets}/get-products-by-ids/http-response.adoc[]
 
 == Get products
+=== Possible path variables:
+- page (number of the page)
+- size (how many items on the page)
+- search ( keyword for search by fields)
+- sortField (field for sorting)
+- sortDirection (ASC/DESC directions)
+
 .Request
 include::{snippets}/get-products/http-request.adoc[]
 

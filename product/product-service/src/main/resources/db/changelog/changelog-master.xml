@@ -13,6 +13,8 @@
             </column>
             <column name="name" type="VARCHAR(50)"/>
             <column name="price" type="Decimal(11,2)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
 

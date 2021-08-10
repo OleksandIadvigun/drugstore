@@ -1,6 +1,7 @@
 package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -11,6 +12,8 @@ import javax.validation.constraints.DecimalMax
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 
 @Entity
 @Table(name = "product")
@@ -29,6 +32,16 @@ data class Product(
     @DecimalMin("0")
     @DecimalMax("100000000")
     @Column(name = "price")
-    val price: BigDecimal
+    val price: BigDecimal,
+
+    @NotNull
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
+    val createdAt: LocalDateTime? = null,
+
+    @NotNull
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    val updatedAt: LocalDateTime? = null
 )
 

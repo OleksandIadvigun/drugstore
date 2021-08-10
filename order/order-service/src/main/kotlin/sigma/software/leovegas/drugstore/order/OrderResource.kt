@@ -30,6 +30,10 @@ class OrderResource(private val orderService: OrderService) {
     fun getOrderById(@PathVariable("id") id: Long) =
         orderService.getOrderById(id)
 
+    @GetMapping("/total-buys")
+    @ResponseStatus(HttpStatus.OK)
+    fun getProductsIdToQuantity(): Map<Long, Int> = orderService.getProductsIdToQuantity()
+
     @GetMapping("/{id}/details")
     @ResponseStatus(HttpStatus.OK)
     fun getOrderDetails(@PathVariable("id") id: Long) =

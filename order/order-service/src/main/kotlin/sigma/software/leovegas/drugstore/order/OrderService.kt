@@ -71,4 +71,20 @@ class OrderService @Autowired constructor(
                 .setScale(2)
         )
     }
+
+    fun getProductsIdToQuantity(): Map<Long, Int> {
+        val map = mutableMapOf<Long, Int>()
+        orderRepository.findAll().forEach { o ->
+            o.orderItems.forEach { i ->
+                if (map.keys.contains(i.productId)) {
+                    val prevQuantity = map[i.productId]
+                    val newQuantity = i.quantity + (prevQuantity ?: -1)
+                    map[i.productId] = newQuantity
+                }else {
+                    map[i.productId] = i.quantity
+                }
+            }
+        }
+        return map.toList().sortedByDescending { (_, value) -> value }.toMap()
+    }
 }
