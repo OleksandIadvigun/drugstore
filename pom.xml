@@ -80,12 +80,14 @@
                 <version>${project.version}</version>
                 <type>jar</type>
             </dependency>
+            <!-- tag::restassured_dependency_management[] -->
             <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>kotlin-extensions</artifactId>
                 <version>${io.rest-assured}</version>
                 <type>jar</type>
             </dependency>
+            <!-- end::restassured_dependency_management[] -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-wiremock</artifactId>
