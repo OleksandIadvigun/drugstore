@@ -32,6 +32,7 @@ enum class OrderStatusDTO {
     CANCELLED,
     UPDATED,
     PAID,
+    BOOKED,
     DELIVERED
 }
 
