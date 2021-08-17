@@ -23,7 +23,8 @@
         <module>product/product-api</module>
         <module>product/product-client</module>
         <module>product/product-service</module>
-        <module>stock/stock-service</module>
+        <module>store/store-api</module>
+        <module>store/store-service</module>
     </modules>
     <properties>
         <java.version>1.8</java.version>
@@ -43,6 +44,7 @@
                 <version>${project.version}</version>
                 <type>jar</type>
             </dependency>
+            <!---->
             <dependency>
                 <groupId>sigma.software.leovegas.drugstore.order.api</groupId>
                 <artifactId>order-api</artifactId>
@@ -56,6 +58,13 @@
                 <type>jar</type>
             </dependency>
             <dependency>
+                <groupId>sigma.software.leovegas.drugstore.order.client</groupId>
+                <artifactId>order-client</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+            </dependency>
+            <!---->
+            <dependency>
                 <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
                 <artifactId>product-api</artifactId>
                 <version>${project.version}</version>
@@ -68,15 +77,21 @@
                 <type>jar</type>
             </dependency>
             <dependency>
-                <groupId>sigma.software.leovegas.drugstore.order.client</groupId>
-                <artifactId>order-client</artifactId>
+                <groupId>sigma.software.leovegas.drugstore.product.service</groupId>
+                <artifactId>product-service</artifactId>
                 <version>${project.version}</version>
                 <type>jar</type>
             </dependency>
             <!---->
             <dependency>
-                <groupId>sigma.software.leovegas.drugstore.product.service</groupId>
-                <artifactId>product-service</artifactId>
+                <groupId>sigma.software.leovegas.drugstore.store.api</groupId>
+                <artifactId>store-api</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
+                <groupId>sigma.software.leovegas.drugstore.store.service</groupId>
+                <artifactId>store-service</artifactId>
                 <version>${project.version}</version>
                 <type>jar</type>
             </dependency>
