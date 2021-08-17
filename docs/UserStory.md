@@ -103,7 +103,10 @@ Feature: Product
   Scenario: As a user I should get products by ids
     Given previously created products
     When send Get Request with ids
-    Then receive response with response body equal to created products
+    Then receive response with response body equal to created products with:
+    """ 
+    product item ids equal to ids
+    """
 
   Scenario: As a user I should get products
     Given previously created products
@@ -141,7 +144,20 @@ Feature: Store
     price item id,
     quantity
     """
+    
+  Scenario: As a user I should get store items
+    Given preciously created store items
+    When send Get Request
+    Then receive response with response body equal to store items
 
+  Scenario: As a user I should get store items by price item ids
+    Given preciously created store items
+    When send Get Request with ids
+    Then receive response with response body equal to store items with:
+    """
+    store item ids equal to ids
+    """
+    
   Scenario: As a I should increase quantity
     Given preciously created store item
     When send Put Request with quantity to increase
@@ -201,7 +217,7 @@ Feature: Accounting
   Scenario: As a user I should get price items
     Given previously created price items
     When send Get Request
-    Then receive response with response body equal to price items:
+    Then receive response with response body equal to price items
 
   Scenario: As a user I should get price items by ids
     When send Get Request with ids

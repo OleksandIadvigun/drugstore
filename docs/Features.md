@@ -39,6 +39,8 @@
 ### Store
 
 - Create new store item
+- Get store items
+- Get store items by price item ids
 - Increase product's quantity
 - Reduce product's quantity
 - Check availability of products
