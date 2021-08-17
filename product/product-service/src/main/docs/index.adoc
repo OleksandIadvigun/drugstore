@@ -1,35 +1,35 @@
 = Operations
 
 
-=== Create product
+== Create product
 .ProductRequest
 include::{snippets}/create-product/http-request.adoc[]
 
 .ProductResponse
 include::{snippets}/create-product/http-response.adoc[]
 
-=== Update product
+== Update product
 .ProductRequest
 include::{snippets}/update-product/http-request.adoc[]
 
 .ProductResponse
 include::{snippets}/update-product/http-response.adoc[]
 
-=== Get product By Id
+== Get product By Id
 .Request
 include::{snippets}/get-product-by-id/http-request.adoc[]
 
 .ProductResponse
 include::{snippets}/get-product-by-id/http-response.adoc[]
 
-=== Get product By Ids
+== Get product By Ids
 .Request
 include::{snippets}/get-products-by-ids/http-request.adoc[]
 
 .ProductResponse
 include::{snippets}/get-products-by-ids/http-response.adoc[]
 
-=== Get products
+== Get products
 .Request
 include::{snippets}/get-products/http-request.adoc[]
 

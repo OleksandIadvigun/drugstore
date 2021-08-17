@@ -1,6 +1,6 @@
 = Operations
 
-=== Create Order
+== Create Order
 
 .CreateOrderRequest
 include::{snippets}/create-order/http-request.adoc[]
@@ -8,7 +8,7 @@ include::{snippets}/create-order/http-request.adoc[]
 .CreateOrderResponse
 include::{snippets}/create-order/http-response.adoc[]
 
-=== Update Order
+== Update Order
 
 .UpdateOrderRequest
 include::{snippets}/update-order/http-request.adoc[]
@@ -16,7 +16,7 @@ include::{snippets}/update-order/http-request.adoc[]
 .UpdateOrderResponse
 include::{snippets}/update-order/http-response.adoc[]
 
-=== Get Order By ID
+== Get Order By ID
 
 .Request
 include::{snippets}/get-order-by-id/http-request.adoc[]
@@ -24,7 +24,7 @@ include::{snippets}/get-order-by-id/http-request.adoc[]
 .GetOrderResponse
 include::{snippets}/get-order-by-id/http-response.adoc[]
 
-=== Get OrderDetails
+== Get OrderDetails
 
 .Request
 include::{snippets}/get-order-details/http-request.adoc[]
@@ -32,7 +32,7 @@ include::{snippets}/get-order-details/http-request.adoc[]
 .GetOrderResponse
 include::{snippets}/get-order-details/http-response.adoc[]
 
-=== Get Orders
+== Get Orders
 
 .Request
 include::{snippets}/get-orders/http-request.adoc[]

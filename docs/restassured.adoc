@@ -1,6 +1,8 @@
 = RestAssured Setup and Usage
 :author: Zabolotnyi Volodymyr
 
+== Steps
+
 === 1. Add restassured dependency into parent pom.xml in dependency management
 
 include::../order/order-service/pom.xml[tags=restassured_dependency]
