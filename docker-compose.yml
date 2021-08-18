@@ -1,29 +1,27 @@
-version: "3"
+version: '2.1'
+networks:
+  drugstore:
+    name: drugstore
+    driver: bridge
 services:
-  product:
-    container_name: product_service
+  product-service:
+    container_name: product
+    image: drugstore/product-service
     build:
-      args:
-        JDK_VERSION: 8
       context: ./product/product-service
       dockerfile: Dockerfile
-    image: drugstore/product
-    ports:
-      - "8081:8081"
-    links:
-      - "order:order_service"
-
-  order:
-    container_name: order_service
+    ports: [ '8081:8081' ]
+    networks: [ drugstore ]
+  order-service:
+    container_name: order
+    image: drugstore/order-service
     build:
       args:
         JDK_VERSION: 8
       context: ./order/order-service
       dockerfile: Dockerfile
-    image: drugstore/order
-    ports:
-      - "8082:8082"
-    links:
-      - "product:product_service"
+    ports: [ '8082:8082' ]
+    networks: [ drugstore ]
+    depends_on: [ product-service ]
 
 

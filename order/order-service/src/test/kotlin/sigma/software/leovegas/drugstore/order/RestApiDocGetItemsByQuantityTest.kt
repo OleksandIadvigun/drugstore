@@ -10,12 +10,13 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @DisplayName("Get items sorted by quantity REST API Doc test")
-class RestApiDocGetItemsByQuantityTest(
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val transactionTemplate: TransactionTemplate,
-    @Autowired val orderService: OrderService,
-    @Autowired val orderRepository: OrderRepository,
-) :RestApiDocumentationTest() {
+class RestApiDocGetItemsByQuantityTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
+    val orderService: OrderService,
+    val orderRepository: OrderRepository,
+    val orderProperties: OrderProperties
+) : RestApiDocumentationTest() {
 
     @Test
     fun `should get total buys of each product`() {
@@ -49,7 +50,7 @@ class RestApiDocGetItemsByQuantityTest(
 
         if (orderCreated != null) {
             of("get-sorted-items").`when`()
-                .get("http://localhost:$port/api/v1/orders/total-buys")
+                .get("http://${orderProperties.host}:$port//api/v1/orders/total-buys")
                 .then()
                 .assertThat().statusCode(200)
                 .assertThat().body("size()", `is`(3))

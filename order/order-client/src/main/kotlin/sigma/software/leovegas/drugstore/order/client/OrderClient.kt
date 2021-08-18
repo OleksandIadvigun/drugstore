@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.order.client.client
+package sigma.software.leovegas.drugstore.order.client
 
 import feign.Headers
 import feign.Param

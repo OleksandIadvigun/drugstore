@@ -9,10 +9,11 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
 
 @DisplayName("Get products by Ids REST API Doc test")
-class RestApiDocGetProductsByIdsTest(
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val transactionTemplate: TransactionTemplate,
-    @Autowired val productRepository: ProductRepository
+class RestApiDocGetProductsByIdsTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
+    val productRepository: ProductRepository,
+    val productProperties: ProductProperties,
 ) : RestApiDocumentationTest() {
 
 
@@ -41,7 +42,7 @@ class RestApiDocGetProductsByIdsTest(
         } ?: listOf(-1L)
 
         of("get-products-by-ids").`when`()
-            .get("http://localhost:$port/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}")
+            .get("http://${productProperties.host}:$port/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", Matchers.`is`(2))

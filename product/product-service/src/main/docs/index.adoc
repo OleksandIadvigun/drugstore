@@ -1,7 +1,7 @@
 = Operations
 
-
 == Create product
+
 .ProductRequest
 include::{snippets}/create-product/http-request.adoc[]
 
@@ -9,6 +9,7 @@ include::{snippets}/create-product/http-request.adoc[]
 include::{snippets}/create-product/http-response.adoc[]
 
 == Update product
+
 .ProductRequest
 include::{snippets}/update-product/http-request.adoc[]
 
@@ -16,6 +17,7 @@ include::{snippets}/update-product/http-request.adoc[]
 include::{snippets}/update-product/http-response.adoc[]
 
 == Get product By Id
+
 .Request
 include::{snippets}/get-product-by-id/http-request.adoc[]
 
@@ -23,6 +25,7 @@ include::{snippets}/get-product-by-id/http-request.adoc[]
 include::{snippets}/get-product-by-id/http-response.adoc[]
 
 == Get product By Ids
+
 .Request
 include::{snippets}/get-products-by-ids/http-request.adoc[]
 
@@ -30,7 +33,9 @@ include::{snippets}/get-products-by-ids/http-request.adoc[]
 include::{snippets}/get-products-by-ids/http-response.adoc[]
 
 == Get products
+
 === Possible path variables:
+
 - page (number of the page)
 - size (how many items on the page)
 - search ( keyword for search by fields)

@@ -24,7 +24,7 @@ import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @AutoConfigureTestDatabase
-@AutoConfigureWireMock(port=8082)
+@AutoConfigureWireMock(port = 8082)
 @DisplayName("ProductService test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductServiceTest @Autowired constructor(
@@ -68,7 +68,7 @@ class ProductServiceTest @Autowired constructor(
         }
 
         //and
-        val responseExpected = mapOf<Long,Int>(saved[0].id!! to 5, saved[1].id!! to 2, saved[2].id!! to 9 )
+        val responseExpected = mapOf<Long, Int>(saved[0].id!! to 5, saved[1].id!! to 2, saved[2].id!! to 9)
 
         // and
         stubFor(
@@ -87,7 +87,7 @@ class ProductServiceTest @Autowired constructor(
         )
 
         // when
-        val all = service.getAll(0,5,"","default","DESC")
+        val all = service.getAll(0, 5, "", "default", "DESC")
 
         // then
         assertNotNull(all)
@@ -108,8 +108,8 @@ class ProductServiceTest @Autowired constructor(
         }
 
         // and
-        val ids  = transactionTemplate.execute {
-           repository.saveAll(
+        val ids = transactionTemplate.execute {
+            repository.saveAll(
                 listOf(
                     Product(
                         name = "test1",

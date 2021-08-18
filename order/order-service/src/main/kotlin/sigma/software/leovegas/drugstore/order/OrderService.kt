@@ -80,7 +80,7 @@ class OrderService @Autowired constructor(
                     val prevQuantity = map[i.productId]
                     val newQuantity = i.quantity + (prevQuantity ?: -1)
                     map[i.productId] = newQuantity
-                }else {
+                } else {
                     map[i.productId] = i.quantity
                 }
             }

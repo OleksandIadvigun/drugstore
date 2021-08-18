@@ -13,7 +13,7 @@ class StoreConvertersTest {
     fun `should convert to Store`() {
 
         // given
-        val store = Store(priceItemId = 12L,quantity = 5)
+        val store = Store(priceItemId = 12L, quantity = 5)
         val storeRequest = CreateStoreRequest(priceItemId = 12L, quantity = 5)
 
         // when

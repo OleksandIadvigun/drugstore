@@ -16,7 +16,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
-import sigma.software.leovegas.drugstore.order.client.client.OrderClient
 
 @SpringBootApplication
 internal class GetOrderDetailsFeignClientWireMockTestApp

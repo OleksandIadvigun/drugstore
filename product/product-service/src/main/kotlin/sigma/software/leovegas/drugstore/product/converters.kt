@@ -20,4 +20,4 @@ fun ProductRequest.toEntity(): Product =
         price = price
     )
 
-fun List<Product>.toProductResponseList(): List<ProductResponse> = this.map (Product::toProductResponse)
+fun List<Product>.toProductResponseList(): List<ProductResponse> = this.map(Product::toProductResponse)

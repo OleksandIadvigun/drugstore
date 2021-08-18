@@ -17,7 +17,6 @@ import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.CREATED
-import sigma.software.leovegas.drugstore.order.client.client.OrderClient
 
 @SpringBootApplication
 internal class GetOrderByIdFeignClientWireMockTestApp
@@ -25,8 +24,8 @@ internal class GetOrderByIdFeignClientWireMockTestApp
 @DisplayName("Get Order By Id Feign Client WireMock test")
 @ContextConfiguration(classes = [GetOrderByIdFeignClientWireMockTestApp::class])
 class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
-     val orderClient: OrderClient,
-     val objectMapper: ObjectMapper,
+    val orderClient: OrderClient,
+    val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
@@ -39,8 +38,9 @@ class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
             orderStatus = CREATED,
             orderItems = listOf(
                 OrderItemDTO(
-                    productId= 1,
-                    quantity = 2)
+                    productId = 1,
+                    quantity = 2
+                )
             ),
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now(),

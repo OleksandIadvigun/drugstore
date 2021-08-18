@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import sigma.software.leovegas.drugstore.order.client.client.OrderClient
+import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
@@ -28,11 +28,11 @@ class ProductService(
         val totalElements = products.totalElements
         val productResponseList = products.content.toProductResponseList()
         val responseList = productResponseList.map { p -> p.copy(totalBuys = productsIdsToQuantityMap[p.id] ?: 0) }
-        if (sortField == "default"){
+        if (sortField == "default") {
             val sortedByTotalBuys = responseList.sortedByDescending { e -> e.totalBuys }
             return PageImpl(sortedByTotalBuys, pageable, totalElements)
         }
-            return PageImpl(responseList, pageable, totalElements)
+        return PageImpl(responseList, pageable, totalElements)
     }
 
     fun getProductsByIds(ids: List<Long>): List<ProductResponse> = repo.findAllById(ids).toProductResponseList()

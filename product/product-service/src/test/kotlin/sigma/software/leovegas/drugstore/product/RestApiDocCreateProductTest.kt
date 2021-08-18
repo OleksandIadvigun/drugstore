@@ -13,9 +13,10 @@ import org.springframework.http.MediaType
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 
 @DisplayName("Create product REST API Doc test")
-class RestApiDocCreateProductTest(
-    @Autowired val objectMapper: ObjectMapper,
-    @Autowired @LocalServerPort val port: Int,
+class RestApiDocCreateProductTest @Autowired constructor(
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
+    val productProperties: ProductProperties,
 ) : RestApiDocumentationTest() {
 
     @Test
@@ -33,12 +34,12 @@ class RestApiDocCreateProductTest(
         of("create-product").`when`()
             .body(orderJson)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .post("http://localhost:$port/api/v1/products")
+            .post("http://${productProperties.host}:$port/api/v1/products")
             .then()
             .assertThat().statusCode(201)
             .assertThat().body("id", not(nullValue()))
-            .assertThat().body("name",equalTo("test product"))
-            .assertThat().body("price",equalTo(10))
+            .assertThat().body("name", equalTo("test product"))
+            .assertThat().body("price", equalTo(10))
 
     }
 }

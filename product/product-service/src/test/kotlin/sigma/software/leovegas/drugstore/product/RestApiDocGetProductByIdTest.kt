@@ -11,10 +11,11 @@ import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 
 @DisplayName("Get product by id REST API Doc test")
-class RestApiDocGetProductByIdTest(
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val transactionTemplate: TransactionTemplate,
-    @Autowired val productService: ProductService
+class RestApiDocGetProductByIdTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
+    val productService: ProductService,
+    val productProperties: ProductProperties
 ) : RestApiDocumentationTest() {
 
 
@@ -35,11 +36,11 @@ class RestApiDocGetProductByIdTest(
         of("get-product-by-id")
             .pathParam("id", savedProduct.id)
             .`when`()
-            .get("http://localhost:$port/api/v1/products/{id}")
+            .get("http://${productProperties.host}:$port/api/v1/products/{id}")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("name",equalTo("test"))
-            .assertThat().body("price",equalTo(10.0F))
+            .assertThat().body("name", equalTo("test"))
+            .assertThat().body("price", equalTo(10.0F))
 
 
     }

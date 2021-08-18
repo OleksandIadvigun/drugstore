@@ -12,11 +12,12 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @DisplayName("Get order by id REST API Doc test")
-class RestApiDocGetOrderByIdTest(
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val transactionTemplate: TransactionTemplate,
-    @Autowired val orderService: OrderService,
-) :RestApiDocumentationTest() {
+class RestApiDocGetOrderByIdTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
+    val orderService: OrderService,
+    val orderProperties: OrderProperties
+) : RestApiDocumentationTest() {
 
 
     @Test
@@ -38,8 +39,8 @@ class RestApiDocGetOrderByIdTest(
         println(orderCreated)
 
         if (orderCreated != null) {
-            of("get-order-by-id").pathParam("id",orderCreated.id).`when`()
-                .get("http://localhost:$port/api/v1/orders/{id}")
+            of("get-order-by-id").pathParam("id", orderCreated.id).`when`()
+                .get("http://${orderProperties.host}:$port//api/v1/orders/{id}")
                 .then()
                 .assertThat().statusCode(200)
                 .assertThat().body("orderStatus", equalTo("CREATED"))

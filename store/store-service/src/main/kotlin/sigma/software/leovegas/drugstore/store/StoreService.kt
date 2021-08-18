@@ -48,7 +48,7 @@ class StoreService(private val storeRepository: StoreRepository) {
         true
     }
 
-    fun deliverGoods(orderId: Long){
+    fun deliverGoods(orderId: Long) {
         // TODO: 8/18/2021  check invoice with orderId is PAID ->
         // TODO: 8/18/2021  change order status DELIVERED
     }

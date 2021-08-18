@@ -4,17 +4,17 @@
 
 | №| Feature |
 | ----------- | ----------- |
-| 1.  | [Order](#order)               
-| 2.  | [Product](#product)         
-| 3.  | [Store](#store)               
-| 4.  | [Accounting](#accounting)    
-| 5.  | [Analytics](#analytics)     
+| 1.  | [Order](#order)
+| 2.  | [Product](#product)
+| 3.  | [Store](#store)
+| 4.  | [Accounting](#accounting)
+| 5.  | [Analytics](#analytics)
 
 ### Order
 
 - Create order
 - Update order
-- Get order by id 
+- Get order by id
 - Get orders
 - Get orders by status
 - Get order details by order id

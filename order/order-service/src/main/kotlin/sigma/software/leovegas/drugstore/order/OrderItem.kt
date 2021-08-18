@@ -16,15 +16,15 @@ data class OrderItem(
     @Id
     @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id",nullable = false,updatable = false)
+    @Column(name = "id", nullable = false, updatable = false)
     val id: Long? = null,
 
     @NotNull
-    @Column(name = "product_id",nullable = false)
+    @Column(name = "product_id", nullable = false)
     val productId: Long = -1L,
 
     @NotNull
     @Min(1)
-    @Column(name = "quantity",nullable = false)
+    @Column(name = "quantity", nullable = false)
     val quantity: Int = -1,
 )

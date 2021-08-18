@@ -6,8 +6,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
@@ -28,16 +29,25 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
-@AutoConfigureWireMock(port=8082)
+@AutoConfigureWireMock(port = 8082)
 @DisplayName("ProductResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-class ProductResourceTest(
-    @Autowired val restTemplate: TestRestTemplate,
-    @Autowired val service: ProductService,
-    @Autowired val transactionalTemplate: TransactionTemplate,
-    @Autowired val repository: ProductRepository,
-    @Autowired val objectMapper: ObjectMapper
+class ProductResourceTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val restTemplate: TestRestTemplate,
+    val service: ProductService,
+    val transactionalTemplate: TransactionTemplate,
+    val repository: ProductRepository,
+    val objectMapper: ObjectMapper,
+    val productProperties: ProductProperties
 ) {
+
+    lateinit var baseUrl: String
+
+    @BeforeEach
+    fun setup() {
+        baseUrl = "http://${productProperties.host}:$port"
+    }
 
     @Test
     fun `should create product`() {
@@ -51,7 +61,8 @@ class ProductResourceTest(
         )
 
         // when
-        val response = restTemplate.exchange("/api/v1/products", POST, httpEntity, respTypeRef<ProductResponse>())
+        val response =
+            restTemplate.exchange("$baseUrl/api/v1/products", POST, httpEntity, respTypeRef<ProductResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
@@ -84,7 +95,7 @@ class ProductResourceTest(
 
         // when
         val response = restTemplate.exchange(
-            "/api/v1/products/${savedProduct.id}", HttpMethod.PUT, httpEntity, respTypeRef<ProductResponse>()
+            "$baseUrl/api/v1/products/${savedProduct.id}", HttpMethod.PUT, httpEntity, respTypeRef<ProductResponse>()
         )
 
         // then
@@ -106,20 +117,22 @@ class ProductResourceTest(
 
         // and
         val savedProducts = transactionalTemplate.execute {
-            repository.saveAll(listOf(
-                Product(
-                    name = "test",
-                    price = BigDecimal("10.00"),
-                ),
-                Product(
-                    name = "aspirin",
-                    price = BigDecimal("40.00"),
-                ),
-                Product(
-                    name = "bca",
-                    price = BigDecimal("30.00"),
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "test",
+                        price = BigDecimal("10.00"),
+                    ),
+                    Product(
+                        name = "aspirin",
+                        price = BigDecimal("40.00"),
+                    ),
+                    Product(
+                        name = "bca",
+                        price = BigDecimal("30.00"),
+                    )
                 )
-            ))
+            )
         } ?: fail("result is expected")
 
         // and
@@ -139,7 +152,12 @@ class ProductResourceTest(
         )
 
         // when
-        val response = restTemplate.exchange("/api/v1/products", GET, null, respTypeRef<RestResponsePage<ProductResponse>>())
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/products",
+            GET,
+            null,
+            respTypeRef<RestResponsePage<ProductResponse>>()
+        )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -164,20 +182,22 @@ class ProductResourceTest(
 
         // and
         val savedProducts = transactionalTemplate.execute {
-            repository.saveAll(listOf(
-                Product(
-                    name = "test",
-                    price = BigDecimal("10.00"),
-                ),
-                Product(
-                    name = "aspirin",
-                    price = BigDecimal("40.00"),
-                ),
-                Product(
-                    name = "bca",
-                    price = BigDecimal("30.00"),
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "test",
+                        price = BigDecimal("10.00"),
+                    ),
+                    Product(
+                        name = "aspirin",
+                        price = BigDecimal("40.00"),
+                    ),
+                    Product(
+                        name = "bca",
+                        price = BigDecimal("30.00"),
+                    )
                 )
-            ))
+            )
         } ?: fail("result is expected")
 
         // and
@@ -197,7 +217,12 @@ class ProductResourceTest(
         )
 
         // when
-        val response = restTemplate.exchange("/api/v1/products?sortField=price&sortDirection=DESC", GET, null, respTypeRef<RestResponsePage<ProductResponse>>())
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/products?sortField=price&sortDirection=DESC",
+            GET,
+            null,
+            respTypeRef<RestResponsePage<ProductResponse>>()
+        )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -220,20 +245,22 @@ class ProductResourceTest(
 
         // and
         val savedProducts = transactionalTemplate.execute {
-            repository.saveAll(listOf(
-                Product(
-                    name = "test",
-                    price = BigDecimal("10.00"),
-                ),
-                Product(
-                    name = "aspirin",
-                    price = BigDecimal("40.00"),
-                ),
-                Product(
-                    name = "bca",
-                    price = BigDecimal("30.00"),
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "test",
+                        price = BigDecimal("10.00"),
+                    ),
+                    Product(
+                        name = "aspirin",
+                        price = BigDecimal("40.00"),
+                    ),
+                    Product(
+                        name = "bca",
+                        price = BigDecimal("30.00"),
+                    )
                 )
-            ))
+            )
         } ?: fail("result is expected")
 
         // and
@@ -253,7 +280,12 @@ class ProductResourceTest(
         )
 
         // when
-        val response = restTemplate.exchange("/api/v1/products?sortField=createdAt&sortDirection=ASC", GET, null, respTypeRef<RestResponsePage<ProductResponse>>())
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/products?sortField=createdAt&sortDirection=ASC",
+            GET,
+            null,
+            respTypeRef<RestResponsePage<ProductResponse>>()
+        )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -293,7 +325,7 @@ class ProductResourceTest(
         // when
         val response = restTemplate
             .exchange(
-                "/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}",
+                "$baseUrl/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}",
                 GET,
                 null,
                 respTypeRef<List<ProductResponse>>()
@@ -323,7 +355,7 @@ class ProductResourceTest(
             service.create(newProduct)
         } ?: fail("result is expected")
         val response = restTemplate.exchange(
-            "/api/v1/products/${savedProduct.id}", GET, null, respTypeRef<ProductResponse>()
+            "$baseUrl/api/v1/products/${savedProduct.id}", GET, null, respTypeRef<ProductResponse>()
         )
 
         // then
@@ -350,7 +382,7 @@ class ProductResourceTest(
             service.create(newProduct)
         } ?: fail("result is expected")
         val response = restTemplate.exchange(
-            "/api/v1/products/${savedProduct.id}", HttpMethod.DELETE, null, respTypeRef<ProductResponse>()
+            "$baseUrl/api/v1/products/${savedProduct.id}", HttpMethod.DELETE, null, respTypeRef<ProductResponse>()
         )
 
         // then

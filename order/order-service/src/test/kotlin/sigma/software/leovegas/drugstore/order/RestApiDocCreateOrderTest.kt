@@ -13,10 +13,12 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @DisplayName("Create order REST API Doc test")
-class RestApiDocCreateOrderTest(
-    @Autowired val objectMapper: ObjectMapper,
-    @Autowired @LocalServerPort val port: Int,
+class RestApiDocCreateOrderTest @Autowired constructor(
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
+    val orderProperties: OrderProperties
 ) : RestApiDocumentationTest() {
+
 
     @Test
     fun `should create order`() {
@@ -37,14 +39,14 @@ class RestApiDocCreateOrderTest(
         of("create-order").`when`()
             .body(orderJson)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .post("http://localhost:$port/api/v1/orders")
+            .post("http://${orderProperties.host}:$port/api/v1/orders")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("orderStatus",equalTo("CREATED"))
+            .assertThat().body("orderStatus", equalTo("CREATED"))
             .assertThat().body("createdAt", not(emptyString()))
             .assertThat().body("updatedAt", not(emptyString()))
-            .assertThat().body("orderItems[0].productId",equalTo(1))
-            .assertThat().body("orderItems[0].quantity",equalTo(3))
+            .assertThat().body("orderItems[0].productId", equalTo(1))
+            .assertThat().body("orderItems[0].quantity", equalTo(3))
 
     }
 }

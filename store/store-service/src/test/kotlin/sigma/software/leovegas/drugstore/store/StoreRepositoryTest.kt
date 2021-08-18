@@ -1,12 +1,12 @@
 package sigma.software.leovegas.drugstore.store
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.support.TransactionTemplate
-import org.assertj.core.api.Assertions.assertThat
 
 @DisplayName("Store Repository test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -19,7 +19,7 @@ class StoreRepositoryTest(
     fun `should get store items`() {
 
         // given
-        transactionalTemplate.execute{
+        transactionalTemplate.execute {
             storeRepository.deleteAll()
         }
 

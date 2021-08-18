@@ -12,14 +12,17 @@ include::../order/order-service/pom.xml[tags=restassured_dependency]
 include::../order/order-service/pom.xml[tags=restassured_dependency]
 
 === 3. Create Rest API Doc Setup
+
 ----
 include::../order/order-service/src/test/kotlin/sigma/software/leovegas/drugstore/order/RestApiDocumentationTest.kt[lines=17..]
 ----
 
 === 4. Create Rest API Doc Test
+
 ----
 include::../order/order-service/src/test/kotlin/sigma/software/leovegas/drugstore/order/RestApiDocCreateOrderTest.kt[lines=15..50]
 ----
+
 * of(name of the snippet)
 * body(body of request)
 * post(url) - type of request
@@ -27,6 +30,7 @@ include::../order/order-service/src/test/kotlin/sigma/software/leovegas/drugstor
 === 5. Create filename.adoc where will be included all snippets
 
 Example
+
 ----
 include::path/filename.adoc
 ----

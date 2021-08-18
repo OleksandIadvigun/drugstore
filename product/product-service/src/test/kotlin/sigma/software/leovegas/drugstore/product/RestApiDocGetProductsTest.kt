@@ -17,15 +17,15 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 
-@AutoConfigureWireMock(port=8082)
+@AutoConfigureWireMock(port = 8082)
 @DisplayName("Get products REST API Doc test")
-class RestApiDocGetProductsTest(
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val transactionTemplate: TransactionTemplate,
-    @Autowired val productService: ProductService,
-    @Autowired val productRepository: ProductRepository,
-    @Autowired val objectMapper: ObjectMapper
-) :RestApiDocumentationTest() {
+class RestApiDocGetProductsTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
+    val productRepository: ProductRepository,
+    val objectMapper: ObjectMapper,
+    val productProperties: ProductProperties
+) : RestApiDocumentationTest() {
 
 
     @Test
@@ -38,16 +38,18 @@ class RestApiDocGetProductsTest(
 
         // and
         val savedProducts = transactionTemplate.execute {
-            productRepository.saveAll(listOf(
-                Product(
-                    name = "test",
-                    price = BigDecimal.TEN.setScale(2),
-                ),
-                Product(
-                    name = "test2",
-                    price = BigDecimal.TEN.setScale(2),
+            productRepository.saveAll(
+                listOf(
+                    Product(
+                        name = "test",
+                        price = BigDecimal.TEN.setScale(2),
+                    ),
+                    Product(
+                        name = "test2",
+                        price = BigDecimal.TEN.setScale(2),
+                    )
                 )
-            ))
+            )
         } ?: fail("result is expected")
 
         // and
@@ -66,10 +68,10 @@ class RestApiDocGetProductsTest(
                 )
         )
 
-            of("get-products").`when`()
-                .get("http://localhost:$port/api/v1/products")
-                .then()
-                .assertThat().statusCode(200)
-                .assertThat().body("content.size", `is`(2))
+        of("get-products").`when`()
+            .get("http://${productProperties.host}:$port/api/v1/products")
+            .then()
+            .assertThat().statusCode(200)
+            .assertThat().body("content.size", `is`(2))
     }
 }

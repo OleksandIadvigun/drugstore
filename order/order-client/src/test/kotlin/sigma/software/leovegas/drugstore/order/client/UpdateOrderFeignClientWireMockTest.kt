@@ -19,7 +19,6 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.UPDATED
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
-import sigma.software.leovegas.drugstore.order.client.client.OrderClient
 
 @SpringBootApplication
 internal class UpdateOrderFeignClientWireMockTestApp

@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
@@ -34,12 +36,21 @@ import sigma.software.leovegas.drugstore.product.api.ProductResponse
 @DisplayName("OrderResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class OrderResourceTest @Autowired constructor(
+    @LocalServerPort val port: Int,
     val restTemplate: TestRestTemplate,
     val transactionTemplate: TransactionTemplate,
     val orderRepository: OrderRepository,
     val orderService: OrderService,
     val objectMapper: ObjectMapper,
+    val orderProperties: OrderProperties,
 ) : WireMockTest() {
+
+    lateinit var baseUrl: String
+
+    @BeforeEach
+    fun setup() {
+        baseUrl = "http://${orderProperties.host}:$port"
+    }
 
     @Test
     fun `should create order`() {
@@ -57,7 +68,7 @@ class OrderResourceTest @Autowired constructor(
         )
 
         // when
-        val response = restTemplate.exchange("/api/v1/orders", POST, httpEntity, respTypeRef<OrderResponse>())
+        val response = restTemplate.exchange("$baseUrl/api/v1/orders", POST, httpEntity, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
@@ -87,7 +98,7 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<OrderResponse>())
+            .exchange("$baseUrl/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -141,7 +152,7 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${order.id}/details", GET, null, respTypeRef<OrderDetailsDTO>())
+            .exchange("$baseUrl/api/v1/orders/${order.id}/details", GET, null, respTypeRef<OrderDetailsDTO>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -190,7 +201,7 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders", GET, null, respTypeRef<List<OrderResponse>>())
+            .exchange("$baseUrl/api/v1/orders", GET, null, respTypeRef<List<OrderResponse>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -232,7 +243,7 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<OrderResponse>())
+            .exchange("$baseUrl/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
@@ -262,7 +273,7 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<OrderResponse>())
+            .exchange("$baseUrl/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<OrderResponse>())
 
         // and
         val exception = assertThrows<OrderNotFoundException> {
@@ -279,7 +290,7 @@ class OrderResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should return total buys from items sorted DESC by quantity `(){
+    fun `should return total buys from items sorted DESC by quantity `() {
 
         // given
         transactionTemplate.execute {
@@ -312,7 +323,7 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("/api/v1/orders/total-buys", GET, null, respTypeRef<Map<Long, Int>>())
+            .exchange("$baseUrl/api/v1/orders/total-buys", GET, null, respTypeRef<Map<Long, Int>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)

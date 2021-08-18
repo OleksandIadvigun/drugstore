@@ -19,7 +19,6 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.CREATED
-import sigma.software.leovegas.drugstore.order.client.client.OrderClient
 
 @SpringBootApplication
 internal class CreateOrderFeignClientWireMockTestApp

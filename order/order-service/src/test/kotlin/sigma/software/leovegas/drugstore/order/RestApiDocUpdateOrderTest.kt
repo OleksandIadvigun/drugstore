@@ -15,11 +15,12 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 
 @DisplayName("Update order REST API Doc test")
-class RestApiDocUpdateOrderTest(
-    @Autowired val objectMapper: ObjectMapper,
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val transactionTemplate: TransactionTemplate,
-    @Autowired val orderService: OrderService,
+class RestApiDocUpdateOrderTest @Autowired constructor(
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
+    val orderService: OrderService,
+    val orderProperties: OrderProperties,
 ) : RestApiDocumentationTest() {
 
 
@@ -60,7 +61,7 @@ class RestApiDocUpdateOrderTest(
                 .`when`()
                 .body(orderJson)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .put("http://localhost:$port/api/v1/orders/{id}")
+                .put("http://${orderProperties.host}:$port/api/v1/orders/{id}")
                 .then()
                 .assertThat().statusCode(202)
                 .assertThat().body("orderStatus", equalTo("UPDATED"))

@@ -19,11 +19,12 @@ import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @DisplayName("Get orderDetails REST API Doc test")
 @AutoConfigureWireMock(port = 8081)
-class RestApiDocGetOrderDetailsTest(
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val transactionTemplate: TransactionTemplate,
-    @Autowired val orderRepository: OrderRepository,
-    @Autowired val objectMapper: ObjectMapper
+class RestApiDocGetOrderDetailsTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
+    val orderRepository: OrderRepository,
+    val objectMapper: ObjectMapper,
+    val orderProperties: OrderProperties
 ) : RestApiDocumentationTest() {
 
 
@@ -67,7 +68,7 @@ class RestApiDocGetOrderDetailsTest(
         } ?: Assertions.fail("result is expected")
 
         of("get-order-details").pathParam("id", order.id).`when`()
-            .get("http://localhost:$port/api/v1/orders/{id}/details")
+            .get("http://${orderProperties.host}:$port//api/v1/orders/{id}/details")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("orderItemDetails[0].name", equalTo("test1"))

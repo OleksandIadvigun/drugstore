@@ -13,11 +13,12 @@ import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 
 @DisplayName("Update order REST API Doc test")
-class RestApiDocUpdateProductTest(
-    @Autowired @LocalServerPort val port: Int,
-    @Autowired val service: ProductService,
-    @Autowired val objectMapper: ObjectMapper,
-    @Autowired val transactionTemplate: TransactionTemplate,
+class RestApiDocUpdateProductTest @Autowired constructor(
+    @LocalServerPort val port: Int,
+    val service: ProductService,
+    val objectMapper: ObjectMapper,
+    val transactionTemplate: TransactionTemplate,
+    val productProperties: ProductProperties
 ) : RestApiDocumentationTest() {
 
     @Test
@@ -46,7 +47,7 @@ class RestApiDocUpdateProductTest(
             .`when`()
             .body(orderJson)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .put("http://localhost:$port/api/v1/products/${savedProduct.id}")
+            .put("http://${productProperties.host}:$port/api/v1/products/${savedProduct.id}")
             .then()
             .assertThat().statusCode(202)
             .assertThat().body("name", equalTo("test product edited"))

@@ -24,6 +24,7 @@ internal class RestResponsePage<T> : PageImpl<T> {
         content!!, PageRequest.of(number, size),
         totalElements!!
     )
+
     constructor(content: List<T>?, pageable: Pageable, total: Long) : super(content!!, pageable, total) {}
     constructor(content: List<T>?) : super(content!!) {}
     constructor() : super(ArrayList<T>()) {}
