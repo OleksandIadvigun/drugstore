@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -71,6 +72,7 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isNotNull
         assertThat(body.price).isEqualTo(BigDecimal.TEN)
+        assertThat(body.createdAt).isBefore(LocalDateTime.now())
     }
 
     @Test
@@ -105,6 +107,7 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.name).isEqualTo(httpEntity.body?.name)
         assertThat(body.price).isEqualTo(httpEntity.body?.price)
+        assertThat(body.createdAt).isBefore(LocalDateTime.now()) // todo should to be before updatedAt
     }
 
     @Test
@@ -366,6 +369,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(body.id).isEqualTo(savedProduct.id)
         assertThat(body.name).isEqualTo(savedProduct.name)
         assertThat(body.price).isEqualTo(savedProduct.price)
+        assertThat(body.createdAt).isBefore(LocalDateTime.now())  //todo should to be before updatedAt
     }
 
     @Test

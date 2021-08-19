@@ -46,8 +46,11 @@ class ProductService(
             .toProductResponse()
 
     fun update(id: Long, productRequest: ProductRequest): ProductResponse = productRequest.run {
-        repo.findById(id).orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
-        repo.save(toEntity().copy(id = id)).toProductResponse()
+        val toUpdate = repo
+            .findById(id)
+            .orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
+            .copy(name = name, price = price)
+        repo.save(toUpdate).toProductResponse()
     }
 
     fun delete(id: Long) {

@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.hibernate.validator.internal.util.Contracts.assertNotNull
@@ -194,6 +195,7 @@ class ProductServiceTest @Autowired constructor(
         assertNotNull(actual.id)
         assertEquals(productResponse.name, actual.name)
         assertEquals(productResponse.price, actual.price)
+        assertThat(actual.createdAt).isBefore(LocalDateTime.now())
     }
 
     @Test
@@ -223,6 +225,7 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertNotNull(actual)
         assertEquals(randomName, actual.name)
+        assertThat(actual.updatedAt).isBefore(LocalDateTime.now())   // todo should to be before createdAt
     }
 
     @Test

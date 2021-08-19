@@ -39,10 +39,10 @@ class ProductResource(private val service: ProductService) {
     fun getProducts(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int,
-        @RequestParam(defaultValue = "") keyword: String,
+        @RequestParam(defaultValue = "") search: String,
         @RequestParam(defaultValue = "default") sortField: String,
         @RequestParam(defaultValue = "ASC") sortDirection: String
-    ): Page<ProductResponse> = service.getAll(page, size, keyword, sortField, sortDirection)
+    ): Page<ProductResponse> = service.getAll(page, size, search, sortField, sortDirection)
 
     @ResponseStatus(OK)
     @GetMapping("products-by-ids")

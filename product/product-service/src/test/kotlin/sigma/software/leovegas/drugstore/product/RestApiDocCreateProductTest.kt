@@ -2,6 +2,7 @@ package sigma.software.leovegas.drugstore.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
+import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
 import org.hamcrest.Matchers.nullValue
@@ -40,6 +41,7 @@ class RestApiDocCreateProductTest @Autowired constructor(
             .assertThat().body("id", not(nullValue()))
             .assertThat().body("name", equalTo("test product"))
             .assertThat().body("price", equalTo(10))
-
+            .assertThat().body("createdAt", not(emptyString()))
+            .assertThat().body("updatedAt", not(emptyString()))
     }
 }

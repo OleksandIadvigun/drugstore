@@ -11,13 +11,14 @@ fun Product.toProductResponse(): ProductResponse =
         id = id ?: -1,
         name = name,
         price = price,
-        createdAt = createdAt
+        createdAt = createdAt,
+        updatedAt = updatedAt
     )
 
 fun ProductRequest.toEntity(): Product =
     Product(
         name = name,
-        price = price
+        price = price,
     )
 
 fun List<Product>.toProductResponseList(): List<ProductResponse> = this.map(Product::toProductResponse)

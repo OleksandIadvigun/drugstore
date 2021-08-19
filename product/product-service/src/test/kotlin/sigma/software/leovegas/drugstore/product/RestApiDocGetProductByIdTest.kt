@@ -1,7 +1,9 @@
 package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
+import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -41,6 +43,8 @@ class RestApiDocGetProductByIdTest @Autowired constructor(
             .assertThat().statusCode(200)
             .assertThat().body("name", equalTo("test"))
             .assertThat().body("price", equalTo(10.0F))
+            .assertThat().body("createdAt", not(emptyString()))
+            .assertThat().body("updatedAt", not(emptyString()))
 
 
     }

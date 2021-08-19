@@ -1,7 +1,7 @@
 package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
-import org.hamcrest.Matchers
+import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,7 +45,7 @@ class RestApiDocGetProductsByIdsTest @Autowired constructor(
             .get("http://${productProperties.host}:$port/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("size()", Matchers.`is`(2))
+            .assertThat().body("size()", `is`(2))
 
     }
 }
