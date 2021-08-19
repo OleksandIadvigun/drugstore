@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import sigma.software.leovegas.drugstore.accountancy.api.ApiError
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
+import sigma.software.leovegas.drugstore.api.ApiError
 
 @RestController
 @RequestMapping("/api/v1/accountancy")

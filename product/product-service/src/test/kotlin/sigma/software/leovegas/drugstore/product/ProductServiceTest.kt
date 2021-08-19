@@ -93,7 +93,6 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertNotNull(all)
         assertThat(all.totalElements).isEqualTo(4)
-        val t = all.content[0]
         assertThat(all.content[0].totalBuys).isEqualTo(9)
         assertThat(all.content[1].totalBuys).isEqualTo(5)
         assertThat(all.content[2].totalBuys).isEqualTo(2)

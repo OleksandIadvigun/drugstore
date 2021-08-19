@@ -37,7 +37,7 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val created = transactionTemplate.execute {
-            storeService.create(storeRequest)
+            storeService.createStoreItem(storeRequest)
         } ?: fail("result expected")
 
         // then
@@ -68,11 +68,11 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<StoreItemWithThisPriceItemAlreadyExistException> {
-            storeService.create(storeRequest)
+            storeService.createStoreItem(storeRequest)
         }
 
         // then
-        assertThat(exception.message).contains("Store with this price item already exist!")
+        assertThat(exception.message).contains("Store with this price item", "already exist!")
     }
 
     @Test
@@ -181,7 +181,7 @@ class StoreServiceTest @Autowired constructor(
 
         //given
         transactionTemplate.execute {
-            storeRepository.deleteAllInBatch()
+            storeRepository.deleteAll()
         }
 
         // and
@@ -206,13 +206,20 @@ class StoreServiceTest @Autowired constructor(
         val result = storeService.checkAvailability(request)
 
         //then
-        assertThat(result).isEqualTo(true)
+        assertThat(result).hasSize(1)
+        assertThat(result[0].priceItemId).isEqualTo(1)
+        assertThat(result[0].quantity).isEqualTo(10)
     }
 
     @Test
     fun `should not get true for not enough amount of store item`() {
 
-        // given
+        //given
+        transactionTemplate.execute {
+            storeRepository.deleteAll()
+        }
+
+        // and
         val created = transactionTemplate.execute {
             storeRepository.save(
                 Store(

@@ -12,9 +12,9 @@
 
 ### Order
 
-- [x] Create order 
+- [x] Create order
 - [x] Update order
-- [x] Get order by id 
+- [x] Get order by id
 - [x] Get orders
 - [ ] Get orders by status
 - [ ] Get order details by order id

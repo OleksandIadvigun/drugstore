@@ -1,7 +1,7 @@
 package sigma.software.leovegas.drugstore.store
 
-class StoreItemWithThisPriceItemAlreadyExistException() : RuntimeException(
-    "Store with this price item already exist!"
+class StoreItemWithThisPriceItemAlreadyExistException(id: Long) : RuntimeException(
+    "Store with this price item id = $id already exist!"
 )
 
 class InsufficientAmountOfStoreItemException(id: Long) : RuntimeException(

@@ -9,14 +9,14 @@ import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 @Transactional
 class StoreService(private val storeRepository: StoreRepository) {
 
-    fun create(storeRequest: CreateStoreRequest) = storeRequest.run {
+    fun createStoreItem(storeRequest: CreateStoreRequest) = storeRequest.run {
         if (getStoreItemsByPriceItemIds(listOf(this.priceItemId)).isNotEmpty()) {
-            throw StoreItemWithThisPriceItemAlreadyExistException()
+            throw StoreItemWithThisPriceItemAlreadyExistException(this.priceItemId)
         }
         storeRepository.save(toEntity()).toStoreResponseDTO()
     }
 
-    fun getStoreItemsByPriceItemIds(ids: List<Long>) = storeRepository.getStoreByPriceItemIds(ids)
+    fun getStoreItemsByPriceItemIds(ids: List<Long>) = storeRepository.getStoreByPriceItemIds(ids).toStoreResponseList()
 
 
     fun getStoreItems() = storeRepository.findAll().toStoreResponseList()
@@ -25,7 +25,7 @@ class StoreService(private val storeRepository: StoreRepository) {
         val map = this.associate { it.priceItemId to it.quantity }
         val priceItemIds = this.map { it.priceItemId }
         val storeItems = getStoreItemsByPriceItemIds(priceItemIds)
-        storeItems.map { it.copy(quantity = map[it.priceItemId]?.plus(it.quantity) ?: -1).toStoreResponseDTO() }
+        storeItems.map { it.copy(quantity = map[it.priceItemId]?.plus(it.quantity) ?: -1) }
     }
 
     fun reduceQuantity(request: List<UpdateStoreRequest>) = request.run {
@@ -33,7 +33,7 @@ class StoreService(private val storeRepository: StoreRepository) {
         val map = this.associate { it.priceItemId to it.quantity }
         val priceItemIds = this.map { it.priceItemId }
         val storeItems = getStoreItemsByPriceItemIds(priceItemIds)
-        storeItems.map { it.copy(quantity = it.quantity.minus(map[it.priceItemId] ?: -1)).toStoreResponseDTO() }
+        storeItems.map { it.copy(quantity = it.quantity.minus(map[it.priceItemId] ?: -1)) }
     }
 
     fun checkAvailability(request: List<UpdateStoreRequest>) = request.run {
@@ -45,7 +45,7 @@ class StoreService(private val storeRepository: StoreRepository) {
                 throw InsufficientAmountOfStoreItemException(it.priceItemId)
             }
         }
-        true
+        storeItems
     }
 
     fun deliverGoods(orderId: Long) {

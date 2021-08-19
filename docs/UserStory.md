@@ -144,7 +144,7 @@ Feature: Store
     price item id,
     quantity
     """
-    
+
   Scenario: As a user I should get store items
     Given preciously created store items
     When send Get Request
@@ -157,7 +157,7 @@ Feature: Store
     """
     store item ids equal to ids
     """
-    
+
   Scenario: As a I should increase quantity
     Given preciously created store item
     When send Put Request with quantity to increase

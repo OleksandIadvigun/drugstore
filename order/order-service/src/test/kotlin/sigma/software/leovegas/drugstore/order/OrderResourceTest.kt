@@ -37,12 +37,12 @@ import sigma.software.leovegas.drugstore.product.api.ProductResponse
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class OrderResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
-    val restTemplate: TestRestTemplate,
-    val transactionTemplate: TransactionTemplate,
     val orderRepository: OrderRepository,
     val orderService: OrderService,
     val objectMapper: ObjectMapper,
     val orderProperties: OrderProperties,
+    val restTemplate: TestRestTemplate,
+    val transactionTemplate: TransactionTemplate,
 ) : WireMockTest() {
 
     lateinit var baseUrl: String

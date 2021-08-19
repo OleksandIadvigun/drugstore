@@ -337,11 +337,11 @@ class ProductResourceTest @Autowired constructor(
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
-        val bodyByIds = response.body ?: fail("body may not be null")
-        assertThat(bodyByIds).isNotNull
-        assertThat(bodyByIds).hasSize(2)
-        assertThat(bodyByIds[0].id).isEqualTo(ids[0])
-        assertThat(bodyByIds[1].id).isEqualTo(ids[1])
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).isNotNull
+        assertThat(body).hasSize(2)
+        assertThat(body[0].id).isEqualTo(ids[0])
+        assertThat(body[1].id).isEqualTo(ids[1])
     }
 
     @Test
@@ -394,7 +394,7 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         assertThrows<ResourceNotFoundException> {
-            service.getOne(savedProduct.id ?: -1)
+            service.getOne(savedProduct.id)
         }
     }
 }
