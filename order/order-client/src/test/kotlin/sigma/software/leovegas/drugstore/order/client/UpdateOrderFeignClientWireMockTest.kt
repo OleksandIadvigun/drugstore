@@ -49,7 +49,7 @@ class UpdateOrderFeignClientWireMockTest @Autowired constructor(
             orderStatus = UPDATED,
             orderItems = request.orderItems,
             createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now().plusMinutes(1),
         )
 
         // and
@@ -82,7 +82,7 @@ class UpdateOrderFeignClientWireMockTest @Autowired constructor(
         assertThat(responseActual.id).isEqualTo(1L)
         assertThat(responseActual.orderStatus).isEqualTo(UPDATED)
         assertThat(responseActual.createdAt).isBefore(LocalDateTime.now())
-        assertThat(responseActual.updatedAt).isBefore(LocalDateTime.now())
+        assertThat(responseActual.updatedAt).isAfter(LocalDateTime.now())
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and

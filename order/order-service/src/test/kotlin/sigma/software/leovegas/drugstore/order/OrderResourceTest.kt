@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -30,6 +31,7 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
@@ -77,6 +79,11 @@ class OrderResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isNotNull
         assertThat(body.orderItems).hasSize(1)
+        assertThat(body.orderItems[0].productId).isEqualTo(1L)
+        assertThat(body.orderItems[0].quantity).isEqualTo(3)
+        assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
+        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+        assertThat(body.updatedAt).isBefore(LocalDateTime.now())
     }
 
     @Test
@@ -108,6 +115,8 @@ class OrderResourceTest @Autowired constructor(
         assertThat(body.id).isEqualTo(orderCreated.id)
         assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
+        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+        assertThat(body.updatedAt).isBefore(LocalDateTime.now())
 
     }
 
@@ -252,6 +261,10 @@ class OrderResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(5)
+        assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
+        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+        assertThat(body.updatedAt).isAfter(body.createdAt)
     }
 
     @Test

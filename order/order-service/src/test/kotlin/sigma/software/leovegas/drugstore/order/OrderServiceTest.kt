@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
@@ -17,6 +18,7 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
@@ -36,7 +38,7 @@ class OrderServiceTest @Autowired constructor(
         val order = CreateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    productId = 1L,
+                    productId = 1,
                     quantity = 3
                 )
             )
@@ -49,6 +51,11 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(created.id).isNotNull
+        assertThat(created.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
+        assertThat(created.orderItems[0].quantity).isEqualTo(3)
+        assertThat(created.orderItems[0].productId).isEqualTo(1)
+        assertThat(created.createdAt).isBefore(LocalDateTime.now())
+        assertThat(created.updatedAt).isBefore(LocalDateTime.now())
     }
 
     @Test
@@ -212,7 +219,7 @@ class OrderServiceTest @Autowired constructor(
         val updateOrderRequest = UpdateOrderRequest(
             orderItems = listOf(
                 OrderItemDTO(
-                    productId = 1L,
+                    productId = 1,
                     quantity = 4
                 )
             )
@@ -224,8 +231,11 @@ class OrderServiceTest @Autowired constructor(
         } ?: fail("result is expected")
 
         // then
-        assertThat(changedOrder.orderItems.iterator().next().quantity)
-            .isEqualTo(4)
+        assertThat(changedOrder.orderItems.iterator().next().quantity).isEqualTo(4)
+        assertThat(changedOrder.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
+        assertThat(changedOrder.createdAt).isBefore(LocalDateTime.now())
+        assertThat(changedOrder.updatedAt).isAfter(changedOrder.createdAt)
     }
 
     @Test

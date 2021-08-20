@@ -45,7 +45,7 @@ class OrderService @Autowired constructor(
                     orderStatus = UPDATED, // NOTE: business logic must be placed in services!
                     orderItems = orderItems.toEntities(),
                 )
-            val updated = orderRepository.save(toUpdate)
+            val updated = orderRepository.saveAndFlush(toUpdate)
             updated.toOrderResponseDTO()
         }
 
