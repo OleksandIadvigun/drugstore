@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.product
 
-import java.math.BigDecimal
 import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
@@ -27,7 +26,6 @@ class RestApiDocGetProductByIdTest @Autowired constructor(
         // given
         val newProduct = ProductRequest(
             name = "test",
-            price = BigDecimal.TEN.setScale(2),
         )
 
         // and
@@ -42,7 +40,6 @@ class RestApiDocGetProductByIdTest @Autowired constructor(
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("name", equalTo("test"))
-            .assertThat().body("price", equalTo(10.0F))
             .assertThat().body("createdAt", not(emptyString()))
             .assertThat().body("updatedAt", not(emptyString()))
 

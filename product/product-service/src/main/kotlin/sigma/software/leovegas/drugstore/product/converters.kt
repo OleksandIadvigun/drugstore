@@ -10,7 +10,6 @@ fun Product.toProductResponse(): ProductResponse =
     ProductResponse(
         id = id ?: -1,
         name = name,
-        price = price,
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -18,7 +17,6 @@ fun Product.toProductResponse(): ProductResponse =
 fun ProductRequest.toEntity(): Product =
     Product(
         name = name,
-        price = price,
     )
 
 fun List<Product>.toProductResponseList(): List<ProductResponse> = this.map(Product::toProductResponse)

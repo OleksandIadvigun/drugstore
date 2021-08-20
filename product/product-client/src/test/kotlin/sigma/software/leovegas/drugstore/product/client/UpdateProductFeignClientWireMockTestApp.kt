@@ -1,11 +1,12 @@
 package sigma.software.leovegas.drugstore.product.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.math.BigDecimal
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,19 +33,17 @@ class UpdateProductFeignClientWireMockTest @Autowired constructor(
         // given
         val request = ProductRequest(
             name = "test",
-            price = BigDecimal("20.00")
         )
 
         //and
         val responseExpected = ProductResponse(
             id = 1L,
             name = request.name,
-            price = request.price
         )
 
         //and
-        WireMock.stubFor(
-            WireMock.put("/api/v1/products/1")
+        stubFor(
+            put("/api/v1/products/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
                     EqualToPattern(
@@ -54,7 +53,7 @@ class UpdateProductFeignClientWireMockTest @Autowired constructor(
                     )
                 )
                 .willReturn(
-                    WireMock.aResponse()
+                    aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
@@ -69,8 +68,7 @@ class UpdateProductFeignClientWireMockTest @Autowired constructor(
         val responseActual = productClient.updateProduct(1, request)
 
         //  then
-        Assertions.assertThat(responseActual.id).isEqualTo(1L)
-        Assertions.assertThat(responseActual.name).isEqualTo(request.name)
-        Assertions.assertThat(responseActual.price).isEqualTo(request.price)
+        assertThat(responseActual.id).isEqualTo(1L)
+        assertThat(responseActual.name).isEqualTo(request.name)
     }
 }

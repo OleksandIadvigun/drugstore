@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -57,7 +56,6 @@ class ProductResourceTest @Autowired constructor(
         val httpEntity = HttpEntity(
             ProductRequest(
                 name = "test product",
-                price = BigDecimal.TEN,
             )
         )
 
@@ -71,7 +69,6 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isNotNull
-        assertThat(body.price).isEqualTo(BigDecimal.TEN)
         assertThat(body.createdAt).isBefore(LocalDateTime.now())
     }
 
@@ -81,7 +78,6 @@ class ProductResourceTest @Autowired constructor(
         // given
         val newProduct = ProductRequest(
             name = "test",
-            price = BigDecimal.ONE,
         )
 
         val savedProduct = transactionalTemplate.execute {
@@ -91,7 +87,6 @@ class ProductResourceTest @Autowired constructor(
         val httpEntity = HttpEntity(
             ProductRequest(
                 name = "test product edited",
-                price = BigDecimal.TEN,
             )
         )
 
@@ -106,7 +101,6 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.name).isEqualTo(httpEntity.body?.name)
-        assertThat(body.price).isEqualTo(httpEntity.body?.price)
         assertThat(body.createdAt).isBefore(LocalDateTime.now()) // todo should to be before updatedAt
     }
 
@@ -124,15 +118,12 @@ class ProductResourceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test",
-                        price = BigDecimal("10.00"),
                     ),
                     Product(
                         name = "aspirin",
-                        price = BigDecimal("40.00"),
                     ),
                     Product(
                         name = "bca",
-                        price = BigDecimal("30.00"),
                     )
                 )
             )
@@ -169,14 +160,12 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.content.size).isEqualTo(3)
         assertThat(body.content[0].totalBuys).isEqualTo(5)
-        assertThat(body.content[0].price).isEqualTo(BigDecimal("40.00"))
         assertThat(body.content[1].totalBuys).isEqualTo(3)
         assertThat(body.content[2].totalBuys).isEqualTo(0)
-        assertThat(body.content[2].price).isEqualTo(BigDecimal("30.00"))
     }
 
     @Test
-    fun `should get products sorted by price descendent`() {
+    fun `should get products sorted by name ascendent`() {
 
         // given
         transactionalTemplate.execute {
@@ -189,15 +178,12 @@ class ProductResourceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test",
-                        price = BigDecimal("10.00"),
                     ),
                     Product(
                         name = "aspirin",
-                        price = BigDecimal("40.00"),
                     ),
                     Product(
                         name = "bca",
-                        price = BigDecimal("30.00"),
                     )
                 )
             )
@@ -221,7 +207,7 @@ class ProductResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products?sortField=price&sortDirection=DESC",
+            "$baseUrl/api/v1/products?sortField=name&sortDirection=ASC",
             GET,
             null,
             respTypeRef<RestResponsePage<ProductResponse>>()
@@ -233,9 +219,9 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.content.size).isEqualTo(3)
-        assertThat(body.content[0].price).isEqualTo(BigDecimal("40.00"))
-        assertThat(body.content[1].price).isEqualTo(BigDecimal("30.00"))
-        assertThat(body.content[2].price).isEqualTo(BigDecimal("10.00"))
+        assertThat(body.content[0].name).isEqualTo("aspirin")
+        assertThat(body.content[1].name).isEqualTo("bca")
+        assertThat(body.content[2].name).isEqualTo("test")
     }
 
     @Test
@@ -252,15 +238,12 @@ class ProductResourceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test",
-                        price = BigDecimal("10.00"),
                     ),
                     Product(
                         name = "aspirin",
-                        price = BigDecimal("40.00"),
                     ),
                     Product(
                         name = "bca",
-                        price = BigDecimal("30.00"),
                     )
                 )
             )
@@ -315,11 +298,9 @@ class ProductResourceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test1",
-                        price = BigDecimal("20.00")
                     ),
                     Product(
                         name = "test2",
-                        price = BigDecimal("40.00")
                     )
                 )
             ).map { it.id ?: -1 }.toList()
@@ -350,7 +331,6 @@ class ProductResourceTest @Autowired constructor(
         // given
         val newProduct = ProductRequest(
             name = "test",
-            price = BigDecimal.TEN.setScale(2),
         )
 
         // when
@@ -368,7 +348,6 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isEqualTo(savedProduct.id)
         assertThat(body.name).isEqualTo(savedProduct.name)
-        assertThat(body.price).isEqualTo(savedProduct.price)
         assertThat(body.createdAt).isBefore(LocalDateTime.now())  //todo should to be before updatedAt
     }
 
@@ -378,7 +357,6 @@ class ProductResourceTest @Autowired constructor(
         // given
         val newProduct = ProductRequest(
             name = "test",
-            price = BigDecimal.ONE,
         )
 
         // when

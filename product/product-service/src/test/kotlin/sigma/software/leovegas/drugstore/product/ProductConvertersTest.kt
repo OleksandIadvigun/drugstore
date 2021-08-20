@@ -1,7 +1,5 @@
 package sigma.software.leovegas.drugstore.product
 
-import java.math.BigDecimal
-
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
@@ -16,8 +14,8 @@ class ProductConvertersTest {
     fun `should convert to ProductResponse`() {
 
         // given
-        val product = Product(name = "test", price = BigDecimal.TEN)
-        val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
+        val product = Product(name = "test")
+        val productResponse = ProductResponse(name = "test")
 
         // when
         val actual = product.toProductResponse()
@@ -30,8 +28,8 @@ class ProductConvertersTest {
     fun `should convert to Product`() {
 
         // given
-        val product = Product(name = "test", price = BigDecimal.TEN)
-        val productRequest = ProductRequest(name = "test", price = BigDecimal.TEN)
+        val product = Product(name = "test")
+        val productRequest = ProductRequest(name = "test")
 
         // when
         val actual = productRequest.toEntity()
@@ -44,8 +42,8 @@ class ProductConvertersTest {
     fun `should convert list of products to list of DTOs`() {
 
         // given
-        val product = Product(name = "test", price = BigDecimal.TEN)
-        val productResponse = ProductResponse(name = "test", price = BigDecimal.TEN)
+        val product = Product(name = "test")
+        val productResponse = ProductResponse(name = "test")
         val products = mutableListOf(product, product)
 
         // when

@@ -1,7 +1,6 @@
 package sigma.software.leovegas.drugstore.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.math.BigDecimal
 import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
@@ -30,7 +29,6 @@ class RestApiDocUpdateProductTest @Autowired constructor(
             service.create(
                 ProductRequest(
                     name = "test",
-                    price = BigDecimal.ONE,
                 )
             )
         } ?: fail("result is expected")
@@ -41,7 +39,6 @@ class RestApiDocUpdateProductTest @Autowired constructor(
             .writeValueAsString(
                 ProductRequest(
                     name = "test product edited",
-                    price = BigDecimal.TEN
                 )
             )
 
@@ -53,7 +50,6 @@ class RestApiDocUpdateProductTest @Autowired constructor(
             .then()
             .assertThat().statusCode(202)
             .assertThat().body("name", equalTo("test product edited"))
-            .assertThat().body("price", equalTo(10))
             .assertThat().body("createdAt", not(emptyString()))
             .assertThat().body("updatedAt", not(emptyString()))
     }

@@ -1,10 +1,11 @@
 package sigma.software.leovegas.drugstore.product.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,15 +32,14 @@ class GetProductByIdFeignClientWireMockTest @Autowired constructor(
         val responseExpected = ProductResponse(
             id = 1L,
             name = "test",
-            price = BigDecimal("20.00")
         )
 
         //and
-        WireMock.stubFor(
-            WireMock.get("/api/v1/products/1")
+        stubFor(
+            get("/api/v1/products/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
-                    WireMock.aResponse()
+                    aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
@@ -54,8 +54,7 @@ class GetProductByIdFeignClientWireMockTest @Autowired constructor(
         val responseActual = productClient.getProductById(1)
 
         //  then
-        Assertions.assertThat(responseActual.id).isEqualTo(1L)
-        Assertions.assertThat(responseActual.name).isEqualTo(responseExpected.name)
-        Assertions.assertThat(responseActual.price).isEqualTo(responseExpected.price)
+        assertThat(responseActual.id).isEqualTo(1L)
+        assertThat(responseActual.name).isEqualTo(responseExpected.name)
     }
 }

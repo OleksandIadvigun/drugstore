@@ -48,6 +48,5 @@ data class OrderDetailsDTO(
 
 data class OrderItemDetailsDTO(
     val name: String = "undefined",
-    val price: BigDecimal = BigDecimal("-1"),
     val quantity: Int = -1,
 )

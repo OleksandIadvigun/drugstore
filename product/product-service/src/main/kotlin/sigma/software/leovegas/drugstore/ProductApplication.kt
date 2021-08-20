@@ -7,8 +7,8 @@ import sigma.software.leovegas.drugstore.product.ProductProperties
 
 @EnableConfigurationProperties(ProductProperties::class)
 @SpringBootApplication
-class DrugstoreApplication
+class ProductApplication
 
 fun main(args: Array<String>) {
-    runApplication<DrugstoreApplication>(*args)
+    runApplication<ProductApplication>(*args)
 }

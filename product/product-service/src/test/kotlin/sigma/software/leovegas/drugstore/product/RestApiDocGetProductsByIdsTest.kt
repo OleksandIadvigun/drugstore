@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.product
 
-import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -31,11 +30,9 @@ class RestApiDocGetProductsByIdsTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test1",
-                        price = BigDecimal("20.00")
                     ),
                     Product(
                         name = "test2",
-                        price = BigDecimal("40.00")
                     )
                 )
             ).map { it.id ?: -1 }.toList()

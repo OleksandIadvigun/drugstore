@@ -12,7 +12,6 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(50)"/>
-            <column name="price" type="Decimal(11,2)"/>
             <column name="created_at" type="TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP"/>
         </createTable>
@@ -22,17 +21,14 @@
         <insert tableName="Product">
             <column name="id" value="1"/>
             <column name="name" value="paracetamol"/>
-            <column name="price" value="10.50"/>
         </insert>
         <insert tableName="Product">
             <column name="id" value="2"/>
             <column name="name" value="aspirin"/>
-            <column name="price" value="5.70"/>
         </insert>
         <insert tableName="Product">
             <column name="id" value="3"/>
             <column name="name" value="decatylen"/>
-            <column name="price" value="2.10"/>
         </insert>
     </changeSet>
 

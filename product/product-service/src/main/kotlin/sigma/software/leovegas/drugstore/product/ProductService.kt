@@ -49,7 +49,7 @@ class ProductService(
         val toUpdate = repo
             .findById(id)
             .orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
-            .copy(name = name, price = price)
+            .copy(name = name)
         repo.save(toUpdate).toProductResponse()
     }
 

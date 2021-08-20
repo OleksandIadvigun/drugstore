@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -42,11 +41,9 @@ class RestApiDocGetProductsTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test",
-                        price = BigDecimal.TEN.setScale(2),
                     ),
                     Product(
                         name = "test2",
-                        price = BigDecimal.TEN.setScale(2),
                     )
                 )
             )

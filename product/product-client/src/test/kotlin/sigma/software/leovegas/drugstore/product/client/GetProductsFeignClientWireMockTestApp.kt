@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -33,11 +32,9 @@ class GetProductsFeignClientWireMockTest @Autowired constructor(
         val responseExpected: List<ProductResponse> = listOf(
             ProductResponse(
                 name = "test",
-                price = BigDecimal("20.00")
             ),
             ProductResponse(
                 name = "test2",
-                price = BigDecimal("40.00")
             )
         )
 

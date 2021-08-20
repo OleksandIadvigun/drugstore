@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -50,19 +49,15 @@ class ProductServiceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "aspirin",
-                        price = BigDecimal("20.00")
                     ),
                     Product(
                         name = "test2",
-                        price = BigDecimal("40.00")
                     ),
                     Product(
                         name = "some",
-                        price = BigDecimal("30.00")
                     ),
                     Product(
                         name = "some2",
-                        price = BigDecimal("70.00")
                     )
                 )
             )
@@ -113,11 +108,9 @@ class ProductServiceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test1",
-                        price = BigDecimal("20.00")
                     ),
                     Product(
                         name = "test2",
-                        price = BigDecimal("40.00")
                     )
                 )
             ).map { it.id }
@@ -138,7 +131,6 @@ class ProductServiceTest @Autowired constructor(
         // given
         val productRequest = ProductRequest(
             name = "test",
-            price = BigDecimal("25.50"),
         )
 
         // and
@@ -153,7 +145,6 @@ class ProductServiceTest @Autowired constructor(
         assertNotNull(actual)
         assertThat(actual.id).isEqualTo(saved.id)
         assertThat(actual.name).isEqualTo(saved.name)
-        assertThat(actual.price).isEqualTo(saved.price)
     }
 
     @Test
@@ -177,13 +168,11 @@ class ProductServiceTest @Autowired constructor(
         // given
         val productRequest = ProductRequest(
             name = "test",
-            price = BigDecimal("25.50"),
         )
 
         //and
         val productResponse = ProductResponse(
             name = "test",
-            price = BigDecimal("25.50"),
         )
 
         // when
@@ -193,7 +182,6 @@ class ProductServiceTest @Autowired constructor(
         assertNotNull(actual)
         assertNotNull(actual.id)
         assertEquals(productResponse.name, actual.name)
-        assertEquals(productResponse.price, actual.price)
         assertThat(actual.createdAt).isBefore(LocalDateTime.now())
     }
 
@@ -203,7 +191,6 @@ class ProductServiceTest @Autowired constructor(
         // given
         val productRequest = ProductRequest(
             name = "test",
-            price = BigDecimal("25.50"),
         )
 
         // and
@@ -215,7 +202,6 @@ class ProductServiceTest @Autowired constructor(
         val randomName = Math.random().toString()
         val updatedProductRequest = ProductRequest(
             name = randomName,
-            price = BigDecimal("25.50"),
         )
 
         // when
@@ -236,7 +222,6 @@ class ProductServiceTest @Autowired constructor(
         // and
         val productRequest = ProductRequest(
             name = "test",
-            price = BigDecimal("25.50"),
         )
 
         // when
@@ -254,7 +239,6 @@ class ProductServiceTest @Autowired constructor(
         // given
         val productRequest = ProductRequest(
             name = "test",
-            price = BigDecimal("25.50"),
         )
 
         // and

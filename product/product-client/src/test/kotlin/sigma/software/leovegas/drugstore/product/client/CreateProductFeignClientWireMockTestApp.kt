@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -34,14 +33,12 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
         // given
         val request = ProductRequest(
             name = "test",
-            price = BigDecimal("20.00")
         )
 
         //and
         val responseExpected = ProductResponse(
             id = 1L,
             name = request.name,
-            price = request.price
         )
 
         //and
@@ -73,6 +70,5 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
         //  then
         assertThat(responseActual.id).isEqualTo(1L)
         assertThat(responseActual.name).isEqualTo(request.name)
-        assertThat(responseActual.price).isEqualTo(request.price)
     }
 }

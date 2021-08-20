@@ -48,8 +48,8 @@
 
 ### Accounting
 
-- [ ] Create new price item
-- [ ] Update new price item
+- [X] Create new price item
+- [X] Update new price item
 - [ ] Get products' price
 - [ ] Get products' price by ids
 - [ ] Create Invoice

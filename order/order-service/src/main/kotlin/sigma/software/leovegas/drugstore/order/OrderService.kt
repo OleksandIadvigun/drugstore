@@ -61,14 +61,15 @@ class OrderService @Autowired constructor(
         val orderItemDetails = orderById.orderItems.map {
             OrderItemDetailsDTO(
                 name = products[it.productId]?.name ?: "undefined",
-                price = products[it.productId]?.price ?: BigDecimal("-1"),
                 quantity = it.quantity
             )
         }
         OrderDetailsDTO(
             orderItemDetails = orderItemDetails,
-            total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
-                .setScale(2)
+           // total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
+           //.setScale(2)
+              total = BigDecimal("0.00")   // todo fix when it will be possible
+
         )
     }
 
