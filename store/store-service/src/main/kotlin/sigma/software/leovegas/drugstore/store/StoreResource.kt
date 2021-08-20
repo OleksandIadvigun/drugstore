@@ -22,16 +22,17 @@ class StoreResource(private val storeService: StoreService) {
 
     @PostMapping(path = ["", "/"])
     @ResponseStatus(HttpStatus.CREATED)
-    fun createOrder(@RequestBody createStoreRequest: CreateStoreRequest) =
+    fun createStoreItem(@RequestBody createStoreRequest: CreateStoreRequest) =
         storeService.createStoreItem(createStoreRequest)
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = ["", "/"])
-    fun getOrders() = storeService.getStoreItems()
+    fun getStoreItems() = storeService.getStoreItems()
 
     @GetMapping("/price-ids")
     @ResponseStatus(HttpStatus.OK)
-    fun getProductsByIds(@RequestParam("ids") ids: List<Long>) = storeService.getStoreItemsByPriceItemIds(ids)
+    fun getStoreItemsByPriceItemsId(@RequestParam("ids") ids: List<Long>) =
+        storeService.getStoreItemsByPriceItemsId(ids)
 
     @PutMapping("/increase")
     @ResponseStatus(HttpStatus.ACCEPTED)

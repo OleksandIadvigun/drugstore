@@ -24,6 +24,7 @@
         <module>product/product-client</module>
         <module>product/product-service</module>
         <module>store/store-api</module>
+        <module>store/store-client</module>
         <module>store/store-service</module>
         <module>accountancy/accountancy-api</module>
         <module>accountancy/accountancy-client</module>
@@ -93,11 +94,18 @@
                 <type>jar</type>
             </dependency>
             <dependency>
+                <groupId>sigma.software.leovegas.drugstore.store.client</groupId>
+                <artifactId>store-client</artifactId>
+                <version>${project.version}</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
                 <groupId>sigma.software.leovegas.drugstore.store.service</groupId>
                 <artifactId>store-service</artifactId>
                 <version>${project.version}</version>
                 <type>jar</type>
             </dependency>
+            <!---->
             <dependency>
                 <groupId>sigma.software.leovegas.drugstore.accountancy.api</groupId>
                 <artifactId>accountancy-api</artifactId>

@@ -1,11 +1,10 @@
-package sigma.software.leovegas.drugstore.product.client
+package sigma.software.leovegas.drugstore.store.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -14,36 +13,37 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+import sigma.software.leovegas.drugstore.store.api.StoreResponse
 
 @SpringBootApplication
-internal class GetProductsByIdsFeignClientWireMockTestApp
+internal class GetStoreItemsFeignClientWireMockTestApp
 
-@DisplayName("Get Products by Ids Feign Client WireMock test")
-@ContextConfiguration(classes = [GetProductsByIdsFeignClientWireMockTestApp::class])
-class GetProductsByIdsFeignClientWireMockTest @Autowired constructor(
-    val productClient: ProductClient,
-    val objectMapper: ObjectMapper
+@DisplayName("Get Store Items Feign Client WireMock test")
+@ContextConfiguration(classes = [GetStoreItemsFeignClientWireMockTestApp::class])
+class GetStoreItemsFeignClientWireMockTest @Autowired constructor(
+    val storeClient: StoreClient,
+    val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should get products by ids`() {
+    fun `should get store items`() {
 
         // given
-        val responseExpected: List<ProductResponse> = listOf(
-            ProductResponse(
-                name = "test",
-                price = BigDecimal("20.00")
-            ),
-            ProductResponse(
-                name = "test2",
-                price = BigDecimal("40.00")
+        val responseExpected = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = 1,
+                quantity = 10
+            ), StoreResponse(
+                id = 2,
+                priceItemId = 2,
+                quantity = 5
             )
         )
 
         // and
         stubFor(
-            get("/api/v1/products-by-ids/?ids=1&ids=2")
+            get("/api/v1/store")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -53,14 +53,13 @@ class GetProductsByIdsFeignClientWireMockTest @Autowired constructor(
                                 .writeValueAsString(responseExpected)
                         )
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = productClient.getProductsByIds(listOf(1L, 2L))
+        val responseActual = storeClient.getStoreItems()
 
         //  then
-        assertThat(responseActual.size).isEqualTo(2)
+        assertThat(responseActual).hasSize(2)
     }
 }

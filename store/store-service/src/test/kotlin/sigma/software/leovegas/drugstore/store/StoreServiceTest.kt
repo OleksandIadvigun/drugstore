@@ -100,7 +100,7 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val actual = transactionTemplate.execute {
-            storeService.getStoreItemsByPriceItemIds(created as List<Long>)
+            storeService.getStoreItemsByPriceItemsId(created as List<Long>)
         }
 
         // then

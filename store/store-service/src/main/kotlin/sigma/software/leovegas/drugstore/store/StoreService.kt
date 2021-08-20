@@ -10,13 +10,13 @@ import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 class StoreService(private val storeRepository: StoreRepository) {
 
     fun createStoreItem(storeRequest: CreateStoreRequest) = storeRequest.run {
-        if (getStoreItemsByPriceItemIds(listOf(this.priceItemId)).isNotEmpty()) {
+        if (getStoreItemsByPriceItemsId(listOf(this.priceItemId)).isNotEmpty()) {
             throw StoreItemWithThisPriceItemAlreadyExistException(this.priceItemId)
         }
         storeRepository.save(toEntity()).toStoreResponseDTO()
     }
 
-    fun getStoreItemsByPriceItemIds(ids: List<Long>) = storeRepository.getStoreByPriceItemIds(ids).toStoreResponseList()
+    fun getStoreItemsByPriceItemsId(ids: List<Long>) = storeRepository.getStoreByPriceItemIds(ids).toStoreResponseList()
 
 
     fun getStoreItems() = storeRepository.findAll().toStoreResponseList()
@@ -24,7 +24,7 @@ class StoreService(private val storeRepository: StoreRepository) {
     fun increaseQuantity(request: List<UpdateStoreRequest>) = request.run {
         val map = this.associate { it.priceItemId to it.quantity }
         val priceItemIds = this.map { it.priceItemId }
-        val storeItems = getStoreItemsByPriceItemIds(priceItemIds)
+        val storeItems = getStoreItemsByPriceItemsId(priceItemIds)
         storeItems.map { it.copy(quantity = map[it.priceItemId]?.plus(it.quantity) ?: -1) }
     }
 
@@ -32,13 +32,13 @@ class StoreService(private val storeRepository: StoreRepository) {
         checkAvailability(request)
         val map = this.associate { it.priceItemId to it.quantity }
         val priceItemIds = this.map { it.priceItemId }
-        val storeItems = getStoreItemsByPriceItemIds(priceItemIds)
+        val storeItems = getStoreItemsByPriceItemsId(priceItemIds)
         storeItems.map { it.copy(quantity = it.quantity.minus(map[it.priceItemId] ?: -1)) }
     }
 
     fun checkAvailability(request: List<UpdateStoreRequest>) = request.run {
         val priceItemIds = this.map { it.priceItemId }
-        val storeItems = getStoreItemsByPriceItemIds(priceItemIds)
+        val storeItems = getStoreItemsByPriceItemsId(priceItemIds)
         val map = storeItems.associate { it.priceItemId to it.quantity }
         forEach {
             if (it.quantity > (map[it.priceItemId] ?: -1)) {

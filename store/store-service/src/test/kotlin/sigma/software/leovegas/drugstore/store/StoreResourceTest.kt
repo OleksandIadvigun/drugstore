@@ -132,7 +132,7 @@ class StoreResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/store/?ids=${ids?.get(0)}&ids=${ids?.get(1)}",
+            "$baseUrl/api/v1/store/price-ids/?ids=${ids?.get(0)}&ids=${ids?.get(1)}",
             HttpMethod.GET, null, respTypeRef<List<StoreResponse>>()
         )
 
