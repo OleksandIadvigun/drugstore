@@ -31,18 +31,21 @@ class RestApiDocUpdatePriceItemTest @Autowired constructor(
         val priceItemCreated = transactionTemplate.execute {
             accountancyService.createPriceItem(
                 PriceItemRequest(
-                productId = 1L,
-                price = BigDecimal("10.00")
-            ))
+                    productId = 1L,
+                    price = BigDecimal("10.00")
+                )
+            )
         }
 
         // given
         val priceItemJson = objectMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(PriceItemRequest(
-                productId = 1L,
-                price = BigDecimal("20.00")
-            ))
+            .writeValueAsString(
+                PriceItemRequest(
+                    productId = 1L,
+                    price = BigDecimal("20.00")
+                )
+            )
 
         of("update-price-item").`when`()
             .body(priceItemJson)

@@ -1,0 +1,49 @@
+= Operations
+
+== Create Store Item
+
+.CreateStoreRequest
+include::{snippets}/create-store-item/http-request.adoc[]
+
+.StoreResponse
+include::{snippets}/create-store-item/http-response.adoc[]
+
+== Get Store Items
+
+.Request
+include::{snippets}/get-store-items/http-request.adoc[]
+
+.StoreResponse
+include::{snippets}/get-store-items/http-response.adoc[]
+
+== Get Store Items By Price Items Ids
+
+.Request
+include::{snippets}/get-store-items-by-price-ids/http-request.adoc[]
+
+.StoreResponse
+include::{snippets}/get-store-items-by-price-ids/http-response.adoc[]
+
+== Increase Store Items Quantity
+
+.UpdateStoreRequest
+include::{snippets}/increase-quantity/http-request.adoc[]
+
+.StoreResponse
+include::{snippets}/increase-quantity/http-response.adoc[]
+
+== Reduce Store Items Quantity
+
+.UpdateStoreRequest
+include::{snippets}/reduce-quantity/http-request.adoc[]
+
+.StoreResponse
+include::{snippets}/reduce-quantity/http-response.adoc[]
+
+== Check Store Items Quantity
+
+.UpdateStoreRequest
+include::{snippets}/check-quantity/http-request.adoc[]
+
+.StoreResponse
+include::{snippets}/check-quantity/http-response.adoc[]

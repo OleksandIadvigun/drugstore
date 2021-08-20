@@ -166,7 +166,7 @@ Feature: Store
     quantity greater than quantity of created store item
     """
 
-  Scenario: As as user I should reduce quantity
+  Scenario: As as user I should reduce quantity of store item
     Given preciously created store item
     When send Put Request with quantity to reduce
     Then receive response with response body equal to store item with:

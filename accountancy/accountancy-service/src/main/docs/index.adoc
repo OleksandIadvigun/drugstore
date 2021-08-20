@@ -1,7 +1,7 @@
 = Operations
 
-
 == Create price item
+
 .PriceItemRequest
 include::{snippets}/create-price-item/http-request.adoc[]
 
@@ -9,6 +9,7 @@ include::{snippets}/create-price-item/http-request.adoc[]
 include::{snippets}/create-price-item/http-response.adoc[]
 
 == Update price item
+
 .PriceItemRequest
 include::{snippets}/update-price-item/http-request.adoc[]
 

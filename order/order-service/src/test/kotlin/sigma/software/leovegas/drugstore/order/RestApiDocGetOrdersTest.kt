@@ -43,7 +43,7 @@ class RestApiDocGetOrdersTest @Autowired constructor(
 
         if (orderCreated != null) {
             of("get-orders").`when`()
-                .get("http://${orderProperties.host}:$port//api/v1/orders")
+                .get("http://${orderProperties.host}:$port/api/v1/orders")
                 .then()
                 .assertThat().statusCode(200)
                 .assertThat().body("size()", `is`(1))

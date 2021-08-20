@@ -26,10 +26,12 @@ class RestApiDocCreatePriceItemTest @Autowired constructor(
         // given
         val priceItemJson = objectMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(PriceItemRequest(
-                productId = 1L,
-                price = BigDecimal("20.00")
-            ))
+            .writeValueAsString(
+                PriceItemRequest(
+                    productId = 1L,
+                    price = BigDecimal("20.00")
+                )
+            )
 
         of("create-price-item").`when`()
             .body(priceItemJson)

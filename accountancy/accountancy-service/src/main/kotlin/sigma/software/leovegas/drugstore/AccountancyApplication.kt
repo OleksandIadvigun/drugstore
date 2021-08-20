@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class AccountancyApplication
 
 fun main(args: Array<String>) {
-	runApplication<AccountancyApplication>(*args)
+    runApplication<AccountancyApplication>(*args)
 }

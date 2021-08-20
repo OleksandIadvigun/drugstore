@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration
 class AccountancyClientConfiguration {
 
     @Bean
-    fun AccountancyClient(props: AccountancyProperties): AccountancyClient{
+    fun AccountancyClient(props: AccountancyProperties): AccountancyClient {
         return Feign
             .builder()
             .logger(Slf4jLogger())

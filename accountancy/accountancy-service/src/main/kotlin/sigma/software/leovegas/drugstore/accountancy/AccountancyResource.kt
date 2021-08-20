@@ -22,7 +22,8 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(CREATED)
     @PostMapping("/price-item")
-    fun create(@RequestBody priceItemRequest: PriceItemRequest): PriceItemResponse = service.createPriceItem(priceItemRequest)
+    fun create(@RequestBody priceItemRequest: PriceItemRequest): PriceItemResponse =
+        service.createPriceItem(priceItemRequest)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("price-item/{id}")

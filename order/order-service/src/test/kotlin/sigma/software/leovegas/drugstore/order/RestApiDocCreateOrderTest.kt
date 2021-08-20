@@ -22,6 +22,7 @@ class RestApiDocCreateOrderTest @Autowired constructor(
 
     @Test
     fun `should create order`() {
+
         // given
         val orderJson = objectMapper
             .writerWithDefaultPrettyPrinter()

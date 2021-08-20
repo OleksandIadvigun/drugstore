@@ -41,8 +41,8 @@
 - [ ] Create new store item
 - [ ] Get store items
 - [ ] Get store items by price item ids
-- [ ] Increase product's quantity
-- [ ] Reduce product's quantity
+- [ ] Increase store item's quantity
+- [ ] Reduce store item's quantity
 - [ ] Check availability of products
 - [ ] Shipment of goods
 
