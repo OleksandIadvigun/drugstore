@@ -8,8 +8,6 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
-import org.hibernate.validator.internal.util.Contracts.assertNotNull
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -86,7 +84,7 @@ class ProductServiceTest @Autowired constructor(
         val all = service.getAll(0, 5, "", "default", "DESC")
 
         // then
-        assertNotNull(all)
+        assertThat(all).isNotNull
         assertThat(all.totalElements).isEqualTo(4)
         assertThat(all.content[0].totalBuys).isEqualTo(9)
         assertThat(all.content[1].totalBuys).isEqualTo(5)
@@ -142,7 +140,7 @@ class ProductServiceTest @Autowired constructor(
         val actual = service.getOne(saved.id)
 
         // then
-        assertNotNull(actual)
+        assertThat(actual).isNotNull
         assertThat(actual.id).isEqualTo(saved.id)
         assertThat(actual.name).isEqualTo(saved.name)
     }
@@ -179,9 +177,9 @@ class ProductServiceTest @Autowired constructor(
         val actual = service.create(productRequest)
 
         // then
-        assertNotNull(actual)
-        assertNotNull(actual.id)
-        assertEquals(productResponse.name, actual.name)
+        assertThat(actual).isNotNull
+        assertThat(actual.id).isNotNull
+        assertThat(productResponse.name).isEqualTo(actual.name)
         assertThat(actual.createdAt).isBefore(LocalDateTime.now())
     }
 
@@ -208,9 +206,9 @@ class ProductServiceTest @Autowired constructor(
         val actual = service.update(saved.id, updatedProductRequest)
 
         // then
-        assertNotNull(actual)
-        assertEquals(randomName, actual.name)
-        assertThat(actual.updatedAt).isBefore(LocalDateTime.now())   // todo should to be before createdAt
+        assertThat(actual).isNotNull
+        assertThat(randomName).isEqualTo(actual.name)
+        assertThat(actual.createdAt).isBefore(actual.updatedAt)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.accountancy
 
+import java.math.BigDecimal
 import javax.transaction.Transactional
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
@@ -22,6 +23,11 @@ class AccountancyService(private val repo: PriceItemRepository) {
             .findById(id)
             .orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
             .copy(productId = productId, price = price)
-        repo.save(toUpdate).toPriceItemResponse()
+        repo.saveAndFlush(toUpdate).toPriceItemResponse()
     }
+
+    fun getProductsPrice(): Map<Long?, BigDecimal> = repo.findAll().associate { it.productId to it.price }
+
+    fun getProductsPriceByIds(ids: List<Long>): Map<Long?, BigDecimal> =
+        repo.findAllByProductId(ids).associate { it.productId to it.price }
 }

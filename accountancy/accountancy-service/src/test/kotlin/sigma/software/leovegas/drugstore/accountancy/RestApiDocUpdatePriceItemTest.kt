@@ -37,7 +37,7 @@ class RestApiDocUpdatePriceItemTest @Autowired constructor(
             )
         }
 
-        // given
+        // and
         val priceItemJson = objectMapper
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(

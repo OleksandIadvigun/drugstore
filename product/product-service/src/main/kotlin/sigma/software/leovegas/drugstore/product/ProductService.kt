@@ -50,7 +50,7 @@ class ProductService(
             .findById(id)
             .orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
             .copy(name = name)
-        repo.save(toUpdate).toProductResponse()
+        repo.saveAndFlush(toUpdate).toProductResponse()
     }
 
     fun delete(id: Long) {

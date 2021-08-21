@@ -23,6 +23,7 @@ class RestApiDocCreatePriceItemTest @Autowired constructor(
 
     @Test
     fun `should create price item`() {
+
         // given
         val priceItemJson = objectMapper
             .writerWithDefaultPrettyPrinter()

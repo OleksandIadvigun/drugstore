@@ -4,7 +4,6 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
-import org.hibernate.validator.internal.util.Contracts.assertNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -44,15 +43,15 @@ class AccountancyServiceTest @Autowired constructor(
         val actual = service.createPriceItem(priceItem)
 
         // then
-        assertNotNull(actual)
-        assertNotNull(actual.id)
+        assertThat(actual).isNotNull
+        assertThat(actual.id).isNotNull
         assertEquals(priceItemResponse.productId, actual.productId)
         assertEquals(priceItemResponse.price, actual.price)
         assertThat(actual.createdAt).isBefore(LocalDateTime.now())
     }
 
     @Test
-    fun `should update product`() {
+    fun `should update price item`() {
 
         // given
         val priceItem = PriceItemRequest(
@@ -75,13 +74,13 @@ class AccountancyServiceTest @Autowired constructor(
         val actual = service.updatePriceItem(saved.id, updatedProductRequest)
 
         // then
-        assertNotNull(actual)
-        assertEquals(updatedProductRequest.price, actual.price)
-        assertThat(actual.createdAt).isBefore(LocalDateTime.now())   // todo should work before updated
+        assertThat(actual).isNotNull
+        assertThat(updatedProductRequest.price).isEqualTo(actual.price)
+        assertThat(actual.createdAt).isBefore(actual.updatedAt)
     }
 
     @Test
-    fun `should not update not existing product`() {
+    fun `should not update not existing price item`() {
 
         // given
         val id = Long.MAX_VALUE
@@ -99,5 +98,60 @@ class AccountancyServiceTest @Autowired constructor(
 
         // then
         assertThat(exception.message).isEqualTo("This price item with id: $id doesn't exist!")
+    }
+
+    @Test
+    fun `should get products price`() {
+
+        // given
+        val priceItem = PriceItemRequest(
+            productId = 1L,
+            price = BigDecimal("25.50"),
+        )
+
+        // and
+        val saved = transactionTemplate.execute {
+            priceItemRepository.save(priceItem.toEntity()).toPriceItemResponse()
+        } ?: fail("result is expected")
+
+        // when
+        val actual = service.getProductsPrice()
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(saved.price).isEqualTo(actual[1])
+    }
+
+    @Test
+    fun `should get products price by products ids`() {
+
+        // given
+        val saved = transactionTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal("25.50")
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal("35.50")
+                    ),
+                    PriceItem(
+                        productId = 3L,
+                        price = BigDecimal("35.50")
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val actual = service.getProductsPriceByIds(listOf(1L, 2L))
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual.size).isEqualTo(2)
+        assertThat(saved[0].price).isEqualTo(actual[1])
+        assertThat(saved[1].price).isEqualTo(actual[2])
     }
 }

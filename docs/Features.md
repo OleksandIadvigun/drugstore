@@ -30,11 +30,9 @@
 - [x] Get products:
     - sorted by total buys (default)
     - sorted by name (ASC/DESC)
-    - sorted by price (ASC/DESC)
 - [x] Search products:
     - by keyword (name...)
     - sorted by popularity (default)
-    - sorted by price (ASC/DESC)
 
 ### Store
 
@@ -50,8 +48,8 @@
 
 - [X] Create new price item
 - [X] Update new price item
-- [ ] Get products' price
-- [ ] Get products' price by ids
+- [X] Get products' price
+- [X] Get products' price by ids
 - [ ] Create Invoice
 - [ ] Get Invoice by id
 - [ ] Cancel Invoice
