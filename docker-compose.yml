@@ -29,5 +29,13 @@ services:
       dockerfile: Dockerfile
     ports: [ '8083:8083' ]
     networks: [ drugstore ]
+  accountancy-service:
+    container_name: accountancy
+    image: drugstore/accountancy-service
+    build:
+      context: ./accountancy/accountancy-service
+      dockerfile: Dockerfile
+    ports: [ '8084:8084' ]
+    networks: [ drugstore ]
 
 
