@@ -28,6 +28,9 @@ class AccountancyService(private val repo: PriceItemRepository) {
 
     fun getProductsPrice(): Map<Long?, BigDecimal> = repo.findAll().associate { it.productId to it.price }
 
-    fun getProductsPriceByIds(ids: List<Long>): Map<Long?, BigDecimal> =
+    fun getProductsPriceByProductIds(ids: List<Long>): Map<Long?, BigDecimal> =
         repo.findAllByProductId(ids).associate { it.productId to it.price }
+
+    fun getPriceItemsByIds(ids: List<Long>): List<PriceItemResponse> =
+        repo.findAllById(ids).toPriceItemResponseList()
 }

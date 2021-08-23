@@ -16,9 +16,9 @@
 - [x] Update order
 - [x] Get order by id
 - [x] Get orders
-- [ ] Get orders by status
-- [ ] Get order details by order id
-- [ ] Change order status
+- [X] Get orders by status
+- [X] Get order details by order id
+- [X] Change order status
 - [x] Get total buys of the order items
 
 ### Product

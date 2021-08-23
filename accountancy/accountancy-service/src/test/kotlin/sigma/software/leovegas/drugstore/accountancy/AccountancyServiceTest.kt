@@ -137,21 +137,58 @@ class AccountancyServiceTest @Autowired constructor(
                         productId = 2L,
                         price = BigDecimal("35.50")
                     ),
-                    PriceItem(
-                        productId = 3L,
-                        price = BigDecimal("35.50")
-                    )
                 )
             )
         } ?: fail("result is expected")
 
         // when
-        val actual = service.getProductsPriceByIds(listOf(1L, 2L))
+        val actual = service.getProductsPriceByProductIds(listOf(1L, 2L))
 
         // then
         assertThat(actual).isNotNull
         assertThat(actual.size).isEqualTo(2)
         assertThat(saved[0].price).isEqualTo(actual[1])
         assertThat(saved[1].price).isEqualTo(actual[2])
+    }
+
+    @Test
+    fun `should get price items by ids`() {
+
+        // given
+        transactionTemplate.execute {
+            priceItemRepository.deleteAllInBatch()
+        }
+
+        // given
+        val saved = transactionTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal("25.50")
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal("35.50")
+                    ),
+                    PriceItem(
+                        productId = 3L,
+                        price = BigDecimal("45.50")
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        val ids = saved.map { it.id }
+
+        // when
+        val actual = service.getPriceItemsByIds(ids as List<Long>)
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual.size).isEqualTo(3)
+        assertThat(actual[0].price).isEqualTo(BigDecimal("25.50"))
+        assertThat(actual[1].price).isEqualTo(BigDecimal("35.50"))
+        assertThat(actual[2].price).isEqualTo(BigDecimal("45.50"))
     }
 }

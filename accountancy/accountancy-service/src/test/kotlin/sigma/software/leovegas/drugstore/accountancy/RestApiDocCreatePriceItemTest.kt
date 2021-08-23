@@ -2,9 +2,7 @@ package sigma.software.leovegas.drugstore.accountancy
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
-import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -41,8 +39,6 @@ class RestApiDocCreatePriceItemTest @Autowired constructor(
             .then()
             .assertThat().statusCode(201)
             .assertThat().body("productId", equalTo(1))
-            .assertThat().body("createdAt", not(emptyString()))
-            .assertThat().body("updatedAt", not(emptyString()))
             .assertThat().body("price", equalTo(20.0F))
     }
 }

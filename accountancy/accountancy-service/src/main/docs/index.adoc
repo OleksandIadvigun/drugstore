@@ -22,4 +22,19 @@ include::{snippets}/update-price-item/http-request.adoc[]
 .PriceItemResponse
 include::{snippets}/update-price-item/http-response.adoc[]
 
+== Get price by Product ids
+
+.PriceItemRequest
+include::{snippets}/get-products-price-by-products-ids/http-request.adoc[]
+
+.PriceItemResponse
+include::{snippets}/get-products-price-by-products-ids/http-response.adoc[]
+
+== Get price by ids
+
+.PriceItemRequest
+include::{snippets}/get-products-price-by-ids/http-request.adoc[]
+
+.PriceItemResponse
+include::{snippets}/get-products-price-by-ids/http-response.adoc[]
 

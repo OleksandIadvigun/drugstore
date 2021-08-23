@@ -34,10 +34,10 @@ class CreateOrderFeignClientWireMockTest @Autowired constructor(
     fun `should create order`() {
 
         // given
-        val request: CreateOrderRequest = CreateOrderRequest(
+        val request = CreateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    productId = 1L,
+                    priceItemId = 1L,
                     quantity = 3
                 )
             )
@@ -86,7 +86,7 @@ class CreateOrderFeignClientWireMockTest @Autowired constructor(
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and
-        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().priceItemId).isEqualTo(1L)
         assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(3)
     }
 }

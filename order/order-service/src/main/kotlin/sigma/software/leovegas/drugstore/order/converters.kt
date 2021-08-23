@@ -44,13 +44,13 @@ fun List<OrderItemDTO>.toEntities(): Set<OrderItem> =
 
 fun OrderItem.toDTO(): OrderItemDTO =
     OrderItemDTO(
-        productId = productId,
+        priceItemId = priceItemId,
         quantity = quantity,
     )
 
 fun OrderItemDTO.toEntity(): OrderItem =
     OrderItem(
-        productId = productId,
+        priceItemId = priceItemId,
         quantity = quantity,
     )
 

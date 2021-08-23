@@ -32,15 +32,15 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productId = 1L,
+                            priceItemId = 1L,
                             quantity = 1
                         ),
                         OrderItemDTO(
-                            productId = 2L,
+                            priceItemId = 2L,
                             quantity = 5
                         ),
                         OrderItemDTO(
-                            productId = 3L,
+                            priceItemId = 3L,
                             quantity = 3
                         )
                     )

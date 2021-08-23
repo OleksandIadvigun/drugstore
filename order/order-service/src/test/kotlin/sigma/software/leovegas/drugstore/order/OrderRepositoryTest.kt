@@ -29,7 +29,7 @@ class OrderRepositoryTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            priceItemId = 1,
                             quantity = 3
                         )
                     ),
@@ -62,7 +62,7 @@ class OrderRepositoryTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                priceItemId = 1,
                                 quantity = 3
                             )
                         )
@@ -70,7 +70,7 @@ class OrderRepositoryTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                priceItemId = 1,
                                 quantity = 1
                             )
                         )
@@ -78,7 +78,7 @@ class OrderRepositoryTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 2,
+                                priceItemId = 2,
                                 quantity = 5
                             )
                         )
@@ -95,6 +95,6 @@ class OrderRepositoryTest @Autowired constructor(
         //then
         assertThat(actual).hasSize(2)
         assertThat(actual[0].quantity).isEqualTo(5)
-        assertThat(actual[0].productId).isEqualTo(2)
+        assertThat(actual[0].priceItemId).isEqualTo(2)
     }
 }

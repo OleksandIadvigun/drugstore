@@ -23,5 +23,8 @@ product:
 order:
   host: ${ORDER_HOST:order}
   port: ${ORDER_PORT:8082}
+accountancy:
+  host: ${ACCOUNTANCY_HOST:accountancy}
+  port: ${ACCOUNTANCY_PORT:8084}
 server:
   port: 8082

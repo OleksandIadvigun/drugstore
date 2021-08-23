@@ -11,8 +11,8 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 
-@DisplayName("Get products price by products ids REST API Doc test")
-class RestApiDocGetProductsPriceByProductsIdsTest @Autowired constructor(
+@DisplayName("Get products price by ids REST API Doc test")
+class RestApiDocGetPriceItemsByIdsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val accountancyProperties: AccountancyProperties,
@@ -21,7 +21,7 @@ class RestApiDocGetProductsPriceByProductsIdsTest @Autowired constructor(
 
 
     @Test
-    fun `should get products price by products ids`() {
+    fun `should get price items by ids`() {
 
         //given
         transactionTemplate.execute {
@@ -29,7 +29,7 @@ class RestApiDocGetProductsPriceByProductsIdsTest @Autowired constructor(
         }
 
         // and
-        val saved = transactionTemplate.execute {
+        val ids = transactionTemplate.execute {
             priceItemRepo.saveAll(
                 listOf(
                     PriceItem(
@@ -38,22 +38,20 @@ class RestApiDocGetProductsPriceByProductsIdsTest @Autowired constructor(
                     ),
                     PriceItem(
                         productId = 2L,
-                        price = BigDecimal("10.00")
-                    ),
-                    PriceItem(
-                        productId = 3L,
-                        price = BigDecimal("10.00")
+                        price = BigDecimal("20.00")
                     )
                 )
             )
-        } ?: fail("Fail, response is expected")
+        }?.map { it.id } ?: fail("Fail, response is expected")
 
         // then
-        of("get-products-price-by-products-ids").`when`()
+        of("get-price-items-by-ids").`when`()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/price-by-product-ids?ids=1,2")
+            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/price-items-by-ids?ids=${ids[0]},${ids[1]}")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", equalTo(2))
+            .assertThat().body("[0].price", equalTo(10.0F))
+            .assertThat().body("[1].price", equalTo(20.0F))
     }
 }

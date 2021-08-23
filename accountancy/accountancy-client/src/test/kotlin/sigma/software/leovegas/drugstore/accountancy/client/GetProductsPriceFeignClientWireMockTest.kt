@@ -19,7 +19,7 @@ import org.springframework.test.context.ContextConfiguration
 internal class GetProductsPriceFeignClientWireMockTestApp
 
 @DisplayName("Get Products Price Feign Client WireMock test")
-@ContextConfiguration(classes = [CreateProductFeignClientWireMockTestApp::class])
+@ContextConfiguration(classes = [GetProductsPriceFeignClientWireMockTestApp::class])
 class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper

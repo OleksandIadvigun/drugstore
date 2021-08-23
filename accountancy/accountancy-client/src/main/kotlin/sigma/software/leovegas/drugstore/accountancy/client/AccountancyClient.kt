@@ -19,6 +19,9 @@ interface AccountancyClient {
     @RequestLine("GET api/v1/accountancy/product-price")
     fun getProductsPrice(): Map<Long, BigDecimal>
 
-    @RequestLine("GET api/v1/accountancy/product-price-by-ids/ids={ids}")
-    fun getProductsPriceByIds(@Param ids: List<Long>): Map<Long, BigDecimal>
+    @RequestLine("GET api/v1/accountancy/price-by-product-ids/ids={ids}")
+    fun getProductsPriceByProductIds(@Param ids: List<Long>): Map<Long, BigDecimal>
+
+    @RequestLine("GET api/v1/accountancy/price-items-by-ids/ids={ids}")
+    fun getPriceItemsByIds(@Param ids: List<Long>): List<PriceItemResponse>
 }

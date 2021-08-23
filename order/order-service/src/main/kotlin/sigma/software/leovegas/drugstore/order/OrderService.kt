@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
 import sigma.software.leovegas.drugstore.order.OrderStatus.UPDATED
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
@@ -19,6 +20,7 @@ import sigma.software.leovegas.drugstore.product.client.ProductClient
 class OrderService @Autowired constructor(
     val orderRepository: OrderRepository,
     val productClient: ProductClient,
+    val accountancyClient: AccountancyClient
 ) {
 
     fun getOrderById(id: Long): OrderResponse =
@@ -55,25 +57,29 @@ class OrderService @Autowired constructor(
 
     fun getOrderDetails(id: Long): OrderDetailsDTO = id.run {
         val orderById = getOrderById(this)
-        val productIdList = orderById.orderItems.map { it.productId }
-        val products = productClient.getProductsByIds(productIdList).associateBy { it.id }
-        val orderItemDetails = orderById.orderItems.map {
-            OrderItemDetailsDTO(
-                name = products[it.productId]?.name ?: "undefined",
-                quantity = it.quantity
-            )
-        }
+        val priceItemIds = orderById.orderItems.map { it.priceItemId }
+        val priceItems = accountancyClient.getPriceItemsByIds(priceItemIds)
+        val productMap = priceItems.associate { it.id to it.productId }
+        val priceMap = priceItems.associate { it.id to it.price }
+        val nameMap = productClient.getProductsByIds(productMap.values.toList()).associate { it.id to it.name }
+        var orderItemDetails: List<OrderItemDetailsDTO> =
+            orderById.orderItems.map {
+                OrderItemDetailsDTO(
+                    priceItemId = it.priceItemId,
+                    name = nameMap[productMap[it.priceItemId]] ?: "undefined",
+                    quantity = it.quantity,
+                    price = priceMap[it.priceItemId] ?: BigDecimal("-1")
+                )
+            }
         OrderDetailsDTO(
             orderItemDetails = orderItemDetails,
-            // total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
-            //.setScale(2)
-            total = BigDecimal("0.00")   // todo fix when it will be possible
-
+            total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
+                .setScale(2)
         )
     }
 
     fun getProductsIdToQuantity(): Map<Long, Int> {
-        return orderRepository.getIdToQuantity().associate { it.productId to it.quantity }
+        return orderRepository.getIdToQuantity().associate { it.priceItemId to it.quantity }
     }
 
     fun changeOrderStatus(id: Long, orderStatus: OrderStatusDTO) =

@@ -28,7 +28,7 @@
             <column name="order_id" type="BIGINT">
                 <constraints foreignKeyName="fk_order_id" references="order(id)"/>
             </column>
-            <column name="product_id" type="BIGINT">
+            <column name="price_item_id" type="BIGINT">
             </column>
             <column name="quantity" type="INT"/>
         </createTable>

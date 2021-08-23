@@ -165,7 +165,7 @@ class ProductResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get products sorted by name ascendent`() {
+    fun `should get products sorted by name ascendant`() {
 
         // given
         transactionalTemplate.execute {

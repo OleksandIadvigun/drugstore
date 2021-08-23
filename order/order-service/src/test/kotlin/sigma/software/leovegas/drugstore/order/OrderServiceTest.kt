@@ -1,10 +1,11 @@
 package sigma.software.leovegas.drugstore.order
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -13,8 +14,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
@@ -23,12 +26,13 @@ import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
 @AutoConfigureTestDatabase
 @DisplayName("OrderService test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
     val orderRepository: OrderRepository,
     val objectMapper: ObjectMapper,
-) : WireMockTest() {
+) {
 
     @Test
     fun `should create order`() {
@@ -37,7 +41,7 @@ class OrderServiceTest @Autowired constructor(
         val order = CreateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    productId = 1,
+                    priceItemId = 1,
                     quantity = 3
                 )
             )
@@ -52,7 +56,7 @@ class OrderServiceTest @Autowired constructor(
         assertThat(created.id).isNotNull
         assertThat(created.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
         assertThat(created.orderItems[0].quantity).isEqualTo(3)
-        assertThat(created.orderItems[0].productId).isEqualTo(1)
+        assertThat(created.orderItems[0].priceItemId).isEqualTo(1)
         assertThat(created.createdAt).isBefore(LocalDateTime.now())
         assertThat(created.updatedAt).isBefore(LocalDateTime.now())
     }
@@ -78,7 +82,7 @@ class OrderServiceTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            priceItemId = 1,
                             quantity = 3
                         )
                     )
@@ -91,7 +95,7 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(actual.id).isEqualTo(created.id)
-        assertThat(actual.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(actual.orderItems.iterator().next().priceItemId).isEqualTo(1)
         assertThat(actual.orderItems.iterator().next().quantity).isEqualTo(3)
     }
 
@@ -109,7 +113,7 @@ class OrderServiceTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            priceItemId = 1,
                             quantity = 3
                         )
                     ),
@@ -123,7 +127,7 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(actual[0].id).isEqualTo(created.id)
-        assertThat(actual[0].orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(actual[0].orderItems.iterator().next().priceItemId).isEqualTo(1)
         assertThat(actual[0].orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(actual[0].orderStatus).isEqualTo(OrderStatusDTO.CREATED)
     }
@@ -132,8 +136,14 @@ class OrderServiceTest @Autowired constructor(
     fun `should get orderDetails`() {
 
         // setup
-        stubFor(
-            get("/api/v1/products-by-ids/?ids=1")
+        val wireMockServer8081 = WireMockServer(8081)
+        val wireMockServer8084 = WireMockServer(8084)
+        wireMockServer8081.start()
+        wireMockServer8084.start()
+
+        // and
+        wireMockServer8081.stubFor(
+            get("/api/v1/products-by-ids/?ids=1&ids=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -145,6 +155,37 @@ class OrderServiceTest @Autowired constructor(
                                         ProductResponse(
                                             id = 1L,
                                             name = "test1",
+                                        ),
+                                        ProductResponse(
+                                            id = 2L,
+                                            name = "test2",
+                                        )
+                                    )
+                                )
+                        )
+                )
+        )
+
+        // and
+        wireMockServer8084.stubFor(
+            get("/api/v1/accountancy/price-items-by-ids/ids=1,2")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    listOf(
+                                        PriceItemResponse(
+                                            id = 1,
+                                            productId = 1,
+                                            price = BigDecimal("20.00")
+                                        ),
+                                        PriceItemResponse(
+                                            id = 2,
+                                            productId = 2,
+                                            price = BigDecimal("40.00")
                                         )
                                     )
                                 )
@@ -158,8 +199,12 @@ class OrderServiceTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
-                            quantity = 3
+                            priceItemId = 1L,
+                            quantity = 1
+                        ),
+                        OrderItem(
+                            priceItemId = 2L,
+                            quantity = 2
                         )
                     )
                 )
@@ -168,12 +213,15 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val orderDetails = orderService.getOrderDetails(order.id ?: -1)
+        wireMockServer8084.stop()
+        wireMockServer8081.stop()
 
         // then
-        assertThat(orderDetails.orderItemDetails).hasSize(1)
+        assertThat(orderDetails.orderItemDetails).hasSize(2)
         assertThat(orderDetails.orderItemDetails.iterator().next().name).isEqualTo("test1")
-        assertThat(orderDetails.orderItemDetails.iterator().next().quantity).isEqualTo(3)
-        // assertThat(orderDetails.total).isEqualTo(BigDecimal("30").setScale(2)) // price multiply quantity //todo!!!!
+        assertThat(orderDetails.orderItemDetails.iterator().next().priceItemId).isEqualTo(1)
+        assertThat(orderDetails.orderItemDetails.iterator().next().quantity).isEqualTo(1)
+        assertThat(orderDetails.total).isEqualTo(BigDecimal("100").setScale(2)) // price multiply quantity
     }
 
     @Test
@@ -204,7 +252,7 @@ class OrderServiceTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                priceItemId = 1,
                                 quantity = 2
                             ),
                         )
@@ -212,7 +260,7 @@ class OrderServiceTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 3,
+                                priceItemId = 3,
                                 quantity = 4
                             ),
                         )
@@ -237,7 +285,7 @@ class OrderServiceTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            priceItemId = 1L,
                             quantity = 3
                         )
                     ),
@@ -249,7 +297,7 @@ class OrderServiceTest @Autowired constructor(
         val updateOrderRequest = UpdateOrderRequest(
             orderItems = listOf(
                 OrderItemDTO(
-                    productId = 1,
+                    priceItemId = 1,
                     quantity = 4
                 )
             )
@@ -262,7 +310,7 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(changedOrder.orderItems.iterator().next().quantity).isEqualTo(4)
-        assertThat(changedOrder.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(changedOrder.orderItems.iterator().next().priceItemId).isEqualTo(1)
         assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
         assertThat(changedOrder.createdAt).isBefore(LocalDateTime.now())
         assertThat(changedOrder.updatedAt).isAfter(changedOrder.createdAt)
@@ -277,7 +325,7 @@ class OrderServiceTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            priceItemId = 1L,
                             quantity = 3
                         )
                     ),
@@ -305,7 +353,7 @@ class OrderServiceTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            priceItemId = 1L,
                             quantity = 3
                         )
                     ),
@@ -354,7 +402,7 @@ class OrderServiceTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 3,
+                                priceItemId = 3,
                                 quantity = 2
                             ),
                         )
@@ -362,7 +410,7 @@ class OrderServiceTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 5,
+                                priceItemId = 5,
                                 quantity = 7
                             ),
                         )
@@ -370,11 +418,11 @@ class OrderServiceTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                priceItemId = 1,
                                 quantity = 4
                             ),
                             OrderItem(
-                                productId = 5,
+                                priceItemId = 5,
                                 quantity = 2
                             )
                         )

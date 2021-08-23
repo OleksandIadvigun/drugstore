@@ -151,11 +151,6 @@ class AccountancyResourceTest @Autowired constructor(
         } ?: fail("result is expected")
 
         // and
-        val priceItemRequest = PriceItemRequest(
-            productId = 1L,
-            price = BigDecimal.ONE,
-        )
-
         val savedPriceItem = transactionalTemplate.execute {
             repository.saveAll(
                 listOf(
@@ -166,10 +161,6 @@ class AccountancyResourceTest @Autowired constructor(
                     PriceItem(
                         productId = 2L,
                         price = BigDecimal.ONE,
-                    ),
-                    PriceItem(
-                        productId = 3L,
-                        price = BigDecimal.ONE,
                     )
                 )
             )
@@ -177,7 +168,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/product-price-by-ids?ids=1,2",
+            "$baseUrl/api/v1/accountancy/price-by-product-ids?ids=1,2",
             HttpMethod.GET,
             null,
             respTypeRef<Map<Long?, BigDecimal>>()
@@ -191,5 +182,46 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.size).isEqualTo(2)
         assertThat(body[1]).isEqualTo(BigDecimal("1.00"))
         assertThat(body[2]).isEqualTo(BigDecimal("1.00"))
+    }
+
+    @Test
+    fun `should get price items by ids`() {
+
+        // given
+        transactionalTemplate.execute {
+            repository.deleteAll()
+        } ?: fail("result is expected")
+
+        val ids = transactionalTemplate.execute {
+            repository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal.ONE,
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal.TEN,
+                    )
+                )
+            )
+        }?.map { it.id } ?: fail("result is expected")
+        println(ids)
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/price-items-by-ids?ids=${ids[0]},${ids[1]}",
+            HttpMethod.GET,
+            null,
+            respTypeRef<List<PriceItemResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.size).isEqualTo(2)
+        assertThat(body[0].price).isEqualTo(BigDecimal("1.00"))
+        assertThat(body[1].price).isEqualTo(BigDecimal("10.00"))
     }
 }

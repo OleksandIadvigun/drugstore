@@ -39,9 +39,14 @@ class AccountancyResource(private val service: AccountancyService) {
     fun getProductsPrice(): Map<Long?, BigDecimal> = service.getProductsPrice()
 
     @ResponseStatus(OK)
-    @GetMapping("/product-price-by-ids")
-    fun getProductsPriceByIds(@RequestParam ids: List<Long>): Map<Long?, BigDecimal> =
-        service.getProductsPriceByIds(ids)
+    @GetMapping("/price-by-product-ids")
+    fun getProductsPriceByProductIds(@RequestParam ids: List<Long>): Map<Long?, BigDecimal> =
+        service.getProductsPriceByProductIds(ids)
+
+    @ResponseStatus(OK)
+    @GetMapping("/price-items-by-ids")
+    fun getPriceItemsByIds(@RequestParam ids: List<Long>): List<PriceItemResponse> =
+        service.getPriceItemsByIds(ids)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

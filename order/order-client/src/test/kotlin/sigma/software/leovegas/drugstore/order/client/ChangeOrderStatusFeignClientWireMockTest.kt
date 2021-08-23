@@ -41,7 +41,7 @@ class ChangeOrderStatusFeignClientWireMockTest @Autowired constructor(
             orderStatus = OrderStatusDTO.BOOKED,
             orderItems = listOf(
                 OrderItemDTO(
-                    productId = 1,
+                    priceItemId = 1,
                     quantity = 2
                 )
             ),
@@ -81,7 +81,7 @@ class ChangeOrderStatusFeignClientWireMockTest @Autowired constructor(
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and
-        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().priceItemId).isEqualTo(1L)
         assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(2)
     }
 }

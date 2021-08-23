@@ -22,7 +22,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 internal class UpdateProductFeignClientWireMockTestApp
 
 @DisplayName("Update Price Item Feign Client WireMock test")
-@ContextConfiguration(classes = [CreateProductFeignClientWireMockTestApp::class])
+@ContextConfiguration(classes = [UpdateProductFeignClientWireMockTestApp::class])
 class UpdatePriceItemFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper

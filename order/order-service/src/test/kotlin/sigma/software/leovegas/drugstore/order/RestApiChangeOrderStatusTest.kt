@@ -37,7 +37,7 @@ class RestApiChangeOrderStatusTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productId = 1L,
+                            priceItemId = 1L,
                             quantity = 3
                         )
                     )
@@ -64,7 +64,7 @@ class RestApiChangeOrderStatusTest @Autowired constructor(
                 .assertThat().body("orderStatus", equalTo("BOOKED"))
                 .assertThat().body("createdAt", not(emptyString()))
                 .assertThat().body("updatedAt", not(emptyString()))
-                .assertThat().body("orderItems[0].productId", equalTo(1))
+                .assertThat().body("orderItems[0].priceItemId", equalTo(1))
                 .assertThat().body("orderItems[0].quantity", equalTo(3))
         }
     }
