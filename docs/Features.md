@@ -44,15 +44,15 @@
 - [X] Check availability of products
 - [ ] Shipment of goods
 
-### Accounting
+### Accountancy
 
 - [X] Create new price item
 - [X] Update new price item
 - [X] Get products' price
 - [X] Get products' price by ids
-- [ ] Create Invoice
-- [ ] Get Invoice by id
-- [ ] Cancel Invoice
+- [X] Create Invoice
+- [X] Get Invoice by id
+- [X] Cancel Invoice
 - [ ] Get Refund
 - [ ] Pay Invoice
 - [ ] Get past purchased goods

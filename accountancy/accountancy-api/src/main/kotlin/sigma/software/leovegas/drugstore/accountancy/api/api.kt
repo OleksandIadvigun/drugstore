@@ -10,6 +10,10 @@ data class PriceItemRequest(
     val price: BigDecimal = BigDecimal.ZERO
 )
 
+data class InvoiceRequest(
+    val orderId: Long = -1,
+)
+
 // Response
 
 data class PriceItemResponse(
@@ -19,4 +23,32 @@ data class PriceItemResponse(
     val createdAt: LocalDateTime? = null,
     val updatedAt: LocalDateTime? = null
 )
+
+data class InvoiceResponse(
+    val id: Long = -1,
+    val orderId: Long = -1,
+    val status: InvoiceStatusDTO = InvoiceStatusDTO.CREATED,
+    val productItems: Set<ProductItemDTO> = setOf(),
+    val total: BigDecimal = BigDecimal.ZERO,
+    val createdAt: LocalDateTime? = null,
+    val expiredAt: LocalDateTime? = null,
+)
+
+// DTOs
+
+enum class InvoiceStatusDTO {
+    CREATED,
+    CANCELLED,
+    PAID,
+    REFUND
+}
+
+data class ProductItemDTO(
+    val priceItemId: Long = -1,
+    val name: String = "default",
+    val price: BigDecimal = BigDecimal.ZERO,
+    val quantity: Int = 0
+)
+
+
 

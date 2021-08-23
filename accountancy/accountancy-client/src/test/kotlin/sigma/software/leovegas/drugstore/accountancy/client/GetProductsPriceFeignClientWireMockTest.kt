@@ -33,7 +33,7 @@ class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
             1L to BigDecimal("20.00")
         )
 
-        //and
+        // and
         stubFor(
             get("/api/v1/accountancy/product-price")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -52,7 +52,7 @@ class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
         // when
         val responseActual = accountancyClient.getProductsPrice()
 
-        //  then
+        // then
         assertThat(responseActual.size).isEqualTo(1)
         assertThat(responseActual[1]).isEqualTo(BigDecimal("20.00"))
     }

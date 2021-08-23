@@ -223,7 +223,11 @@ Feature: Accounting
     When send Get Request with ids
     Then receive response with response body equal to price items with:
     """
-    id = ids
+     id,
+    product id,
+    price,
+    createdAt,
+    updatedAt
     """
 
   Scenario: As a user I should create invoice

@@ -180,7 +180,7 @@ class ProductServiceTest @Autowired constructor(
         assertThat(actual).isNotNull
         assertThat(actual.id).isNotNull
         assertThat(productResponse.name).isEqualTo(actual.name)
-        assertThat(actual.createdAt).isBefore(LocalDateTime.now())
+        assertThat(actual.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test

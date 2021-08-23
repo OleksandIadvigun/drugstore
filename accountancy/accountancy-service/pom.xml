@@ -27,6 +27,22 @@
             <artifactId>accountancy-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>sigma.software.leovegas.drugstore.order.api</groupId>
+            <artifactId>order-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.order.client</groupId>
+            <artifactId>order-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.store.api</groupId>
+            <artifactId>store-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.store.client</groupId>
+            <artifactId>store-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <scope>runtime</scope>

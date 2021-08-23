@@ -1,5 +1,14 @@
 package sigma.software.leovegas.drugstore.accountancy
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
+import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
@@ -12,28 +21,44 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
+import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
+import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
+import sigma.software.leovegas.drugstore.order.api.OrderResponse
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
+import sigma.software.leovegas.drugstore.store.api.StoreResponse
+import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 
 @DisplayName("Accountancy Resource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@AutoConfigureWireMock(port = 8082)
 class AccountancyResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val restTemplate: TestRestTemplate,
     val service: AccountancyService,
     val transactionalTemplate: TransactionTemplate,
-    val repository: PriceItemRepository,
-    val accountancyProperties: AccountancyProperties
+    val priceItemRepository: PriceItemRepository,
+    val invoiceRepository: InvoiceRepository,
+    val accountancyProperties: AccountancyProperties,
+    val objectMapper: ObjectMapper
 ) {
 
     lateinit var baseUrl: String
+    private val wireMockServerStoreClient = WireMockServer(wireMockConfig().port(8083))
 
     @BeforeEach
     fun setup() {
@@ -70,6 +95,133 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
+    fun `should create invoice`() {
+
+        // given
+        wireMockServerStoreClient.start()
+
+        // and
+        transactionalTemplate.execute {
+            invoiceRepository.deleteAll()
+        } ?: fail("result is expected")
+
+        // and
+        val httpEntity = HttpEntity(
+            InvoiceRequest(
+                orderId = 1L
+            )
+        )
+
+        val orderDetails = OrderDetailsDTO(
+            orderItemDetails = listOf(
+                OrderItemDetailsDTO(
+                    priceItemId = 1L,
+                    name = "test1",
+                    price = BigDecimal("20.00"),
+                    quantity = 3,
+                ),
+                OrderItemDetailsDTO(
+                    priceItemId = 2L,
+                    name = "test2",
+                    price = BigDecimal("10.00"),
+                    quantity = 3,
+                )
+            ),
+            total = BigDecimal("90").setScale(2)
+        )
+
+        stubFor(
+            put("/api/v1/orders/change-status/1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.BOOKED)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.BOOKED))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        stubFor(
+            get("/api/v1/orders/1/details")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(orderDetails)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // and
+        val storeResponse = listOf(
+            StoreResponse(
+                id = 1L,
+                priceItemId = 1L,
+                quantity = 2
+            )
+        )
+
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/reduce")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(1L, 3),
+                                    UpdateStoreRequest(2L, 3)
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/invoice",
+            POST,
+            httpEntity,
+            respTypeRef<InvoiceResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isNotNull
+        assertThat(body.total).isEqualTo(BigDecimal("90.00"))
+        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+
+        // and
+        wireMockServerStoreClient.stop()
+    }
+
+    @Test
     fun `should update price item`() {
 
         // given
@@ -79,7 +231,7 @@ class AccountancyResourceTest @Autowired constructor(
         )
 
         val savedPriceItem = transactionalTemplate.execute {
-            repository.save(priceItem)
+            priceItemRepository.save(priceItem)
         } ?: fail("result is expected")
 
         val httpEntity = HttpEntity(
@@ -111,7 +263,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // given
         transactionalTemplate.execute {
-            repository.deleteAll()
+            priceItemRepository.deleteAll()
         } ?: fail("result is expected")
 
         // and
@@ -122,7 +274,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val savedPriceItem = transactionalTemplate.execute {
-            repository.save(priceItem)
+            priceItemRepository.save(priceItem)
         } ?: fail("result is expected")
 
         // when
@@ -147,12 +299,12 @@ class AccountancyResourceTest @Autowired constructor(
 
         // given
         transactionalTemplate.execute {
-            repository.deleteAll()
+            priceItemRepository.deleteAll()
         } ?: fail("result is expected")
 
         // and
         val savedPriceItem = transactionalTemplate.execute {
-            repository.saveAll(
+            priceItemRepository.saveAll(
                 listOf(
                     PriceItem(
                         productId = 1L,
@@ -160,6 +312,10 @@ class AccountancyResourceTest @Autowired constructor(
                     ),
                     PriceItem(
                         productId = 2L,
+                        price = BigDecimal.ONE,
+                    ),
+                    PriceItem(
+                        productId = 3L,
                         price = BigDecimal.ONE,
                     )
                 )
@@ -185,15 +341,150 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get invoice by id`() {
+
+        // given
+        val savedInvoice = transactionalTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00")
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/invoice/${savedInvoice.id}",
+            GET,
+            null,
+            respTypeRef<InvoiceResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isNotNull
+        assertThat(body.total).isEqualTo(BigDecimal("90.00"))
+        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+    }
+
+    @Test
+    fun `should cancel invoice by id`() {
+
+        // given
+        wireMockServerStoreClient.start();
+
+        // and
+        transactionalTemplate.execute {
+            invoiceRepository.deleteAll()
+        } ?: fail("result is expected")
+
+        // and
+        val savedInvoice = transactionalTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            quantity = 2,
+                            price = BigDecimal("10.00")
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        stubFor(
+            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.CANCELLED)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.CANCELLED))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // and
+        val storeResponse = listOf(
+            StoreResponse(
+                id = 1L,
+                priceItemId = 1L,
+                quantity = 2
+            )
+        )
+
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/increase")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(1L, 2)
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/invoice/cancel/${savedInvoice.id}",
+            PUT,
+            null,
+            respTypeRef<InvoiceResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isNotNull
+        assertThat(body.total).isEqualTo(BigDecimal("90.00"))
+        assertThat(body.status).isEqualTo(InvoiceStatus.CANCELLED.toDTO())
+
+        wireMockServerStoreClient.stop();
+    }
+
+    @Test
     fun `should get price items by ids`() {
 
         // given
         transactionalTemplate.execute {
-            repository.deleteAll()
+            priceItemRepository.deleteAll()
         } ?: fail("result is expected")
 
         val ids = transactionalTemplate.execute {
-            repository.saveAll(
+            priceItemRepository.saveAll(
                 listOf(
                     PriceItem(
                         productId = 1L,

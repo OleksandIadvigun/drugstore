@@ -6,7 +6,7 @@
 
     <!-- V20210729202901 where V means version 202107292029 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
 
-    <changeSet id="V202108180162101" author="OI">
+    <changeSet id="V20210818162101" author="OI">
         <createTable tableName="price_item">
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
@@ -17,5 +17,30 @@
             <column name="updated_at" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
-
+    <changeSet id="V20210823150402" author="OI">
+        <createTable tableName="invoice">
+            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="order_id" type="BIGINT"/>
+            <column name="total" type="Decimal(11,2)"/>
+            <column name="status" type="VARCHAR(15)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="V20210823150503" author="OI">
+        <createTable tableName="product_item">
+            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="price_item_id" type="BIGINT"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="price" type="Decimal(11,2)"/>
+            <column name="quantity" type="INT"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="invoice_id" type="BIGINT">
+                <constraints foreignKeyName="fk_invoice_id" references="invoice(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

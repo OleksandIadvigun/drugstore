@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.api.ApiError
@@ -29,14 +31,28 @@ class AccountancyResource(private val service: AccountancyService) {
     fun create(@RequestBody priceItemRequest: PriceItemRequest): PriceItemResponse =
         service.createPriceItem(priceItemRequest)
 
+    @ResponseStatus(CREATED)
+    @PostMapping("/invoice")
+    fun createInvoice(@RequestBody invoiceRequest: InvoiceRequest): InvoiceResponse =
+        service.createInvoice(invoiceRequest)
+
     @ResponseStatus(ACCEPTED)
     @PutMapping("/price-item/{id}")
     fun update(@PathVariable id: Long, @RequestBody priceItemRequest: PriceItemRequest): PriceItemResponse =
         service.updatePriceItem(id, priceItemRequest)
 
+    @ResponseStatus(ACCEPTED)
+    @PutMapping("/invoice/cancel/{id}")
+    fun cancelInvoice(@PathVariable id: Long): InvoiceResponse =
+        service.cancelInvoice(id)
+
     @ResponseStatus(OK)
     @GetMapping("/product-price")
     fun getProductsPrice(): Map<Long?, BigDecimal> = service.getProductsPrice()
+
+    @ResponseStatus(OK)
+    @GetMapping("/invoice/{id}")
+    fun getInvoiceById(@PathVariable id: Long): InvoiceResponse = service.getInvoiceById(id)
 
     @ResponseStatus(OK)
     @GetMapping("/price-by-product-ids")
