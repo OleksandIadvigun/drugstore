@@ -50,7 +50,7 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
 
         if (orderCreated != null) {
             of("get-sorted-items").`when`()
-                .get("http://${orderProperties.host}:$port//api/v1/orders/total-buys")
+                .get("http://${orderProperties.host}:$port/api/v1/orders/total-buys")
                 .then()
                 .assertThat().statusCode(200)
                 .assertThat().body("size()", `is`(3))

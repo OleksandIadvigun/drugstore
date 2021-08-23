@@ -1,23 +1,27 @@
 = RestAssured Setup and Usage
 :author: Zabolotnyi Volodymyr
+:doctype: book
+:toc: left
+:toclevels: 4
+:source-highlighter: prettify
+:numbered:
+:icons: font
 
-== Steps
-
-=== 1. Add restassured dependency into parent pom.xml in dependency management
+=== Add restassured dependency into parent pom.xml in dependency management
 
 include::../order/order-service/pom.xml[tags=restassured_dependency]
 
-=== 2. Add restassured dependency into pom.xml of your service for generating snippets
+=== Add restassured dependency into pom.xml of your service for generating snippets
 
 include::../order/order-service/pom.xml[tags=restassured_dependency]
 
-=== 3. Create Rest API Doc Setup
+=== Create Rest API Doc Setup
 
 ----
 include::../order/order-service/src/test/kotlin/sigma/software/leovegas/drugstore/order/RestApiDocumentationTest.kt[lines=17..]
 ----
 
-=== 4. Create Rest API Doc Test
+=== Create Rest API Doc Test
 
 ----
 include::../order/order-service/src/test/kotlin/sigma/software/leovegas/drugstore/order/RestApiDocCreateOrderTest.kt[lines=15..50]
@@ -27,7 +31,7 @@ include::../order/order-service/src/test/kotlin/sigma/software/leovegas/drugstor
 * body(body of request)
 * post(url) - type of request
 
-=== 5. Create filename.adoc where will be included all snippets
+=== Create filename.adoc where will be included all snippets
 
 Example
 
@@ -35,7 +39,7 @@ Example
 include::path/filename.adoc
 ----
 
-=== 6. Add asciidoctor maven plugin for generating adoc file in necessary format
+=== Add asciidoctor maven plugin for generating adoc file in necessary format
 
 include::../order/order-service/pom.xml[tags=restassured_plugin]
 

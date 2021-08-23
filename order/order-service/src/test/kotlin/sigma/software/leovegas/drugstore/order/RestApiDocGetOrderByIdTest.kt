@@ -40,7 +40,7 @@ class RestApiDocGetOrderByIdTest @Autowired constructor(
 
         if (orderCreated != null) {
             of("get-order-by-id").pathParam("id", orderCreated.id).`when`()
-                .get("http://${orderProperties.host}:$port//api/v1/orders/{id}")
+                .get("http://${orderProperties.host}:$port/api/v1/orders/{id}")
                 .then()
                 .assertThat().statusCode(200)
                 .assertThat().body("orderStatus", equalTo("CREATED"))

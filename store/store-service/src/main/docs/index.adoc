@@ -1,4 +1,10 @@
 = Operations
+:doctype: book
+:toc: left
+:toclevels: 4
+:source-highlighter: prettify
+:numbered:
+:icons: font
 
 == Create Store Item
 

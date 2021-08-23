@@ -67,7 +67,7 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         } ?: Assertions.fail("result is expected")
 
         of("get-order-details").pathParam("id", order.id).`when`()
-            .get("http://${orderProperties.host}:$port//api/v1/orders/{id}/details")
+            .get("http://${orderProperties.host}:$port/api/v1/orders/{id}/details")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("orderItemDetails[0].name", equalTo("test1"))
