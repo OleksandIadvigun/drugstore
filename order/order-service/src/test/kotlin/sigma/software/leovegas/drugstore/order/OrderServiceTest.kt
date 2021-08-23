@@ -96,6 +96,39 @@ class OrderServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get order by status `() {
+
+        // given
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
+        // and
+        val created = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1,
+                            quantity = 3
+                        )
+                    ),
+                    orderStatus = OrderStatus.CREATED
+                )
+            )
+        }?.toOrderResponseDTO() ?: fail("result is expected")
+
+        // when
+        val actual = orderService.getOrdersByStatus(OrderStatusDTO.CREATED)
+
+        // then
+        assertThat(actual[0].id).isEqualTo(created.id)
+        assertThat(actual[0].orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(actual[0].orderItems.iterator().next().quantity).isEqualTo(3)
+        assertThat(actual[0].orderStatus).isEqualTo(OrderStatusDTO.CREATED)
+    }
+
+    @Test
     fun `should get orderDetails`() {
 
         // setup
@@ -161,7 +194,7 @@ class OrderServiceTest @Autowired constructor(
 
         // given
         transactionTemplate.execute {
-            orderRepository.deleteAllInBatch()
+            orderRepository.deleteAll()
         }
 
         // and
@@ -233,6 +266,34 @@ class OrderServiceTest @Autowired constructor(
         assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
         assertThat(changedOrder.createdAt).isBefore(LocalDateTime.now())
         assertThat(changedOrder.updatedAt).isAfter(changedOrder.createdAt)
+    }
+
+    @Test
+    fun `should change order status`() {
+
+        // given
+        val orderToChange = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1L,
+                            quantity = 3
+                        )
+                    ),
+                    orderStatus = OrderStatus.CREATED
+                )
+            )
+        }?.toOrderResponseDTO() ?: fail("result is expected")
+
+        // when
+        val changedOrder = transactionTemplate.execute {
+            orderService.changeOrderStatus(orderToChange.id, OrderStatusDTO.BOOKED)
+        } ?: fail("result is expected")
+
+        // then
+        assertThat(changedOrder.id).isEqualTo(orderToChange.id)
+        assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.BOOKED)
     }
 
     @Test

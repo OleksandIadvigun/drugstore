@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 
 @RestController
@@ -29,24 +30,32 @@ class OrderResource(private val orderService: OrderService) {
     fun getOrderById(@PathVariable("id") id: Long) =
         orderService.getOrderById(id)
 
+    @GetMapping("/status/{status}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getOrdersByStatus(@PathVariable("status") orderStatus: OrderStatusDTO) =
+        orderService.getOrdersByStatus(orderStatus)
+
     @GetMapping("/total-buys")
     @ResponseStatus(HttpStatus.OK)
     fun getProductsIdToQuantity(): Map<Long, Int> = orderService.getProductsIdToQuantity()
 
     @GetMapping("/{id}/details")
     @ResponseStatus(HttpStatus.OK)
-    fun getOrderDetails(@PathVariable("id") id: Long) =
-        orderService.getOrderDetails(id)
+    fun getOrderDetails(@PathVariable("id") id: Long) = orderService.getOrderDetails(id)
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = ["", "/"])
-    fun getOrders() =
-        orderService.getOrders()
+    fun getOrders() = orderService.getOrders()
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun updateOrder(@PathVariable("id") id: Long, @RequestBody updateOrderRequest: UpdateOrderRequest) =
         orderService.updateOrder(id, updateOrderRequest)
+
+    @PutMapping("/change-status/{id}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    fun changeOrderStatus(@PathVariable("id") id: Long, @RequestBody orderStatus: OrderStatusDTO) =
+        orderService.changeOrderStatus(id, orderStatus)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

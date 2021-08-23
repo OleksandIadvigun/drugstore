@@ -70,6 +70,5 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
                 .assertThat().body("orderItems[0].productId", equalTo(1))
                 .assertThat().body("orderItems[0].quantity", equalTo(4))
         }
-
     }
 }

@@ -1,30 +1,62 @@
 package sigma.software.leovegas.drugstore.order
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.support.TransactionTemplate
 
 @DisplayName("Order Repository test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class OrderRepositoryTest(
-    @Autowired val transactionalTemplate: TransactionTemplate,
-    @Autowired val orderRepository: OrderRepository
+class OrderRepositoryTest @Autowired constructor(
+    val transactionTemplate: TransactionTemplate,
+    val orderRepository: OrderRepository
 ) {
+
+    @Test
+    fun `should get order by status`() {
+
+        // given
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
+        // and
+        val created = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1,
+                            quantity = 3
+                        )
+                    ),
+                    orderStatus = OrderStatus.CREATED
+                )
+            )
+        }?.toOrderResponseDTO() ?: fail("result is expected")
+
+        // when
+        val changed = transactionTemplate.execute {
+            orderRepository.getAllByOrderStatus(OrderStatus.CREATED)
+        } ?: fail("result is expected")
+
+        // given
+        assertThat(changed[0].orderStatus).isEqualTo(OrderStatus.CREATED)
+    }
 
     @Test
     fun `should get views`() {
 
         // given
-        transactionalTemplate.execute {
+        transactionTemplate.execute {
             orderRepository.deleteAll()
         }
 
         // and
-        val created = transactionalTemplate.execute {
+        val created = transactionTemplate.execute {
             orderRepository.saveAll(
                 listOf(
                     Order(
@@ -53,12 +85,12 @@ class OrderRepositoryTest(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        } ?: org.junit.jupiter.api.fail("result is expected")
 
         // when
-        val actual = transactionalTemplate.execute {
+        val actual = transactionTemplate.execute {
             orderRepository.getIdToQuantity()
-        } ?: fail("result is expected")
+        } ?: org.junit.jupiter.api.fail("result is expected")
 
         //then
         assertThat(actual).hasSize(2)

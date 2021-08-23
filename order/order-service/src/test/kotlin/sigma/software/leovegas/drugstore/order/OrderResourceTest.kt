@@ -117,6 +117,47 @@ class OrderResourceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get order by status`() {
+
+        // given
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
+        // given
+        val orderCreated = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1L,
+                            quantity = 3
+                        )
+                    ),
+                    orderStatus = OrderStatus.CREATED
+                )
+            )
+        }?.toOrderResponseDTO() ?: fail("result is expected")
+
+        // when
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/orders/status/${orderCreated.orderStatus}", GET,
+                null, respTypeRef<List<OrderResponse>>()
+            )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body[0].id).isEqualTo(orderCreated.id)
+        assertThat(body[0].orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(body[0].orderItems.iterator().next().quantity).isEqualTo(3)
+        assertThat(body[0].orderStatus).isEqualTo(OrderStatusDTO.CREATED)
+    }
+
+    @Test
     fun `should get orderDetails`() {
 
         // setup
@@ -262,6 +303,47 @@ class OrderResourceTest @Autowired constructor(
     }
 
     @Test
+    fun `should change order status`() {
+
+        // given
+        val orderCreated = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderItems = setOf(
+                        OrderItem(
+                            productId = 1L,
+                            quantity = 3
+                        )
+                    ),
+                    orderStatus = OrderStatus.CREATED
+                )
+            )
+        }?.toOrderResponseDTO() ?: fail("result is expected")
+
+        // and
+        val httpEntity = HttpEntity(
+            OrderStatus.BOOKED
+        )
+
+        // when
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/orders/change-status/${orderCreated.id}", PUT,
+                httpEntity, respTypeRef<OrderResponse>()
+            )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).isNotNull
+        assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
+        assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.BOOKED)
+    }
+
+    @Test
     fun `should return total buys from items sorted DESC by quantity `() {
 
         // given
@@ -298,7 +380,6 @@ class OrderResourceTest @Autowired constructor(
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        println(response.body)
         assertThat(response.body?.size).isEqualTo(2)
         assertThat(response.body?.iterator()?.next()?.value).isEqualTo(5) // first should have the biggest value
         assertThat(response.body?.get(4)).isEqualTo(3)

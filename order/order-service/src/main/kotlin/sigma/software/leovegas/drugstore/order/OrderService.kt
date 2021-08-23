@@ -10,6 +10,7 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 import sigma.software.leovegas.drugstore.product.client.ProductClient
 
@@ -22,6 +23,9 @@ class OrderService @Autowired constructor(
 
     fun getOrderById(id: Long): OrderResponse =
         orderRepository.findById(id).orElseThrow { throw OrderNotFoundException(id) }.toOrderResponseDTO()
+
+    fun getOrdersByStatus(orderStatus: OrderStatusDTO): List<OrderResponse> =
+        orderRepository.getAllByOrderStatus(OrderStatus.valueOf(orderStatus.name)).toOrderResponseList()
 
     fun getOrders(): List<OrderResponse> {
         val orderList = orderRepository.findAll()
@@ -71,4 +75,14 @@ class OrderService @Autowired constructor(
     fun getProductsIdToQuantity(): Map<Long, Int> {
         return orderRepository.getIdToQuantity().associate { it.productId to it.quantity }
     }
+
+    fun changeOrderStatus(id: Long, orderStatus: OrderStatusDTO) =
+        id.run {
+            val toUpdate = orderRepository
+                .findById(this)
+                .orElseThrow { OrderNotFoundException(id) }
+                .copy(orderStatus = OrderStatus.valueOf(orderStatus.name))
+            val updated = orderRepository.saveAndFlush(toUpdate)
+            updated.toOrderResponseDTO()
+        }
 }

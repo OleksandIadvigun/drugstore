@@ -30,6 +30,14 @@ include::{snippets}/get-order-by-id/http-request.adoc[]
 .GetOrderResponse
 include::{snippets}/get-order-by-id/http-response.adoc[]
 
+== Get Order By Status
+
+.Request
+include::{snippets}/get-order-by-status/http-request.adoc[]
+
+.GetOrderResponse
+include::{snippets}/get-order-by-status/http-response.adoc[]
+
 == Get OrderDetails
 
 .Request
