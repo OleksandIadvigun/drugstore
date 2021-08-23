@@ -5,13 +5,11 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -19,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
@@ -40,7 +37,6 @@ import sigma.software.leovegas.drugstore.product.api.ProductResponse
 class OrderResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val orderRepository: OrderRepository,
-    val orderService: OrderService,
     val objectMapper: ObjectMapper,
     val orderProperties: OrderProperties,
     val restTemplate: TestRestTemplate,
@@ -266,56 +262,20 @@ class OrderResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should delete order`() {
-
-        // given
-        val orderCreated = transactionTemplate.execute {
-            orderRepository.save(
-                Order(
-                    orderItems = setOf(
-                        OrderItem(
-                            productId = 1L,
-                            quantity = 3
-                        )
-                    ),
-                )
-            )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
-
-        // when
-        val response = restTemplate
-            .exchange("$baseUrl/api/v1/orders/${orderCreated.id}", DELETE, null, respTypeRef<OrderResponse>())
-
-        // and
-        val exception = assertThrows<OrderNotFoundException> {
-            transactionTemplate.execute {
-                orderService.getOrderById(orderCreated.id)
-            }
-        }
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NO_CONTENT)
-
-        // and
-        assertThat(exception.message).contains("Order", "not found")
-    }
-
-    @Test
     fun `should return total buys from items sorted DESC by quantity `() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        orderRepository.deleteAll()
+
 
         // and
         transactionTemplate.execute {
             orderRepository.saveAll(
-                mutableListOf<Order>(
+                listOf(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1L,
+                                productId = 4,
                                 quantity = 3
                             )
                         ),
@@ -323,7 +283,7 @@ class OrderResourceTest @Autowired constructor(
                     Order(
                         orderItems = setOf(
                             OrderItem(
-                                productId = 2L,
+                                productId = 5,
                                 quantity = 5
                             )
                         ),
@@ -338,8 +298,9 @@ class OrderResourceTest @Autowired constructor(
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        println(response.body)
         assertThat(response.body?.size).isEqualTo(2)
         assertThat(response.body?.iterator()?.next()?.value).isEqualTo(5) // first should have the biggest value
-        assertThat(response.body?.get(1)).isEqualTo(3)
+        assertThat(response.body?.get(4)).isEqualTo(3)
     }
 }

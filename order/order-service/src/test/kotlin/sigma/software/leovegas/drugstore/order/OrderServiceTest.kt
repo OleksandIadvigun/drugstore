@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -141,7 +140,7 @@ class OrderServiceTest @Autowired constructor(
         assertThat(orderDetails.orderItemDetails).hasSize(1)
         assertThat(orderDetails.orderItemDetails.iterator().next().name).isEqualTo("test1")
         assertThat(orderDetails.orderItemDetails.iterator().next().quantity).isEqualTo(3)
-       // assertThat(orderDetails.total).isEqualTo(BigDecimal("30").setScale(2)) // price multiply quantity //todo!!!!
+        // assertThat(orderDetails.total).isEqualTo(BigDecimal("30").setScale(2)) // price multiply quantity //todo!!!!
     }
 
     @Test
@@ -273,39 +272,6 @@ class OrderServiceTest @Autowired constructor(
         // when
         val exception = assertThrows<OrderNotFoundException> {
             orderService.updateOrder(nonExitingId, request)
-        }
-
-        // then
-        assertThat(exception.message).contains("Order", "was not found")
-    }
-
-    @Test
-    fun `should delete order`() {
-
-        // given
-        val orderToChange = transactionTemplate.execute {
-            orderRepository.save(
-                Order(
-                    orderItems = setOf(
-                        OrderItem(
-                            productId = 1L,
-                            quantity = 3
-                        )
-                    ),
-                )
-            )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
-
-        // when
-        transactionTemplate.execute {
-            orderService.deleteOrder(orderToChange.id)
-        } ?: fail("result is expected")
-
-        // and
-        val exception = assertThrows<OrderNotFoundException> {
-            transactionTemplate.execute {
-                orderService.getOrderById(orderToChange.id)
-            }
         }
 
         // then

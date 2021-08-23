@@ -45,7 +45,7 @@ data class Order(
 
     @NotEmpty // TODO: FIXME: Make sure its not possible to save an order without order items (write test)
     @JoinColumn(name = "order_id")
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
     val orderItems: Set<OrderItem> = setOf(),
 
     @NotNull

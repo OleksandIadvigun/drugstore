@@ -2,7 +2,6 @@ package sigma.software.leovegas.drugstore.order
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -48,11 +47,6 @@ class OrderResource(private val orderService: OrderService) {
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun updateOrder(@PathVariable("id") id: Long, @RequestBody updateOrderRequest: UpdateOrderRequest) =
         orderService.updateOrder(id, updateOrderRequest)
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteOrder(@PathVariable("id") id: Long) =
-        orderService.deleteOrder(id)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

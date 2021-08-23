@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
@@ -72,7 +71,7 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
             .assertThat().statusCode(200)
             .assertThat().body("orderItemDetails[0].name", equalTo("test1"))
             .assertThat().body("orderItemDetails[0].quantity", equalTo(3))
-           //.assertThat().body("orderItemDetails[0].price", equalTo(10))
-           //.assertThat().body("total", equalTo(30.0F)) // price multiply quantity   // todo!!!!!!
+        //.assertThat().body("orderItemDetails[0].price", equalTo(10))
+        //.assertThat().body("total", equalTo(30.0F)) // price multiply quantity   // todo!!!!!!
     }
 }

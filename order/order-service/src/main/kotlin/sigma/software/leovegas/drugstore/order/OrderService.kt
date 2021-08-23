@@ -49,11 +49,6 @@ class OrderService @Autowired constructor(
             updated.toOrderResponseDTO()
         }
 
-    fun deleteOrder(id: Long) {
-        val orderToDelete = getOrderById(id).toEntity()
-        orderRepository.delete(orderToDelete)
-    }
-
     fun getOrderDetails(id: Long): OrderDetailsDTO = id.run {
         val orderById = getOrderById(this)
         val productIdList = orderById.orderItems.map { it.productId }
@@ -66,26 +61,14 @@ class OrderService @Autowired constructor(
         }
         OrderDetailsDTO(
             orderItemDetails = orderItemDetails,
-           // total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
-           //.setScale(2)
-              total = BigDecimal("0.00")   // todo fix when it will be possible
+            // total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
+            //.setScale(2)
+            total = BigDecimal("0.00")   // todo fix when it will be possible
 
         )
     }
 
     fun getProductsIdToQuantity(): Map<Long, Int> {
-        val map = mutableMapOf<Long, Int>()
-        orderRepository.findAll().forEach { o ->
-            o.orderItems.forEach { i ->
-                if (map.keys.contains(i.productId)) {
-                    val prevQuantity = map[i.productId]
-                    val newQuantity = i.quantity + (prevQuantity ?: -1)
-                    map[i.productId] = newQuantity
-                } else {
-                    map[i.productId] = i.quantity
-                }
-            }
-        }
-        return map.toList().sortedByDescending { (_, value) -> value }.toMap()
+        return orderRepository.getIdToQuantity().associate { it.productId to it.quantity }
     }
 }
