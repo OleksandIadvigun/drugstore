@@ -9,18 +9,22 @@ import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.client.OrderClient
+import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
 import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 import sigma.software.leovegas.drugstore.store.client.StoreClient
 
 @Service
 @Transactional
 class AccountancyService @Autowired constructor(
-    private val repo: PriceItemRepository,
-    private val orderClient: OrderClient,
-    private val invoiceRepository: InvoiceRepository,
-    private val storeClient: StoreClient
+    val purchasedCostsRepository: PurchasedCostsRepository,
+    val priceItemRepository: PriceItemRepository,
+    val orderClient: OrderClient,
+    val invoiceRepository: InvoiceRepository,
+    val storeClient: StoreClient
 ) {
 
     companion object {
@@ -29,23 +33,43 @@ class AccountancyService @Autowired constructor(
     }
 
     fun createPriceItem(priceItemRequest: PriceItemRequest): PriceItemResponse = priceItemRequest.run {
-        repo.save(toEntity()).toPriceItemResponse()
+        priceItemRepository.save(toEntity()).toPriceItemResponse()
     }
 
     fun updatePriceItem(id: Long, priceItemRequest: PriceItemRequest): PriceItemResponse = priceItemRequest.run {
-        val toUpdate = repo
+        val toUpdate = priceItemRepository
             .findById(id)
             .orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
             .copy(productId = productId, price = price)
-        repo.saveAndFlush(toUpdate).toPriceItemResponse()
+        priceItemRepository.saveAndFlush(toUpdate).toPriceItemResponse()
     }
 
-    fun getProductsPrice(): Map<Long?, BigDecimal> = repo.findAll().associate { it.productId to it.price }
+    fun getProductsPrice(): Map<Long?, BigDecimal> =
+        priceItemRepository.findAll().associate { it.productId to it.price }
+
+    fun getProductsPriceByIds(ids: List<Long>): Map<Long?, BigDecimal> =
+        priceItemRepository.findAllByProductId(ids).associate { it.productId to it.price }
+
+    fun createPurchasedCosts(purchasedCostsRequest: PurchasedCostsRequest): PurchasedCostsResponse =
+        purchasedCostsRequest.run {
+            priceItemRepository.findById(this.priceItemId)
+                .orElseThrow { throw PriceItemNotFoundException(this.priceItemId) }
+            when {
+                storeClient.getStoreItemsByPriceItemsId(listOf(this.priceItemId)).isEmpty() -> {
+                    storeClient.createStoreItem(CreateStoreRequest(this.priceItemId, this.quantity))
+                }
+                else -> {
+                    storeClient.increaseQuantity(listOf(UpdateStoreRequest(this.priceItemId, this.quantity)))
+                }
+            }
+            purchasedCostsRepository.save(purchasedCostsRequest.toEntity()).toPurchasedCostsResponse()
+        }
 
     fun getProductsPriceByProductIds(ids: List<Long>): Map<Long?, BigDecimal> =
-        repo.findAllByProductId(ids).associate { it.productId to it.price }
+        priceItemRepository.findAllByProductId(ids).associate { it.productId to it.price }
 
-    fun getPriceItemsByIds(ids: List<Long>):List<PriceItemResponse> = repo.findAllById(ids).toPriceItemResponseList()
+    fun getPriceItemsByIds(ids: List<Long>): List<PriceItemResponse> =
+        priceItemRepository.findAllById(ids).toPriceItemResponseList()
 
     fun createInvoice(invoiceRequest: InvoiceRequest): InvoiceResponse = invoiceRequest.run {
         val isAlreadyExist = invoiceRepository.getInvoiceByOrderId(orderId)

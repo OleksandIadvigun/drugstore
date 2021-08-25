@@ -12,10 +12,10 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -23,7 +23,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
@@ -34,6 +33,8 @@ import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
@@ -49,8 +50,8 @@ import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 class AccountancyResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val restTemplate: TestRestTemplate,
-    val service: AccountancyService,
     val transactionalTemplate: TransactionTemplate,
+    val purchasedCostsRepository: PurchasedCostsRepository,
     val priceItemRepository: PriceItemRepository,
     val invoiceRepository: InvoiceRepository,
     val accountancyProperties: AccountancyProperties,
@@ -97,7 +98,7 @@ class AccountancyResourceTest @Autowired constructor(
     @Test
     fun `should create invoice`() {
 
-        // given
+        // setup
         wireMockServerStoreClient.start()
 
         // and
@@ -244,7 +245,7 @@ class AccountancyResourceTest @Autowired constructor(
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/price-item/${savedPriceItem.id}",
-            HttpMethod.PUT,
+            PUT,
             httpEntity,
             respTypeRef<PriceItemResponse>()
         )
@@ -280,7 +281,7 @@ class AccountancyResourceTest @Autowired constructor(
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/product-price",
-            HttpMethod.GET,
+            GET,
             null,
             respTypeRef<Map<Long?, BigDecimal>>()
         )
@@ -325,7 +326,7 @@ class AccountancyResourceTest @Autowired constructor(
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/price-by-product-ids?ids=1,2",
-            HttpMethod.GET,
+            GET,
             null,
             respTypeRef<Map<Long?, BigDecimal>>()
         )
@@ -410,8 +411,8 @@ class AccountancyResourceTest @Autowired constructor(
     @Test
     fun `should cancel invoice by id`() {
 
-        // given
-        wireMockServerStoreClient.start();
+        // setup
+        wireMockServerStoreClient.start()
 
         // and
         transactionalTemplate.execute {
@@ -508,7 +509,7 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.total).isEqualTo(BigDecimal("90.00"))
         assertThat(body.status).isEqualTo(InvoiceStatus.CANCELLED.toDTO())
 
-        wireMockServerStoreClient.stop();
+        wireMockServerStoreClient.stop()
     }
 
     @Test
@@ -537,7 +538,7 @@ class AccountancyResourceTest @Autowired constructor(
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/price-items-by-ids?ids=${ids[0]},${ids[1]}",
-            HttpMethod.GET,
+            GET,
             null,
             respTypeRef<List<PriceItemResponse>>()
         )
@@ -550,5 +551,120 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.size).isEqualTo(2)
         assertThat(body[0].price).isEqualTo(BigDecimal("1.00"))
         assertThat(body[1].price).isEqualTo(BigDecimal("10.00"))
+    }
+
+    @Test
+    fun `should create purchased costs`() {
+
+        // setup
+        wireMockServerStoreClient.start()
+
+        // given
+        transactionalTemplate.execute {
+            priceItemRepository.deleteAll()
+        }
+
+        // and
+        transactionalTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val priceItem = transactionalTemplate.execute {
+            priceItemRepository.save(
+                PriceItem(
+                    productId = 1L,
+                    price = BigDecimal("25.50")
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val storeIncreaseResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = priceItem.id ?: -1,
+                quantity = 12
+            )
+        )
+
+        // and
+        val storeGetResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = priceItem.id ?: -1,
+                quantity = 2
+            )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            get("/api/v1/store/price-ids/?ids=${priceItem.id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeGetResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/increase")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(priceItem.id ?: -1, 10)
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeIncreaseResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // and
+        val httpEntity = HttpEntity(
+            PurchasedCostsRequest(
+                priceItemId = priceItem.id ?: -1,
+                quantity = 10,
+            )
+        )
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/purchased-costs",
+            POST,
+            httpEntity,
+            respTypeRef<PurchasedCostsResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isNotNull
+        assertThat(body.quantity).isEqualTo(10)
+        assertThat(body.priceItemId).isEqualTo(priceItem.id)
+        assertThat(body.dateOfPurchase).isBefore(LocalDateTime.now())
+
+        wireMockServerStoreClient.stop()
     }
 }

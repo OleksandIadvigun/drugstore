@@ -3,9 +3,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
-
-    <!-- V20210729202901 where V means version 202107292029 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
-
+    <!-- V20210729202901 where V means version 2021 07 29 20 29 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
     <changeSet id="V20210818162101" author="OI">
         <createTable tableName="price_item">
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
@@ -41,6 +39,16 @@
             <column name="invoice_id" type="BIGINT">
                 <constraints foreignKeyName="fk_invoice_id" references="invoice(id)"/>
             </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="V20210825153504" author="VZ">
+        <createTable tableName="purchased_costs">
+            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="price_item_id" type="BIGINT"/>
+            <column name="quantity" type="INT"/>
+            <column name="date_of_purchased" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

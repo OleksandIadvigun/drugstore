@@ -5,6 +5,8 @@ import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 
 // PriceItemRequest -> PriceItem entity
 
@@ -48,3 +50,21 @@ fun ProductItem.toDTO() = ProductItemDTO(
 )
 
 fun Set<ProductItem>.toDTOs(): Set<ProductItemDTO> = this.map { it.toDTO() }.toSet()
+
+// PurchasedCostsRequest -> PurchasedCosts entity
+
+fun PurchasedCostsRequest.toEntity() = PurchasedCosts(
+    priceItemId = priceItemId,
+    quantity = quantity
+)
+
+// PurchasedCosts entity -> PurchasedCostsResponse
+
+fun PurchasedCosts.toPurchasedCostsResponse() = PurchasedCostsResponse(
+    id = id ?: -1,
+    priceItemId = priceItemId,
+    quantity = quantity,
+    dateOfPurchase = dateOfPurchase
+)
+
+fun List<PurchasedCosts>.toPurchasedCostsResponseList() = this.map(PurchasedCosts::toPurchasedCostsResponse)

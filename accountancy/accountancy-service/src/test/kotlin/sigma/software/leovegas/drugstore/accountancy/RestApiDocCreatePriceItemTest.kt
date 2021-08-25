@@ -18,7 +18,6 @@ class RestApiDocCreatePriceItemTest @Autowired constructor(
     val accountancyProperties: AccountancyProperties
 ) : RestApiDocumentationTest() {
 
-
     @Test
     fun `should create price item`() {
 

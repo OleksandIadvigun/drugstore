@@ -275,7 +275,18 @@ Feature: Accounting
     invoice status = PAID
     """
 
-  Scenario: As a user I should get past purchased goods
+  Scenario: As a user I should create purchased costs
+    Given previously created price item
+    When send Post request
+    Then receive response with response body:
+    """
+    id,
+    price item id
+    quantity,
+    date of purchase
+    """
+
+  Scenario: As a user I should get past purchased items
     Given previously created paid invoices
     When send Get request
     Then receive response with response body:
@@ -293,7 +304,7 @@ Feature: Accounting
     income
     """
 
-  Scenario: As a user I should calculate last month purchase costs
+  Scenario: As a user I should calculate last month purchased costs
     Given previously created price items
     When send Get request
     Then receive response with response body:

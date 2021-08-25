@@ -14,6 +14,11 @@ data class InvoiceRequest(
     val orderId: Long = -1,
 )
 
+data class PurchasedCostsRequest(
+    val priceItemId: Long = -1,
+    val quantity: Int = -1,
+)
+
 // Response
 
 data class PriceItemResponse(
@@ -51,4 +56,10 @@ data class ProductItemDTO(
 )
 
 
+data class PurchasedCostsResponse(
+    val id: Long = -1,
+    val priceItemId: Long = -1,
+    val quantity: Int = -1,
+    val dateOfPurchase: LocalDateTime? = null,
+)
 

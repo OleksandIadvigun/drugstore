@@ -38,3 +38,12 @@ include::{snippets}/get-products-price-by-ids/http-request.adoc[]
 .PriceItemResponse
 include::{snippets}/get-products-price-by-ids/http-response.adoc[]
 
+== Create purchased costs
+
+.PriceItemRequest
+include::{snippets}/create-purchased-costs/http-request.adoc[]
+
+.PriceItemResponse
+include::{snippets}/create-purchased-costs/http-response.adoc[]
+
+

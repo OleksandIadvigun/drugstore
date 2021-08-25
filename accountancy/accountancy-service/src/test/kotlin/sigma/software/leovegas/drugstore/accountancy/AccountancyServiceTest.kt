@@ -27,6 +27,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
@@ -34,16 +35,17 @@ import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.store.api.StoreResponse
 import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureTestDatabase
 @AutoConfigureWireMock(port = 8082)
 @DisplayName("Accountancy Service test")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AccountancyServiceTest @Autowired constructor(
     val service: AccountancyService,
     val transactionTemplate: TransactionTemplate,
-    val priceItemRepository: PriceItemRepository,
     val invoiceRepository: InvoiceRepository,
-    val objectMapper: ObjectMapper
+    val objectMapper: ObjectMapper,
+    val priceItemRepository: PriceItemRepository,
+    val purchasedCostsRepository: PurchasedCostsRepository
 ) {
 
     private val wireMockServerStoreClient = WireMockServer(wireMockConfig().port(8083))
@@ -483,5 +485,127 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual[0].price).isEqualTo(BigDecimal("25.50"))
         assertThat(actual[1].price).isEqualTo(BigDecimal("35.50"))
         assertThat(actual[2].price).isEqualTo(BigDecimal("45.50"))
+    }
+
+    @Test
+    fun `should create purchased costs`() {
+
+        wireMockServerStoreClient.start()
+
+        // given
+        transactionTemplate.execute {
+            priceItemRepository.deleteAll()
+        }
+
+        // and
+        transactionTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val priceItem = transactionTemplate.execute {
+            priceItemRepository.save(
+                PriceItem(
+                    productId = 1,
+                    price = BigDecimal("25.50")
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val purchasedCostsRequest = PurchasedCostsRequest(
+            priceItemId = priceItem.id ?: -1,
+            quantity = 10,
+        )
+
+        // and
+        val storeIncreaseResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = priceItem.id ?: -1,
+                quantity = 12
+            )
+        )
+
+        // and
+        val storeGetResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = priceItem.id ?: -1,
+                quantity = 2
+            )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            get("/api/v1/store/price-ids/?ids=${priceItem.id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeGetResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/increase")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(priceItem.id ?: -1, 10)
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeIncreaseResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val actual = service.createPurchasedCosts(purchasedCostsRequest)
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual.id).isNotNull
+        assertThat(actual.quantity).isEqualTo(10)
+        assertThat(actual.priceItemId).isEqualTo(priceItem.id)
+        assertThat(actual.dateOfPurchase).isBefore(LocalDateTime.now())
+
+        wireMockServerStoreClient.stop()
+    }
+
+    @Test
+    fun `should not create purchased costs with not existing price item`() {
+
+        // given
+        val purchasedCostsRequest = PurchasedCostsRequest(
+            priceItemId = -1,
+            quantity = 10,
+        )
+
+        // when
+        val exception = assertThrows<PriceItemNotFoundException> {
+            service.createPurchasedCosts(purchasedCostsRequest)
+        }
+
+        // then
+        assertThat(exception.message).contains("Price Item with id", "was not found")
     }
 }

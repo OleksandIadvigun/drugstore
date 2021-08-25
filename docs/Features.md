@@ -55,7 +55,8 @@
 - [X] Cancel Invoice
 - [ ] Get Refund
 - [ ] Pay Invoice
-- [ ] Get past purchased goods
+- [X] Create purchased costs
+- [ ] Get past purchased items
 - [ ] Calculate last month income
 - [ ] Calculate last month purchase costs
 - [ ] Credit, debit ??? account details

@@ -20,6 +20,8 @@ import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 import sigma.software.leovegas.drugstore.api.ApiError
 
 @RestController
@@ -68,10 +70,16 @@ class AccountancyResource(private val service: AccountancyService) {
     fun getPriceItemsByIds(@RequestParam ids: List<Long>): List<PriceItemResponse> =
         service.getPriceItemsByIds(ids)
 
+    @ResponseStatus(CREATED)
+    @PostMapping("/purchased-costs")
+    fun createPurchasedCosts(@RequestBody purchasedCostsRequest: PurchasedCostsRequest): PurchasedCostsResponse =
+        service.createPurchasedCosts(purchasedCostsRequest)
+
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {
             is ResourceNotFoundException -> HttpStatus.BAD_REQUEST
+            is PriceItemNotFoundException -> HttpStatus.BAD_REQUEST
             else -> HttpStatus.BAD_REQUEST
         }
         ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))

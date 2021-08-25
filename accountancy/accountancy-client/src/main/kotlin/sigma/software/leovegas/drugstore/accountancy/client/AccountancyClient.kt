@@ -8,6 +8,8 @@ import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 
 @Headers("Content-Type: application/json")
 interface AccountancyClient {
@@ -41,4 +43,7 @@ interface AccountancyClient {
 
     @RequestLine("GET api/v1/accountancy/price-items-by-ids/ids={ids}")
     fun getPriceItemsByIds(@Param ids: List<Long>): List<PriceItemResponse>
+
+    @RequestLine("POST api/v1/accountancy/purchased-costs")
+    fun createPurchasedCosts(request: PurchasedCostsRequest): PurchasedCostsResponse
 }
