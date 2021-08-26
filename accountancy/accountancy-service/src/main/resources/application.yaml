@@ -24,10 +24,13 @@ order:
   host: ${ORDER_HOST:order}
   port: ${ORDER_PORT:8082}
 store:
-  host: ${STORE_HOST:order}
+  host: ${STORE_HOST:store}
   port: ${STORE_PORT:8083}
 accountancy:
   host: ${ACCOUNTANCY_HOST:accountancy}
   port: ${ACCOUNTANCY_PORT:8084}
+  invoice:
+    time-to-live-days: "3"
+    scheduled-cron-expression: "0 0 12 * * ?"
 server:
   port: 8084

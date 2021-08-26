@@ -23,7 +23,7 @@ class RestApiDocGetInvoiceByOrderIdTest @Autowired constructor(
     fun `should get invoice by order id`() {
 
         // given
-        transactionTemplate.execute{
+        transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 

@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
@@ -80,7 +81,7 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should create invoice`() {
 
         // given
-        transactionTemplate.execute{
+        transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
@@ -256,8 +257,13 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should cancel invoice by id`() {
 
-        // given
+        // setup
         wireMockServerStoreClient.start()
+
+        // given
+        transactionTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
 
         // and
         val savedInvoice = transactionTemplate.execute {
@@ -342,6 +348,100 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual.createdAt).isBefore(LocalDateTime.now())
 
         // and
+        wireMockServerStoreClient.stop()
+    }
+
+    @Test
+    fun `should cancel order with order status and createdAt less than`() {
+
+        // setup
+        wireMockServerStoreClient.start()
+
+        // given
+        transactionTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
+        // and
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1,
+                    total = BigDecimal("90.00"),
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    ),
+                    status = InvoiceStatus.CREATED
+                )
+            )
+        } ?: fail("result is expected")
+
+        stubFor(
+            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.CANCELLED)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.CANCELLED))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // and
+        val storeResponse = listOf(
+            StoreResponse(
+                id = 1L,
+                priceItemId = 1L,
+                quantity = 5
+            )
+        )
+
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/increase")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(1L, 3)
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val expiredInvoice = service.cancelExpiredInvoice(LocalDateTime.now().plusDays(10L))
+
+        // then
+        assertThat(expiredInvoice[0].status).isEqualTo(InvoiceStatusDTO.CANCELLED)
+
         wireMockServerStoreClient.stop()
     }
 
@@ -591,7 +691,7 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual.id).isNotNull
         assertThat(actual.quantity).isEqualTo(10)
         assertThat(actual.priceItemId).isEqualTo(priceItem.id)
-        assertThat(actual.dateOfPurchase).isBefore(LocalDateTime.now())
+        assertThat(actual.dateOfPurchase).isBeforeOrEqualTo(LocalDateTime.now())
 
         wireMockServerStoreClient.stop()
     }

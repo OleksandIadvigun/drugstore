@@ -376,7 +376,7 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should get invoice by order id`() {
 
         // given
-        transactionalTemplate.execute{
+        transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
@@ -404,7 +404,7 @@ class AccountancyResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isEqualTo(savedInvoice.id)
-        assertThat(body.id).isEqualTo(savedInvoice.orderId)
+        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
         assertThat(body.total).isEqualTo(BigDecimal("90.00"))
     }
 

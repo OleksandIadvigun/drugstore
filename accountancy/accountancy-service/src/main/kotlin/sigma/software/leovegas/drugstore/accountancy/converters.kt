@@ -39,8 +39,14 @@ fun Invoice.toInvoiceResponse() = InvoiceResponse(
     expiredAt = createdAt,
 )
 
+fun List<Invoice>.toInvoiceResponseList() = this.map(Invoice::toInvoiceResponse)
+
+// InvoiceStatus -> InvoiceStatusDTO
+
 fun InvoiceStatus.toDTO(): InvoiceStatusDTO =
     InvoiceStatusDTO.valueOf(name)
+
+// ProductItem entity -> ProductItemDTO
 
 fun ProductItem.toDTO() = ProductItemDTO(
     priceItemId = priceItemId ?: -1,

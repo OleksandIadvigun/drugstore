@@ -120,4 +120,13 @@ class AccountancyService @Autowired constructor(
         orderClient.changeOrderStatus(invoice.orderId ?: -1, OrderStatusDTO.CANCELLED)
         return invoiceRepository.saveAndFlush(toUpdate).toInvoiceResponse()
     }
+
+    fun cancelExpiredInvoice(date: LocalDateTime): List<InvoiceResponse> {
+        val invoiceToCancelList =
+            invoiceRepository.findAllByStatusAndCreatedAtLessThan(InvoiceStatus.CREATED, date)
+        invoiceToCancelList.forEach {
+            cancelInvoice(it.id ?: -1)
+        }
+        return invoiceToCancelList.toInvoiceResponseList()
+    }
 }

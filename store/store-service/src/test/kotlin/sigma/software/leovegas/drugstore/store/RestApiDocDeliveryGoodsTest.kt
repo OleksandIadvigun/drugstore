@@ -9,7 +9,6 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import io.restassured.http.ContentType
 import java.math.BigDecimal
-import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -88,7 +87,7 @@ class RestApiDocDeliveryGoodsTest @Autowired constructor(
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(
                 "DELIVERED"
-                )
+            )
 
         of("delivery-goods").`when`()
             .pathParam("invoice-id", 1)

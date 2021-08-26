@@ -57,7 +57,7 @@ class StoreService @Autowired constructor(
         storeItems
     }
 
-    fun deliverGoods(orderId: Long) :String {
+    fun deliverGoods(orderId: Long): String {
         val invoice = accountancyClient.getInvoiceByOrderId(orderId)
         if (invoice.status != InvoiceStatusDTO.PAID) {
             throw InvoiceNotPaidException(invoice.id)
