@@ -1,6 +1,11 @@
 package sigma.software.leovegas.drugstore.store
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -13,8 +18,13 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
+import sigma.software.leovegas.drugstore.order.api.OrderResponse
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
 import sigma.software.leovegas.drugstore.store.api.StoreResponse
 import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
@@ -25,7 +35,6 @@ class StoreResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val restTemplate: TestRestTemplate,
     val transactionTemplate: TransactionTemplate,
-    val storeService: StoreService,
     val storeRepository: StoreRepository,
     val objectMapper: ObjectMapper,
     val storeProperties: StoreProperties
@@ -283,5 +292,76 @@ class StoreResourceTest @Autowired constructor(
         assertThat(body[0].id).isEqualTo(created?.id ?: -1)
         assertThat(body[0].priceItemId).isEqualTo(created?.priceItemId ?: -1)
         assertThat(body[0].quantity).isEqualTo(10)
+    }
+
+    @Test
+    fun `should deliver goods`() {
+
+        // setup
+        val wireMockServer8084 = WireMockServer(8084)
+        val wireMockServer8082 = WireMockServer(8082)
+        wireMockServer8084.start()
+        wireMockServer8082.start()
+
+        // given
+        wireMockServer8084.stubFor(
+            WireMock.get("/api/v1/accountancy/invoice/order-id/1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    WireMock.aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    InvoiceResponse(
+                                        id = 1,
+                                        orderId = 1,
+                                        total = BigDecimal("90.00"),
+                                        status = InvoiceStatusDTO.PAID
+                                    )
+                                )
+                        )
+                )
+        )
+
+        // and
+        wireMockServer8082.stubFor(
+            WireMock.put("/api/v1/orders/change-status/1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.DELIVERED)
+                    )
+                )
+                .willReturn(
+                    WireMock.aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.DELIVERED))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/store/delivery/1",
+            HttpMethod.PUT, null, respTypeRef<String>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).isEqualTo("DELIVERED")
+
+        wireMockServer8082.stop()
+        wireMockServer8084.stop()
+
     }
 }

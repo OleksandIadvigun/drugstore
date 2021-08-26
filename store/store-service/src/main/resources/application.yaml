@@ -26,5 +26,8 @@ order:
 store:
   host: ${STORE_HOST:order}
   port: ${STORE_PORT:8083}
+accountancy:
+  host: ${ACCOUNTANCY_HOST:accountancy}
+  port: ${ACCOUNTANCY_PORT:8084}
 server:
   port: 8083

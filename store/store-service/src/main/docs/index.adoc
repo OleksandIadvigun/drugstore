@@ -53,3 +53,11 @@ include::{snippets}/check-quantity/http-request.adoc[]
 
 .StoreResponse
 include::{snippets}/check-quantity/http-response.adoc[]
+
+== Delivery goods
+
+.UpdateStoreRequest
+include::{snippets}/delivery-goods/http-request.adoc[]
+
+.StoreResponse
+include::{snippets}/delivery-goods/http-response.adoc[]

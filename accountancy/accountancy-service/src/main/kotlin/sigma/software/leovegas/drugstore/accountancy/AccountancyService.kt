@@ -77,6 +77,12 @@ class AccountancyService @Autowired constructor(
         .orElseThrow { throw ResourceNotFoundException(String.format(messageForInvoice, id)) }
         .toInvoiceResponse()
 
+    fun getInvoiceByOrderId(id: Long): InvoiceResponse =
+        invoiceRepository
+            .getInvoiceByOrderId(id)
+            .orElseThrow { throw ResourceNotFoundException(String.format(messageForInvoice, id)) }
+            .toInvoiceResponse()
+
     fun cancelInvoice(id: Long): InvoiceResponse {
         val invoice = invoiceRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Not found invoice with this id")

@@ -55,6 +55,10 @@ class AccountancyResource(private val service: AccountancyService) {
     fun getInvoiceById(@PathVariable id: Long): InvoiceResponse = service.getInvoiceById(id)
 
     @ResponseStatus(OK)
+    @GetMapping("/invoice/order-id/{id}")
+    fun getInvoiceByOrderId(@PathVariable id: Long): InvoiceResponse = service.getInvoiceByOrderId(id)
+
+    @ResponseStatus(OK)
     @GetMapping("/price-by-product-ids")
     fun getProductsPriceByProductIds(@RequestParam ids: List<Long>): Map<Long?, BigDecimal> =
         service.getProductsPriceByProductIds(ids)

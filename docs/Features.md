@@ -42,7 +42,7 @@
 - [X] Increase store item's quantity
 - [X] Reduce store item's quantity
 - [X] Check availability of products
-- [ ] Shipment of goods
+- [X] Delivery of goods
 
 ### Accountancy
 

@@ -7,4 +7,6 @@ product:
 store:
   host: 127.0.0.3
   port: 8083
-
+accountancy:
+  host: 127.0.0.4
+  port: 8084

@@ -27,4 +27,7 @@ interface StoreClient {
 
     @RequestLine("PUT /api/v1/store/check")
     fun checkAvailability(requests: List<UpdateStoreRequest>): List<StoreResponse>
+
+    @RequestLine("PUT /api/v1/store/delivery/{id}")
+    fun deliverGoods(@Param id: Long): String
 }

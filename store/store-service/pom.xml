@@ -23,6 +23,14 @@
             <groupId>sigma.software.leovegas.drugstore.store.api</groupId>
             <artifactId>store-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.accountancy.client</groupId>
+            <artifactId>accountancy-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.order.client</groupId>
+            <artifactId>order-client</artifactId>
+        </dependency>
         <!---->
         <dependency>
             <groupId>org.hsqldb</groupId>

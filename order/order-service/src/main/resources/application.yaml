@@ -23,6 +23,9 @@ product:
 order:
   host: ${ORDER_HOST:order}
   port: ${ORDER_PORT:8082}
+store:
+  host: ${STORE_HOST:order}
+  port: ${STORE_PORT:8083}
 accountancy:
   host: ${ACCOUNTANCY_HOST:accountancy}
   port: ${ACCOUNTANCY_PORT:8084}

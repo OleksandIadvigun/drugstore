@@ -1,13 +1,22 @@
 package sigma.software.leovegas.drugstore.store
 
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
+import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
 import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 
 @Service
 @Transactional
-class StoreService(private val storeRepository: StoreRepository) {
+class StoreService @Autowired constructor(
+    val storeRepository: StoreRepository,
+    val orderClient: OrderClient,
+    val accountancyClient: AccountancyClient
+) {
 
     fun createStoreItem(storeRequest: CreateStoreRequest) = storeRequest.run {
         if (getStoreItemsByPriceItemsId(listOf(this.priceItemId)).isNotEmpty()) {
@@ -48,8 +57,12 @@ class StoreService(private val storeRepository: StoreRepository) {
         storeItems
     }
 
-    fun deliverGoods(orderId: Long) {
-        // TODO: 8/18/2021  check invoice with orderId is PAID ->
-        // TODO: 8/18/2021  change order status DELIVERED
+    fun deliverGoods(orderId: Long) :String {
+        val invoice = accountancyClient.getInvoiceByOrderId(orderId)
+        if (invoice.status != InvoiceStatusDTO.PAID) {
+            throw InvoiceNotPaidException(invoice.id)
+        }
+        orderClient.changeOrderStatus(invoice.orderId, OrderStatusDTO.DELIVERED)
+        return "DELIVERED"
     }
 }

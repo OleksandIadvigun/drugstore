@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -46,11 +47,16 @@ class StoreResource(private val storeService: StoreService) {
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun checkAvailability(@RequestBody requests: List<UpdateStoreRequest>) = storeService.checkAvailability(requests)
 
+    @PutMapping("/delivery/{id}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    fun deliverGoods(@PathVariable("id") id: Long) = storeService.deliverGoods(id)
+
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {
             is StoreItemWithThisPriceItemAlreadyExistException -> HttpStatus.BAD_REQUEST
             is InsufficientAmountOfStoreItemException -> HttpStatus.BAD_REQUEST
+            is InvoiceNotPaidException -> HttpStatus.BAD_REQUEST
             else -> HttpStatus.BAD_REQUEST
         }
         ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))

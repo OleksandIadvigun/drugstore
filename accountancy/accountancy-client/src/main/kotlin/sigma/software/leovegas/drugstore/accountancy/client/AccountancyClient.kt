@@ -30,6 +30,9 @@ interface AccountancyClient {
     @RequestLine("GET api/v1/accountancy/invoice/{id}")
     fun getInvoiceById(@Param id: Long): InvoiceResponse
 
+    @RequestLine("GET api/v1/accountancy/invoice/order-id/{id}")
+    fun getInvoiceByOrderId(@Param id: Long): InvoiceResponse
+
     @RequestLine("GET api/v1/accountancy/product-price-by-ids/ids={ids}")
     fun getProductsPriceByIds(@Param ids: List<Long>): Map<Long, BigDecimal>
 

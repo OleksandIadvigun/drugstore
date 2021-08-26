@@ -1,5 +1,13 @@
 package sigma.software.leovegas.drugstore.store
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -8,7 +16,13 @@ import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
+import sigma.software.leovegas.drugstore.order.api.OrderResponse
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
 import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 
@@ -19,6 +33,7 @@ class StoreServiceTest @Autowired constructor(
     val storeRepository: StoreRepository,
     val transactionTemplate: TransactionTemplate,
     val storeService: StoreService,
+    val objectMapper: ObjectMapper
 ) {
 
     @Test
@@ -277,5 +292,67 @@ class StoreServiceTest @Autowired constructor(
 
         // then
         assertThat(actual[0].quantity).isEqualTo(7) // 10-3=7
+    }
+
+    @Test
+    fun `should deliver goods`() {
+
+        // setup
+        val wireMockServer8084 = WireMockServer(8084)
+        val wireMockServer8082 = WireMockServer(8082)
+        wireMockServer8084.start()
+        wireMockServer8082.start()
+
+        // given
+        wireMockServer8084.stubFor(
+            get("/api/v1/accountancy/invoice/order-id/1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    InvoiceResponse(
+                                        id = 1,
+                                        orderId = 1,
+                                        total = BigDecimal("90.00"),
+                                        status = InvoiceStatusDTO.PAID
+                                    )
+                                )
+                        )
+                )
+        )
+
+        // and
+        wireMockServer8082.stubFor(
+            put("/api/v1/orders/change-status/1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.DELIVERED)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.DELIVERED))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+
+        // when
+        val delivery = storeService.deliverGoods(1)
+
+        // then
+        assertThat(delivery).isEqualTo("DELIVERED")
+        wireMockServer8082.stop()
+        wireMockServer8084.stop()
     }
 }

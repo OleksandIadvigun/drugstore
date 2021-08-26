@@ -8,3 +8,7 @@ class InsufficientAmountOfStoreItemException(id: Long) : RuntimeException(
     "Insufficient amount of store with price item id = $id "
 )
 
+class InvoiceNotPaidException(id: Long) : RuntimeException(
+    "Invoice with id = $id not paid !"
+)
+

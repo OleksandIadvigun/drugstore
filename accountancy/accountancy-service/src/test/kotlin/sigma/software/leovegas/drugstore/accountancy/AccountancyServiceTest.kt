@@ -78,7 +78,12 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should create invoice`() {
 
         // given
-        wireMockServerStoreClient.start();
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
+        wireMockServerStoreClient.start()
 
         // and
         val invoiceRequest = InvoiceRequest(
@@ -217,10 +222,40 @@ class AccountancyServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get invoice by order id`() {
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    productItems = setOf(
+                        ProductItem(
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val actual = service.getInvoiceByOrderId(savedInvoice.orderId ?: -1)
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual.id).isEqualTo(savedInvoice.id)
+        assertThat(actual.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(actual.total).isEqualTo(savedInvoice.total)
+    }
+
+    @Test
     fun `should cancel invoice by id`() {
 
         // given
-        wireMockServerStoreClient.start();
+        wireMockServerStoreClient.start()
 
         // and
         val savedInvoice = transactionTemplate.execute {
@@ -305,7 +340,7 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual.createdAt).isBefore(LocalDateTime.now())
 
         // and
-        wireMockServerStoreClient.stop();
+        wireMockServerStoreClient.stop()
     }
 
     @Test

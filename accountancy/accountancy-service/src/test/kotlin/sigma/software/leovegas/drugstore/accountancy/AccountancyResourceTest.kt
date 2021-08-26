@@ -372,6 +372,42 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get invoice by order id`() {
+
+        // given
+        transactionalTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // given
+        val savedInvoice = transactionalTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1,
+                    total = BigDecimal("90.00")
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/invoice/order-id/1",
+            GET,
+            null,
+            respTypeRef<InvoiceResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isEqualTo(savedInvoice.id)
+        assertThat(body.id).isEqualTo(savedInvoice.orderId)
+        assertThat(body.total).isEqualTo(BigDecimal("90.00"))
+    }
+
+    @Test
     fun `should cancel invoice by id`() {
 
         // given
