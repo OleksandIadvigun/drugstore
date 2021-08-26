@@ -230,6 +230,13 @@ Feature: Accounting
     updatedAt
     """
 
+  Scenario: As a user I should get price items by products ids
+    When send Get Request with ids
+    Then receive response with response body equal to price items with:
+    """
+    id = ids
+    """
+
   Scenario: As a user I should create invoice
     Given previously created order
     When send Post request with order id

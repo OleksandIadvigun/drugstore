@@ -4,4 +4,7 @@ product:
 order:
   host: 127.0.0.2
   port: 8082
+accountancy:
+  host: 127.0.0.4
+  port: 8084
 

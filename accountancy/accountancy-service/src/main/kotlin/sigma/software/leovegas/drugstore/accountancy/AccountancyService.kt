@@ -65,8 +65,8 @@ class AccountancyService @Autowired constructor(
             purchasedCostsRepository.save(purchasedCostsRequest.toEntity()).toPurchasedCostsResponse()
         }
 
-    fun getProductsPriceByProductIds(ids: List<Long>): Map<Long?, BigDecimal> =
-        priceItemRepository.findAllByProductId(ids).associate { it.productId to it.price }
+    fun getProductsPriceByProductIds(ids: List<Long>): List<PriceItemResponse> =
+        priceItemRepository.findAllByProductId(ids).toPriceItemResponseList()
 
     fun getPriceItemsByIds(ids: List<Long>): List<PriceItemResponse> =
         priceItemRepository.findAllById(ids).toPriceItemResponseList()

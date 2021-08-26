@@ -40,12 +40,14 @@ include::{snippets}/get-products-by-ids/http-response.adoc[]
 
 == Get products
 
+By default is sorted by popularity without price with 5 items on 1 page
+
 === Possible path variables:
 
 - page (number of the page)
 - size (how many items on the page)
 - search ( keyword for search by fields)
-- sortField (field for sorting)
+- sortField (name, price, createdAt)
 - sortDirection (ASC/DESC directions)
 
 .Request

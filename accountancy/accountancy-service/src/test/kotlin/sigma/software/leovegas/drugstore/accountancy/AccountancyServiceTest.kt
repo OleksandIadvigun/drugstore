@@ -421,6 +421,11 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should get products price by products ids`() {
 
         // given
+        transactionTemplate.execute {
+            priceItemRepository.deleteAll()
+        }
+
+        // and
         val saved = transactionTemplate.execute {
             priceItemRepository.saveAll(
                 listOf(
@@ -442,8 +447,8 @@ class AccountancyServiceTest @Autowired constructor(
         // then
         assertThat(actual).isNotNull
         assertThat(actual.size).isEqualTo(2)
-        assertThat(saved[0].price).isEqualTo(actual[1])
-        assertThat(saved[1].price).isEqualTo(actual[2])
+        assertThat(actual[0].price).isEqualTo(BigDecimal("25.50"))
+        assertThat(actual[1].price).isEqualTo(BigDecimal("35.50"))
     }
 
     @Test

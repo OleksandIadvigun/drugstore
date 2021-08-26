@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
+import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 
 @SpringBootApplication
 internal class GetProductsPriceByProductIdsFeignClientWireMockApp
@@ -29,9 +30,15 @@ class GetProductsPriceByProductIdsFeignClientWireMock @Autowired constructor(
     fun `should get products price by products ids`() {
 
         // given
-        val responseExpected = mapOf(
-            1L to BigDecimal("20.00"),
-            2L to BigDecimal("40.00")
+        val responseExpected = listOf(
+            PriceItemResponse(
+                productId = 1L,
+                price = BigDecimal("20.00")
+            ),
+            PriceItemResponse(
+                productId = 2L,
+                price = BigDecimal("40.00")
+            )
         )
 
         //and
@@ -55,7 +62,7 @@ class GetProductsPriceByProductIdsFeignClientWireMock @Autowired constructor(
 
         //  then
         assertThat(responseActual.size).isEqualTo(2)
-        assertThat(responseActual[1]).isEqualTo(BigDecimal("20.00"))
-        assertThat(responseActual[2]).isEqualTo(BigDecimal("40.00"))
+        assertThat(responseActual[0].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(responseActual[1].price).isEqualTo(BigDecimal("40.00"))
     }
 }

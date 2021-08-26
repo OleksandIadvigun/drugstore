@@ -62,7 +62,7 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(OK)
     @GetMapping("/price-by-product-ids")
-    fun getProductsPriceByProductIds(@RequestParam ids: List<Long>): Map<Long?, BigDecimal> =
+    fun getProductsPriceByProductIds(@RequestParam ids: List<Long>): List<PriceItemResponse> =
         service.getProductsPriceByProductIds(ids)
 
     @ResponseStatus(OK)

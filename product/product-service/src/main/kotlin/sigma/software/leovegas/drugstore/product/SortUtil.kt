@@ -8,7 +8,7 @@ class SortUtil {
     companion object {
         fun getSort(sortField: String?, sortDirection: String): Sort {
             val sort: Sort =
-                if (sortField == "default") {
+                if (sortField == "default"|| sortField == "price") {
                     Sort.unsorted()
                 } else {
                     if ("ASC" == sortDirection) {

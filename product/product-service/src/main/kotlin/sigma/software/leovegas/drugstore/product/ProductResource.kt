@@ -41,7 +41,7 @@ class ProductResource(private val service: ProductService) {
         @RequestParam(defaultValue = "5") size: Int,
         @RequestParam(defaultValue = "") search: String,
         @RequestParam(defaultValue = "default") sortField: String,
-        @RequestParam(defaultValue = "ASC") sortDirection: String
+        @RequestParam(defaultValue = "DESC") sortDirection: String
     ): Page<ProductResponse> = service.getAll(page, size, search, sortField, sortDirection)
 
     @ResponseStatus(OK)

@@ -328,7 +328,7 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/price-by-product-ids?ids=1,2",
             GET,
             null,
-            respTypeRef<Map<Long?, BigDecimal>>()
+            respTypeRef<List<PriceItemResponse>>()
         )
 
         // then
@@ -337,8 +337,8 @@ class AccountancyResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.size).isEqualTo(2)
-        assertThat(body[1]).isEqualTo(BigDecimal("1.00"))
-        assertThat(body[2]).isEqualTo(BigDecimal("1.00"))
+        assertThat(body[0].price).isEqualTo(BigDecimal("1.00"))
+        assertThat(body[1].price).isEqualTo(BigDecimal("1.00"))
     }
 
     @Test
