@@ -44,7 +44,7 @@ class ProductService(
             val convertedToDto = responseList.content.toProductResponseList().associateBy { it.id }
             var response = listOf<ProductResponse?>()
             val productsWithPrice: List<ProductResponse?> =
-                prices.map { el -> convertedToDto[el.productId]?.copy(price = el.price) }
+                prices.map { el -> convertedToDto[el.productId]?.copy(price = el.price, priceItemId = el.id) }
             when (sortField) {
                 "name" -> {
                     response = if (sortDirection == "DESC") {

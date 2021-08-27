@@ -22,7 +22,8 @@ include::{snippets}/update-price-item/http-request.adoc[]
 .PriceItemResponse
 include::{snippets}/update-price-item/http-response.adoc[]
 
-== Get price by Product ids
+== Get price by products ids
+
 By default price return calculated according markup
 
 possible path variable: markup=(true/false)
@@ -32,14 +33,6 @@ include::{snippets}/get-products-price-by-products-ids/http-request.adoc[]
 
 .Response
 include::{snippets}/get-products-price-by-products-ids/http-response.adoc[]
-
-== Get price by Product ids
-
-.Request
-include::{snippets}/get-products-price/http-request.adoc[]
-
-.Response
-include::{snippets}/get-products-price/http-response.adoc[]
 
 == Get price by ids
 
@@ -57,6 +50,14 @@ include::{snippets}/create-purchased-costs/http-request.adoc[]
 .PriceItemResponse
 include::{snippets}/create-purchased-costs/http-response.adoc[]
 
+== Get markups
+
+.request
+include::{snippets}/get-markups/http-request.adoc[]
+
+.markupUpdateResponse
+include::{snippets}/get-markups/http-response.adoc[]
+
 == Update markups
 
 .MarkupUpdateRequest
@@ -65,10 +66,6 @@ include::{snippets}/update-markup-in-price-item/http-request.adoc[]
 .MarkupUpdateResponse
 include::{snippets}/update-markup-in-price-item/http-response.adoc[]
 
-== get markups
-
-.request
-include::{snippets}/get-markups/http-request.adoc[]
 == Create invoice
 
 .InvoiceRequest
@@ -101,6 +98,14 @@ include::{snippets}/get-invoice-by-id/http-request.adoc[]
 .InvoiceResponse
 include::{snippets}/get-invoice-by-id/http-response.adoc[]
 
+== Get markups by price item ids
+
+.request
+include::{snippets}/get-markups-by-price-item-ids/http-request.adoc[]
+
+.MarkupUpdateResponse
+include::{snippets}/get-markups-by-price-item-ids/http-response.adoc[]
+
 == Get invoice by  order id
 
 .Request
@@ -111,18 +116,8 @@ include::{snippets}/get-invoice-by-order-id/http-response.adoc[]
 
 == Refund invoice
 
-.MarkupUpdateResponse
-include::{snippets}/get-markups/http-response.adoc[]
 .Request
 include::{snippets}/refund-invoice/http-request.adoc[]
 
 .InvoiceResponse
 include::{snippets}/refund-invoice/http-response.adoc[]
-
-== get markups by price item ids
-
-.request
-include::{snippets}/get-markups-by-price-item-ids/http-request.adoc[]
-
-.MarkupUpdateResponse
-include::{snippets}/get-markups-by-price-item-ids/http-response.adoc[]

@@ -57,8 +57,8 @@ class OrderServiceTest @Autowired constructor(
         assertThat(created.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
         assertThat(created.orderItems[0].quantity).isEqualTo(3)
         assertThat(created.orderItems[0].priceItemId).isEqualTo(1)
-        assertThat(created.createdAt).isBefore(LocalDateTime.now())
-        assertThat(created.updatedAt).isBefore(LocalDateTime.now())
+        assertThat(created.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(created.updatedAt).isAfterOrEqualTo(created.createdAt)
     }
 
     @Test
@@ -168,7 +168,7 @@ class OrderServiceTest @Autowired constructor(
 
         // and
         wireMockServer8084.stubFor(
-            get("/api/v1/accountancy/price-items-by-ids/ids=1,2&markup=true")
+            get("/api/v1/accountancy/price-items-by-ids?ids=1&ids=2&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -312,8 +312,8 @@ class OrderServiceTest @Autowired constructor(
         assertThat(changedOrder.orderItems.iterator().next().quantity).isEqualTo(4)
         assertThat(changedOrder.orderItems.iterator().next().priceItemId).isEqualTo(1)
         assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
-        assertThat(changedOrder.createdAt).isBefore(LocalDateTime.now())
-        assertThat(changedOrder.updatedAt).isAfter(changedOrder.createdAt)
+        assertThat(changedOrder.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(changedOrder.updatedAt).isAfterOrEqualTo(changedOrder.createdAt)
     }
 
     @Test

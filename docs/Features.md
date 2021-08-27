@@ -53,16 +53,14 @@
 - [X] Create Invoice
 - [X] Get Invoice by id
 - [X] Cancel Invoice
-- [ ] Get Refund
-- [ ] Pay Invoice
+- [X] Get Refund
+- [X] Pay Invoice
 - [X] Create purchased costs
-- [ ] Create costs
-- [ ] Update costs
 - [X] Get markups
 - [X] Update markups
 - [ ] Get past purchased items
-- [ ] Calculate last month income
-- [ ] Calculate last month purchase costs
+- [ ] Create costs
+- [ ] Update costs
 - [ ] Credit, debit ??? account details
 
 ### Analytics

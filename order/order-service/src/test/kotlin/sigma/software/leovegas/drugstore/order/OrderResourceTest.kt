@@ -80,8 +80,8 @@ class OrderResourceTest @Autowired constructor(
         assertThat(body.orderItems[0].priceItemId).isEqualTo(1L)
         assertThat(body.orderItems[0].quantity).isEqualTo(3)
         assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
-        assertThat(body.updatedAt).isBefore(LocalDateTime.now())
+        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(body.updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test
@@ -113,9 +113,8 @@ class OrderResourceTest @Autowired constructor(
         assertThat(body.id).isEqualTo(orderCreated.id)
         assertThat(body.orderItems.iterator().next().priceItemId).isEqualTo(1)
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
-        assertThat(body.updatedAt).isBefore(LocalDateTime.now())
-
+        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(body.updatedAt).isAfterOrEqualTo(body.createdAt)
     }
 
     @Test
@@ -195,7 +194,7 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         wireMockServer8084.stubFor(
-            get("/api/v1/accountancy/price-items-by-ids/ids=1,2&markup=true")
+            get("/api/v1/accountancy/price-items-by-ids?ids=1&ids=2&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

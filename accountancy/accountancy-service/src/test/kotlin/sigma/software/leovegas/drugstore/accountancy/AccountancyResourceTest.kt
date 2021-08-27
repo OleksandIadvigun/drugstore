@@ -31,9 +31,9 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
@@ -95,7 +95,7 @@ class AccountancyResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isNotNull
         assertThat(body.price).isEqualTo(BigDecimal.TEN)
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test
@@ -685,49 +685,6 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get markups`() {
-
-        // given
-        transactionalTemplate.execute {
-            priceItemRepository.deleteAll()
-        } ?: fail("result is expected")
-
-        transactionalTemplate.execute {
-            priceItemRepository.saveAll(
-                listOf(
-                    PriceItem(
-                        productId = 1L,
-                        price = BigDecimal.ONE,
-                        markup = BigDecimal("0.20")
-                    ),
-                    PriceItem(
-                        productId = 2L,
-                        price = BigDecimal.TEN,
-                        markup = BigDecimal("0.20")
-                    )
-                )
-            )
-        }?: fail("result is expected")
-
-        // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/price-item/markup",
-            GET,
-            null,
-            respTypeRef<List<MarkupUpdateResponse>>()
-        )
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-
-        // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.size).isEqualTo(2)
-        assertThat(body[0].markup).isEqualTo(BigDecimal("0.20"))
-        assertThat(body[1].markup).isEqualTo(BigDecimal("0.20"))
-    }
-
-    @Test
     fun `should get markups by price items ids`() {
 
         // given
@@ -824,6 +781,49 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.size).isEqualTo(2)
         assertThat(body[0].markup).isEqualTo(BigDecimal("0.30"))
         assertThat(body[1].markup).isEqualTo(BigDecimal("0.30"))
+    }
+
+    @Test
+    fun `should get markups`() {
+
+        // given
+        transactionalTemplate.execute {
+            priceItemRepository.deleteAll()
+        } ?: fail("result is expected")
+
+        transactionalTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal.ONE,
+                        markup = BigDecimal("0.20")
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal.TEN,
+                        markup = BigDecimal("0.20")
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/price-item/markup",
+            GET,
+            null,
+            respTypeRef<List<MarkupUpdateResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.size).isEqualTo(2)
+        assertThat(body[0].markup).isEqualTo(BigDecimal("0.20"))
+        assertThat(body[1].markup).isEqualTo(BigDecimal("0.20"))
     }
 
     @Test
@@ -937,7 +937,7 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.id).isNotNull
         assertThat(body.quantity).isEqualTo(10)
         assertThat(body.priceItemId).isEqualTo(priceItem.id)
-        assertThat(body.dateOfPurchase).isBefore(LocalDateTime.now())
+        assertThat(body.dateOfPurchase).isBeforeOrEqualTo(LocalDateTime.now())
 
         wireMockServerStoreClient.stop()
     }

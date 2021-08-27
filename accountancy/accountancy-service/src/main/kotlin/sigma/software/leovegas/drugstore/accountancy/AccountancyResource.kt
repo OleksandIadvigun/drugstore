@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.accountancy
 
-import java.math.BigDecimal
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.ACCEPTED
 import org.springframework.http.HttpStatus.CREATED

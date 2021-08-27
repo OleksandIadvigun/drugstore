@@ -16,7 +16,6 @@ import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
 import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
 
-
 @RestController
 @RequestMapping("/api/v1/store")
 class StoreResource(private val storeService: StoreService) {

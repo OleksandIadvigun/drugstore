@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.accountancy
 
-import java.math.BigDecimal
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
@@ -15,7 +14,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 fun PriceItemRequest.toEntity() = PriceItem(
     productId = productId,
     price = price,
-    markup = BigDecimal.ZERO
+    markup = markup
 )
 
 // PriceItem entity -> PriceResponse

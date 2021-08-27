@@ -15,6 +15,7 @@ data class ProductResponse(
     val id: Long = -1,
     val name: String = "undefined",
     val totalBuys: Int = 0,
+    val priceItemId: Long = -1,
     val price: BigDecimal = BigDecimal.ZERO,
     val createdAt: LocalDateTime? = null,
     val updatedAt: LocalDateTime? = null

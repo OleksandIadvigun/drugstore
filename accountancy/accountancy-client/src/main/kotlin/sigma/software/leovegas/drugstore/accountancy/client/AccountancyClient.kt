@@ -3,10 +3,6 @@ package sigma.software.leovegas.drugstore.accountancy.client
 import feign.Headers
 import feign.Param
 import feign.RequestLine
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestParam
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
@@ -52,10 +48,10 @@ interface AccountancyClient {
     @RequestLine("GET api/v1/accountancy/price-item/markup?ids={ids}")
     fun getMarkups(@Param ids: List<Long>): List<MarkupUpdateResponse>
 
-    @RequestLine("GET api/v1/accountancy/price-by-product-ids/ids={ids}&markup={markup}")
+    @RequestLine("GET api/v1/accountancy/price-by-product-ids?ids={ids}&markup={markup}")
     fun getProductsPriceByProductIds(@Param ids: List<Long>, @Param markup: Boolean = true): List<PriceItemResponse>
 
-    @RequestLine("GET api/v1/accountancy/price-items-by-ids/ids={ids}&markup={markup}")
+    @RequestLine("GET api/v1/accountancy/price-items-by-ids?ids={ids}&markup={markup}")
     fun getPriceItemsByIds(@Param ids: List<Long>, @Param markup: Boolean = true): List<PriceItemResponse>
 
     @RequestLine("POST api/v1/accountancy/purchased-costs")

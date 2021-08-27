@@ -45,7 +45,7 @@ class GetProductsPriceByIdsFeignClientWireMockTest @Autowired constructor(
 
         //and
         stubFor(
-            get("/api/v1/accountancy/price-items-by-ids/ids=1,2&markup=true")
+            get("/api/v1/accountancy/price-items-by-ids?ids=1&ids=2&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

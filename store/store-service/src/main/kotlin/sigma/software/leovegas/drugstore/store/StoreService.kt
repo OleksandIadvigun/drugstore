@@ -33,16 +33,20 @@ class StoreService @Autowired constructor(
     fun increaseQuantity(request: List<UpdateStoreRequest>) = request.run {
         val map = this.associate { it.priceItemId to it.quantity }
         val priceItemIds = this.map { it.priceItemId }
-        val storeItems = getStoreItemsByPriceItemsId(priceItemIds)
-        storeItems.map { it.copy(quantity = map[it.priceItemId]?.plus(it.quantity) ?: -1) }
+        val toUpdate = storeRepository.getStoreByPriceItemIds(priceItemIds)
+            .map { it.copy(quantity = map[it.priceItemId]?.plus(it.quantity) ?: -1) }
+
+        storeRepository.saveAllAndFlush(toUpdate).toStoreResponseList()
     }
 
     fun reduceQuantity(request: List<UpdateStoreRequest>) = request.run {
         checkAvailability(request)
         val map = this.associate { it.priceItemId to it.quantity }
         val priceItemIds = this.map { it.priceItemId }
-        val storeItems = getStoreItemsByPriceItemsId(priceItemIds)
-        storeItems.map { it.copy(quantity = it.quantity.minus(map[it.priceItemId] ?: -1)) }
+        val toUpdate = storeRepository.getStoreByPriceItemIds(priceItemIds)
+            .map { it.copy(quantity = it.quantity.minus(map[it.priceItemId] ?: -1)) }
+
+        storeRepository.saveAllAndFlush(toUpdate).toStoreResponseList()
     }
 
     fun checkAvailability(request: List<UpdateStoreRequest>) = request.run {

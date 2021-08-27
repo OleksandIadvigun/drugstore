@@ -73,7 +73,7 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isNotNull
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test
@@ -198,8 +198,10 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[1].id},${savedProducts[2].id}," +
-                    "${savedProducts[0].id}&markup=true")
+            get(
+                "/api/v1/accountancy/price-by-product-ids?ids=${savedProducts[1].id}&ids=${savedProducts[2].id}" +
+                        "&ids=${savedProducts[0].id}&markup=true"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -273,7 +275,7 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProduct1.id},${savedProduct2.id}&markup=true")
+            get("/api/v1/accountancy/price-by-product-ids?ids=${savedProduct1.id}&ids=${savedProduct2.id}&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -349,8 +351,10 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[0].id},${savedProducts[1].id}," +
-                    "${savedProducts[2].id}&markup=true")
+            get(
+                "/api/v1/accountancy/price-by-product-ids?ids=${savedProducts[0].id}&ids=${savedProducts[1].id}" +
+                        "&ids=${savedProducts[2].id}&markup=true"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -494,7 +498,7 @@ class ProductResourceTest @Autowired constructor(
         } ?: fail("result is expected")
 
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[1].id}&markup=true")
+            get("/api/v1/accountancy/price-by-product-ids?ids=${savedProducts[1].id}&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -612,7 +616,7 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body.id).isEqualTo(savedProduct.id)
         assertThat(body.name).isEqualTo(savedProduct.name)
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())  //todo should to be before updatedAt
+        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test

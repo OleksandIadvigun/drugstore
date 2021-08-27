@@ -1,10 +1,12 @@
 package sigma.software.leovegas.drugstore.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -18,6 +20,7 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductResponse
 
@@ -124,6 +127,93 @@ class ProductServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get products sorted by price descendant`() {
+
+        // given
+        val wiremockAccountancyServer = WireMockServer(8084)
+        wiremockAccountancyServer.start()
+
+        // and
+        transactionTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // and
+        var saved = mutableListOf<Product>()
+        transactionTemplate.execute {
+            saved = repository.saveAll(
+                listOf(
+                    Product(
+                        name = "aspirin",
+                    ),
+                    Product(
+                        name = "test2",
+                    ),
+                    Product(
+                        name = "some",
+                    )
+                )
+            )
+        }
+
+        //and
+        val responseExpected = mapOf<Long, Int>(saved[0].id!! to 5, saved[1].id!! to 2, saved[2].id!! to 9)
+
+        // and
+        wiremockAccountancyServer.stubFor(
+            get(
+                "/api/v1/accountancy/price-by-product-ids?ids=${saved[0].id}&ids=${saved[1].id}" +
+                        "&ids=${saved[2].id}&markup=true"
+            )
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    listOf(
+                                        PriceItemResponse(
+                                            id = 1L,
+                                            productId = saved[0].id ?: -1,
+                                            price = BigDecimal("20.00")
+                                        ),
+                                        PriceItemResponse(
+                                            id = 2L,
+                                            productId = saved[2].id ?: -1,
+                                            price = BigDecimal("40.00"),
+                                        ),
+                                        PriceItemResponse(
+                                            id = 3L,
+                                            productId = saved[1].id ?: -1,
+                                            price = BigDecimal("25.00")
+                                        )
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // when
+        val all = service.getAll(0, 5, "", "price", "DESC")
+
+        // then
+        assertThat(all).isNotNull
+        assertThat(all.totalElements).isEqualTo(3)
+        assertThat(all.content[0].price).isEqualTo(BigDecimal("40.00"))
+        assertThat(all.content[0].priceItemId).isEqualTo(2L)
+        assertThat(all.content[1].price).isEqualTo(BigDecimal("25.00"))
+        assertThat(all.content[1].priceItemId).isEqualTo(3L)
+        assertThat(all.content[2].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(all.content[2].priceItemId).isEqualTo(1L)
+
+        // and
+        wiremockAccountancyServer.stop()
+    }
+
+    @Test
     fun `should get product by id`() {
 
         // given
@@ -208,7 +298,7 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(actual).isNotNull
         assertThat(randomName).isEqualTo(actual.name)
-        assertThat(actual.createdAt).isBefore(actual.updatedAt)
+        assertThat(actual.createdAt).isBeforeOrEqualTo(actual.updatedAt)
     }
 
     @Test

@@ -73,7 +73,7 @@ class GetMarkupFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.getMarkups(listOf(1L,2L))
+        val responseActual = accountancyClient.getMarkups(listOf(1L, 2L))
 
         //  then
         assertThat(responseActual[0].priceItemId).isEqualTo(1L)

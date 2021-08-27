@@ -25,8 +25,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
@@ -189,7 +189,7 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual).isNotNull
         assertThat(actual.id).isNotNull
         assertThat(actual.total).isEqualTo(orderDetail.total)
-        assertThat(actual.createdAt).isBefore(LocalDateTime.now())
+        assertThat(actual.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
 
         // and
         wireMockServerStoreClient.stop()
@@ -744,7 +744,7 @@ class AccountancyServiceTest @Autowired constructor(
         // then
         assertThat(actual).isNotNull
         assertThat(updatedProductRequest.price).isEqualTo(actual.price)
-        assertThat(actual.createdAt).isBefore(actual.updatedAt)
+        assertThat(actual.createdAt).isBeforeOrEqualTo(actual.updatedAt)
     }
 
     @Test

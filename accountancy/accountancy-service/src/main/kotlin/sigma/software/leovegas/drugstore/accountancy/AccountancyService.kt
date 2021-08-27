@@ -80,7 +80,6 @@ class AccountancyService @Autowired constructor(
         val toUpdate = priceItemRepository
             .findAllById(priceItemToMarkup.keys)
             .map { it.copy(markup = priceItemToMarkup[it.id] ?: BigDecimal.ZERO) }
-
         priceItemRepository.saveAllAndFlush(toUpdate).toMarkupUpdateResponse()
     }
 
