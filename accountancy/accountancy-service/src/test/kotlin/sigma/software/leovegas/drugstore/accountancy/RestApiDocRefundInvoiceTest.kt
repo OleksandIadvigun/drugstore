@@ -29,7 +29,7 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
     val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
     val invoiceRepository: InvoiceRepository
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
     fun `should refund invoice`() {

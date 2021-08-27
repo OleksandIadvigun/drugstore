@@ -13,11 +13,15 @@ import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.restassured3.RestAssuredRestDocumentation
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 
 @AutoConfigureRestDocs
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @ExtendWith(SpringExtension::class, RestDocumentationExtension::class)
-class RestApiDocumentationTest {
+class RestApiDocumentationTest(
+    private val accountancyProperties: AccountancyProperties
+) {
+
 
     lateinit var documentationSpec: RequestSpecification
 
@@ -29,7 +33,8 @@ class RestApiDocumentationTest {
     }
 
     fun of(snippet: String): RequestSpecification {
-        val processor = Preprocessors.modifyUris().scheme("http").host("localhost").port(8080)
+        val processor = Preprocessors.modifyUris().scheme("http")
+            .host(accountancyProperties.host).port(accountancyProperties.port)
         val prettyPrint = Preprocessors.prettyPrint()
         val requestProcessor = Preprocessors.preprocessRequest(
             prettyPrint,

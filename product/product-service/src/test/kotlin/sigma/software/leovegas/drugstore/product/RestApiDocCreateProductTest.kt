@@ -17,7 +17,7 @@ class RestApiDocCreateProductTest @Autowired constructor(
     val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
     val productProperties: ProductProperties,
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(productProperties) {
 
     @Test
     fun `should create product`() {

@@ -16,7 +16,7 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
     val orderService: OrderService,
     val orderRepository: OrderRepository,
     val orderProperties: OrderProperties
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(orderProperties) {
 
     @Test
     fun `should get total buys of each product`() {

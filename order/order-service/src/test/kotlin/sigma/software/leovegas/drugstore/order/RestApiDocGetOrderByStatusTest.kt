@@ -19,7 +19,7 @@ class RestApiDocGetOrderByStatusTest @Autowired constructor(
     val orderService: OrderService,
     val orderProperties: OrderProperties,
     val orderRepository: OrderRepository
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(orderProperties) {
 
     @Test
     fun `should get order by status`() {

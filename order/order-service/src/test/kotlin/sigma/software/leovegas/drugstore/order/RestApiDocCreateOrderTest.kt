@@ -17,7 +17,7 @@ class RestApiDocCreateOrderTest @Autowired constructor(
     val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
     val orderProperties: OrderProperties
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(orderProperties) {
 
 
     @Test

@@ -18,7 +18,7 @@ class RestApiDocIncreaseQuantityTest @Autowired constructor(
     val storeProperties: StoreProperties,
     val storeRepository: StoreRepository,
     val transactionTemplate: TransactionTemplate
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(storeProperties) {
 
     @Test
     fun `should increase store items quantity`() {

@@ -16,7 +16,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @AutoConfigureRestDocs
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension::class, RestDocumentationExtension::class)
-class RestApiDocumentationTest {
+class RestApiDocumentationTest(
+    private val storeProperties: StoreProperties
+) {
 
     lateinit var documentationSpec: RequestSpecification
 
@@ -28,7 +30,8 @@ class RestApiDocumentationTest {
     }
 
     fun of(snippet: String): RequestSpecification {
-        val processor = Preprocessors.modifyUris().scheme("http").host("localhost").port(8080)
+        val processor = Preprocessors.modifyUris().scheme("http")
+            .host(storeProperties.host).port(storeProperties.port)
         val prettyPrint = Preprocessors.prettyPrint()
         val requestProcessor = Preprocessors.preprocessRequest(
             prettyPrint,

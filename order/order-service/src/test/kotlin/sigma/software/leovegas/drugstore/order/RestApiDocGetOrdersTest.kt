@@ -16,7 +16,7 @@ class RestApiDocGetOrdersTest @Autowired constructor(
     val orderService: OrderService,
     val orderRepository: OrderRepository,
     val orderProperties: OrderProperties
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(orderProperties) {
 
 
     @Test

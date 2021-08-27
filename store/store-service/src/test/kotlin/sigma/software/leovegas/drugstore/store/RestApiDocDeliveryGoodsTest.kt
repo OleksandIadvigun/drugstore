@@ -28,7 +28,7 @@ class RestApiDocDeliveryGoodsTest @Autowired constructor(
     val storeProperties: StoreProperties,
     val storeRepository: StoreRepository,
     val transactionTemplate: TransactionTemplate
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(storeProperties) {
 
     @Test
     fun `should deliver goods`() {

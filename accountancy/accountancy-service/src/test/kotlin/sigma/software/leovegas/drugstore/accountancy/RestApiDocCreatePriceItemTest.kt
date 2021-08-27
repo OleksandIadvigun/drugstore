@@ -16,7 +16,7 @@ class RestApiDocCreatePriceItemTest @Autowired constructor(
     val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
     fun `should create price item`() {

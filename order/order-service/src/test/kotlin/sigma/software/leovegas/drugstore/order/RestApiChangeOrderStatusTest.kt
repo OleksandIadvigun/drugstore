@@ -21,7 +21,7 @@ class RestApiChangeOrderStatusTest @Autowired constructor(
     val orderService: OrderService,
     val orderProperties: OrderProperties,
     val orderRepository: OrderRepository
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(orderProperties) {
 
     @Test
     fun `should update order`() {

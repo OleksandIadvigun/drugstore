@@ -21,7 +21,7 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
     val orderProperties: OrderProperties,
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(orderProperties) {
 
 
     @Test

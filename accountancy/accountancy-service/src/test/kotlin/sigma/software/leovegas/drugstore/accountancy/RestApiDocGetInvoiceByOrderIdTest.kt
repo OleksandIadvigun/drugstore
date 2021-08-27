@@ -17,7 +17,7 @@ class RestApiDocGetInvoiceByOrderIdTest @Autowired constructor(
     val accountancyProperties: AccountancyProperties,
     val invoiceRepository: InvoiceRepository,
     val transactionTemplate: TransactionTemplate
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
     fun `should get invoice by order id`() {

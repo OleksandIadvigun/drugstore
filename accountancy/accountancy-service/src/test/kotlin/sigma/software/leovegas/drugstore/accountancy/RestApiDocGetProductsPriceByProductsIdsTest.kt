@@ -17,7 +17,7 @@ class RestApiDocGetProductsPriceByProductsIdsTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val accountancyProperties: AccountancyProperties,
     val priceItemRepo: PriceItemRepository
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(accountancyProperties) {
 
 
     @Test

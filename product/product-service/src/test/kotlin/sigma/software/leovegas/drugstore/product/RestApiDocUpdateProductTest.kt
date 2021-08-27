@@ -20,7 +20,7 @@ class RestApiDocUpdateProductTest @Autowired constructor(
     val objectMapper: ObjectMapper,
     val transactionTemplate: TransactionTemplate,
     val productProperties: ProductProperties
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(productProperties) {
 
     @Test
     fun `should update product`() {

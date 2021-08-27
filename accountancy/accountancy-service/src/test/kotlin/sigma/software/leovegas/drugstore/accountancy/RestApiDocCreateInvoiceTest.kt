@@ -39,7 +39,7 @@ class RestApiDocCreateInvoiceTest @Autowired constructor(
     val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
     val invoiceRepository: InvoiceRepository
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(accountancyProperties) {
 
     private val wireMockServerStoreClient = WireMockServer(wireMockConfig().port(8083))
 

@@ -32,7 +32,7 @@ class RestApiDocCreatePurchasedCostsTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val priceItemRepository: PriceItemRepository,
     val purchasedCostsRepository: PurchasedCostsRepository
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
     fun `should create purchased costs`() {

@@ -19,7 +19,7 @@ class RestApiDocUpdatePriceItemTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val accountancyProperties: AccountancyProperties,
     val accountancyService: AccountancyService
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(accountancyProperties) {
 
 
     @Test

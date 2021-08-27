@@ -24,7 +24,7 @@ class RestApiDocGetProductsTest @Autowired constructor(
     val productRepository: ProductRepository,
     val objectMapper: ObjectMapper,
     val productProperties: ProductProperties
-) : RestApiDocumentationTest() {
+) : RestApiDocumentationTest(productProperties) {
 
 
     @Test
