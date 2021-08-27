@@ -53,6 +53,11 @@ class AccountancyResource(private val service: AccountancyService) {
     fun cancelInvoice(@PathVariable id: Long): InvoiceResponse =
         service.cancelInvoice(id)
 
+    @ResponseStatus(ACCEPTED)
+    @PutMapping("/invoice/refund/{id}")
+    fun refundInvoice(@PathVariable id: Long): InvoiceResponse =
+        service.refundInvoice(id)
+
     @ResponseStatus(OK)
     @GetMapping("/product-price")
     fun getProductsPrice(): Map<Long?, BigDecimal> = service.getProductsPrice()

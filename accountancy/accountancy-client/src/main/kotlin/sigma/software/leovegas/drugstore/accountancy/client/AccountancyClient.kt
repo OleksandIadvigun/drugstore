@@ -29,6 +29,9 @@ interface AccountancyClient {
     @RequestLine("PUT api/v1/accountancy/invoice/pay/{id}")
     fun payInvoice(@Param id: Long): InvoiceResponse
 
+    @RequestLine("PUT api/v1/accountancy/invoice/refund/{id}")
+    fun refundInvoice(@Param id: Long): InvoiceResponse
+
     @RequestLine("GET api/v1/accountancy/product-price")
     fun getProductsPrice(): Map<Long, BigDecimal>
 

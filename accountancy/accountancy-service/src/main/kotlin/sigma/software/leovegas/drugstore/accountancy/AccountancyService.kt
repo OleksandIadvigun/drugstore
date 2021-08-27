@@ -119,6 +119,18 @@ class AccountancyService @Autowired constructor(
         return invoiceRepository.saveAndFlush(paidInvoice).toInvoiceResponse()
     }
 
+    fun refundInvoice(id: Long): InvoiceResponse = id.run {
+        val invoiceToRefund = invoiceRepository.findById(this).orElseThrow {
+            ResourceNotFoundException("Not found invoice with this id")
+        }
+        if (invoiceToRefund.status != InvoiceStatus.PAID) {
+            throw NotPaidInvoiceException(invoiceToRefund.id ?: -1)
+        }
+        orderClient.changeOrderStatus(invoiceToRefund.orderId ?: -1, OrderStatusDTO.REFUND)
+        val refundInvoice = invoiceToRefund.copy(status = InvoiceStatus.REFUND)
+        invoiceRepository.saveAndFlush(refundInvoice).toInvoiceResponse()
+    }
+
     fun cancelInvoice(id: Long): InvoiceResponse {
         val invoice = invoiceRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Not found invoice with this id")

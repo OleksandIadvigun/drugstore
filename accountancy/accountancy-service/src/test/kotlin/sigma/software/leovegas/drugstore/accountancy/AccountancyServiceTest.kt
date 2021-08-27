@@ -255,6 +255,88 @@ class AccountancyServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should refund invoice`() {
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.PAID,
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        stubFor(
+            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.REFUND)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.REFUND))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val actual = service.refundInvoice(savedInvoice.id ?: -1)
+
+        // then
+        assertThat(actual.id).isEqualTo(savedInvoice.id ?: -1)
+        assertThat(actual.status).isEqualTo(InvoiceStatusDTO.REFUND)
+    }
+
+    @Test
+    fun `should not refund non-paid invoice`() {
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.CREATED,
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val exception = assertThrows<NotPaidInvoiceException> {
+            service.refundInvoice(savedInvoice.id ?: -1)
+        }
+
+        // then
+        assertThat(exception.message).contains("The invoice with id", "is not paid")
+    }
+
+    @Test
     fun `should pay invoice`() {
 
         // given

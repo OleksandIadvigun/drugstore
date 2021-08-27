@@ -9,3 +9,5 @@ class OrderAlreadyHaveInvoice(message: String?) : RuntimeException(message)
 class InvalidStatusOfInvoice() : RuntimeException(
     "The invoice status should be CREATED to be paid, but status found is invalid"
 )
+
+class NotPaidInvoiceException(id: Long) : RuntimeException("The invoice with id = $id is not paid")

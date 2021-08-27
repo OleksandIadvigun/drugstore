@@ -93,3 +93,11 @@ include::{snippets}/get-invoice-by-order-id/http-request.adoc[]
 
 .InvoiceResponse
 include::{snippets}/get-invoice-by-order-id/http-response.adoc[]
+
+== Refund invoice
+
+.Request
+include::{snippets}/refund-invoice/http-request.adoc[]
+
+.InvoiceResponse
+include::{snippets}/refund-invoice/http-response.adoc[]

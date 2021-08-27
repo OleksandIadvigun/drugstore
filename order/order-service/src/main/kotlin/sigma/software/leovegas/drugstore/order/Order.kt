@@ -24,6 +24,7 @@ enum class OrderStatus {
     CANCELLED,
     UPDATED,
     PAID,
+    REFUND,
     BOOKED,
     DELIVERED
 }

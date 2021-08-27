@@ -410,6 +410,66 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
+    fun `should refund invoice`() {
+
+        // given
+        val savedInvoice = transactionalTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.PAID,
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        stubFor(
+            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.REFUND)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.REFUND))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/invoice/refund/${savedInvoice.id}",
+            PUT,
+            null,
+            respTypeRef<InvoiceResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isEqualTo(savedInvoice.id ?: -1)
+        assertThat(body.status).isEqualTo(InvoiceStatusDTO.REFUND)
+    }
+
+    @Test
     fun `should pay invoice`() {
 
         // given
