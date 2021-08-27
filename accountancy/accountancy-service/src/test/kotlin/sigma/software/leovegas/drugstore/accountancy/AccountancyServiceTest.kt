@@ -195,6 +195,45 @@ class AccountancyServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should not create invoice with order id already in the another invoice`() {
+
+        // given
+        transactionTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1,
+                    total = BigDecimal("90.00"),
+                    productItems = setOf(
+                        ProductItem(
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val invoiceRequest = InvoiceRequest(
+            orderId = 1
+        )
+
+        // when
+        val exception = assertThrows<OrderAlreadyHaveInvoice> {
+            service.createInvoice(invoiceRequest)
+        }
+
+        // then
+        assertThat(exception.message).contains("This order already have some invoice")
+    }
+
+    @Test
     fun `should get invoice by id`() {
 
         // given
@@ -225,6 +264,18 @@ class AccountancyServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should not get non-existing invoice `() {
+
+        // when
+        val exception = assertThrows<ResourceNotFoundException> {
+            service.getInvoiceById(-15)
+        }
+
+        // then
+        assertThat(exception.message).contains("The invoice with id:", "doesn't exist!")
+    }
+
+    @Test
     fun `should get invoice by order id`() {
 
         // given
@@ -252,6 +303,18 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual.id).isEqualTo(savedInvoice.id)
         assertThat(actual.orderId).isEqualTo(savedInvoice.orderId)
         assertThat(actual.total).isEqualTo(savedInvoice.total)
+    }
+
+    @Test
+    fun `should not get invoice with non-existing order id`() {
+
+        // when
+        val exception = assertThrows<ResourceNotFoundException> {
+            service.getInvoiceByOrderId(-15)
+        }
+
+        // then
+        assertThat(exception.message).contains("The invoice with id:", "doesn't exist!")
     }
 
     @Test
@@ -609,6 +672,49 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(expiredInvoice[0].status).isEqualTo(InvoiceStatusDTO.CANCELLED)
 
         wireMockServerStoreClient.stop()
+    }
+
+    @Test
+    fun `should not cancel non-existing invoice`() {
+
+        // when
+        val exception = assertThrows<ResourceNotFoundException> {
+            service.cancelInvoice(-15)
+        }
+
+        // then
+        assertThat(exception.message).contains("Not found invoice with this id")
+    }
+
+    @Test
+    fun `should not cancel paid invoice`() {
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.PAID,
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val exception = assertThrows<OrderAlreadyHaveInvoice> {
+            service.cancelInvoice(savedInvoice.id ?: -1)
+        }
+
+        // then
+        assertThat(exception.message).contains("This order is already paid. Please, first do refund!")
     }
 
     @Test

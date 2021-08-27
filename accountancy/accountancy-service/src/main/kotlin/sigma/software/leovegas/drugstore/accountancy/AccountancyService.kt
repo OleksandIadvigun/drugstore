@@ -29,7 +29,7 @@ class AccountancyService @Autowired constructor(
 
     companion object {
         private const val exceptionMessage = "This price item with id: %d doesn't exist!"
-        private const val messageForInvoice = "This product item with id: %d doesn't exist!"
+        private const val messageForNotFoundInvoice = "The invoice with id: %d doesn't exist!"
     }
 
     fun createPriceItem(priceItemRequest: PriceItemRequest): PriceItemResponse = priceItemRequest.run {
@@ -98,13 +98,13 @@ class AccountancyService @Autowired constructor(
 
     fun getInvoiceById(id: Long): InvoiceResponse = invoiceRepository
         .findById(id)
-        .orElseThrow { throw ResourceNotFoundException(String.format(messageForInvoice, id)) }
+        .orElseThrow { throw ResourceNotFoundException(String.format(messageForNotFoundInvoice, id)) }
         .toInvoiceResponse()
 
     fun getInvoiceByOrderId(id: Long): InvoiceResponse =
         invoiceRepository
             .getInvoiceByOrderId(id)
-            .orElseThrow { throw ResourceNotFoundException(String.format(messageForInvoice, id)) }
+            .orElseThrow { throw ResourceNotFoundException(String.format(messageForNotFoundInvoice, id)) }
             .toInvoiceResponse()
 
     fun payInvoice(id: Long): InvoiceResponse {

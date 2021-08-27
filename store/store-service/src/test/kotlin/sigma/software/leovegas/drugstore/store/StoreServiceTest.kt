@@ -355,4 +355,43 @@ class StoreServiceTest @Autowired constructor(
         wireMockServer8082.stop()
         wireMockServer8084.stop()
     }
+
+    @Test
+    fun `should not deliver goods if invoice status not paid`() {
+
+        // setup
+        val wireMockServer8084 = WireMockServer(8084)
+        wireMockServer8084.start()
+
+        // given
+        wireMockServer8084.stubFor(
+            get("/api/v1/accountancy/invoice/order-id/1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    InvoiceResponse(
+                                        id = 1,
+                                        orderId = 1,
+                                        total = BigDecimal("90.00"),
+                                        status = InvoiceStatusDTO.CREATED
+                                    )
+                                )
+                        )
+                )
+        )
+
+        // when
+        val exception = assertThrows<InvoiceNotPaidException> {
+            storeService.deliverGoods(1)
+        }
+
+        // then
+        assertThat(exception.message).contains("Invoice with id =", "not paid !")
+
+        wireMockServer8084.stop()
+    }
 }
