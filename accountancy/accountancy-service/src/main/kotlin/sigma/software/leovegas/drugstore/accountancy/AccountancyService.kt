@@ -1,12 +1,15 @@
 package sigma.software.leovegas.drugstore.accountancy
 
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDateTime
 import javax.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
@@ -44,11 +47,8 @@ class AccountancyService @Autowired constructor(
         priceItemRepository.saveAndFlush(toUpdate).toPriceItemResponse()
     }
 
-    fun getProductsPrice(): Map<Long?, BigDecimal> =
-        priceItemRepository.findAll().associate { it.productId to it.price }
-
-    fun getProductsPriceByIds(ids: List<Long>): Map<Long?, BigDecimal> =
-        priceItemRepository.findAllByProductId(ids).associate { it.productId to it.price }
+    fun getProductsPrice(): List<PriceItemResponse> =
+        priceItemRepository.findAll().toPriceItemResponseList()
 
     fun createPurchasedCosts(purchasedCostsRequest: PurchasedCostsRequest): PurchasedCostsResponse =
         purchasedCostsRequest.run {
@@ -65,11 +65,24 @@ class AccountancyService @Autowired constructor(
             purchasedCostsRepository.save(purchasedCostsRequest.toEntity()).toPurchasedCostsResponse()
         }
 
-    fun getProductsPriceByProductIds(ids: List<Long>): List<PriceItemResponse> =
-        priceItemRepository.findAllByProductId(ids).toPriceItemResponseList()
+    fun getProductsPriceByProductIds(ids: List<Long>, markup: Boolean): List<PriceItemResponse> {
+        val priceItems = priceItemRepository.findAllByProductId(ids)
+        return markupChecker(priceItems, markup)
+    }
 
-    fun getPriceItemsByIds(ids: List<Long>): List<PriceItemResponse> =
-        priceItemRepository.findAllById(ids).toPriceItemResponseList()
+    fun getPriceItemsByIds(ids: List<Long>, markup: Boolean): List<PriceItemResponse> {
+        val priceItems = priceItemRepository.findAllById(ids)
+        return markupChecker(priceItems, markup)
+    }
+
+    fun updateMarkups(markupsToUpdate: List<MarkupUpdateRequest>): List<MarkupUpdateResponse> = markupsToUpdate.run {
+        val priceItemToMarkup = associate { it.priceItemId to it.markup.setScale(2, RoundingMode.DOWN) }
+        val toUpdate = priceItemRepository
+            .findAllById(priceItemToMarkup.keys)
+            .map { it.copy(markup = priceItemToMarkup[it.id] ?: BigDecimal.ZERO) }
+
+        priceItemRepository.saveAllAndFlush(toUpdate).toMarkupUpdateResponse()
+    }
 
     fun createInvoice(invoiceRequest: InvoiceRequest): InvoiceResponse = invoiceRequest.run {
         val isAlreadyExist = invoiceRepository.getInvoiceByOrderId(orderId)
@@ -107,6 +120,11 @@ class AccountancyService @Autowired constructor(
             .orElseThrow { throw ResourceNotFoundException(String.format(messageForNotFoundInvoice, id)) }
             .toInvoiceResponse()
 
+    fun getMarkUps(ids: List<Long>): List<MarkupUpdateResponse> =
+        if (ids.isNotEmpty()) {
+            priceItemRepository.findAllById(ids).toMarkupUpdateResponse()
+        } else priceItemRepository.findAll().toMarkupUpdateResponse()
+
     fun payInvoice(id: Long): InvoiceResponse {
         val invoice = invoiceRepository.findById(id).orElseThrow {
             ResourceNotFoundException("Not found invoice with this id")
@@ -143,6 +161,16 @@ class AccountancyService @Autowired constructor(
         storeClient.increaseQuantity(toIncrease)
         orderClient.changeOrderStatus(invoice.orderId ?: -1, OrderStatusDTO.CANCELLED)
         return invoiceRepository.saveAndFlush(toUpdate).toInvoiceResponse()
+    }
+
+    private fun markupChecker(priceItems: List<PriceItem>, markup: Boolean): List<PriceItemResponse> {
+        return if (markup) {
+            priceItems.map { el ->
+                val newPrice = (el.price * (BigDecimal(1.00) + el.markup)).setScale(2)
+                el.copy(price = newPrice)
+            }
+                .toPriceItemResponseList()
+        } else priceItems.toPriceItemResponseList()
     }
 
     fun cancelExpiredInvoice(date: LocalDateTime): List<InvoiceResponse> {

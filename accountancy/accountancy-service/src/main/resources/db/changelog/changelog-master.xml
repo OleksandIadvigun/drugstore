@@ -11,6 +11,7 @@
             </column>
             <column name="product_id" type="BIGINT"/>
             <column name="price" type="Decimal(11,2)"/>
+            <column name="markup" type="Decimal(11,2)"/>
             <column name="created_at" type="TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP"/>
         </createTable>

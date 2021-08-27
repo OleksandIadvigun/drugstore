@@ -7,7 +7,13 @@ import java.time.LocalDateTime
 
 data class PriceItemRequest(
     val productId: Long = -1,
-    val price: BigDecimal = BigDecimal.ZERO
+    val price: BigDecimal = BigDecimal.ZERO,
+    val markup: BigDecimal = BigDecimal.ZERO
+)
+
+data class MarkupUpdateRequest(
+    val priceItemId: Long = -1,
+    val markup: BigDecimal = BigDecimal.ZERO
 )
 
 data class InvoiceRequest(
@@ -27,6 +33,12 @@ data class PriceItemResponse(
     val price: BigDecimal = BigDecimal.ZERO,
     val createdAt: LocalDateTime? = null,
     val updatedAt: LocalDateTime? = null
+)
+
+data class MarkupUpdateResponse(
+    val priceItemId: Long = -1,
+    val price: BigDecimal = BigDecimal.ZERO,
+    val markup: BigDecimal = BigDecimal.ZERO
 )
 
 data class InvoiceResponse(

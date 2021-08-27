@@ -198,7 +198,8 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[1].id},${savedProducts[2].id},${savedProducts[0].id}")
+            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[1].id},${savedProducts[2].id}," +
+                    "${savedProducts[0].id}&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -272,7 +273,7 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProduct1.id},${savedProduct2.id}")
+            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProduct1.id},${savedProduct2.id}&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -348,7 +349,8 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[0].id},${savedProducts[1].id},${savedProducts[2].id}")
+            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[0].id},${savedProducts[1].id}," +
+                    "${savedProducts[2].id}&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -492,7 +494,7 @@ class ProductResourceTest @Autowired constructor(
         } ?: fail("result is expected")
 
         wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[1].id}")
+            get("/api/v1/accountancy/price-by-product-ids/ids=${savedProducts[1].id}&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

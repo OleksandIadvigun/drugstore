@@ -34,6 +34,12 @@ data class PriceItem(
     val price: BigDecimal,
 
     @NotNull
+    @DecimalMin("0")
+    @DecimalMax("100000000")
+    @Column(name = "markup")
+    val markup: BigDecimal,
+
+    @NotNull
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     val createdAt: LocalDateTime? = null,

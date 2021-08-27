@@ -31,6 +31,8 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
@@ -230,6 +232,7 @@ class AccountancyResourceTest @Autowired constructor(
         val priceItem = PriceItem(
             productId = 1L,
             price = BigDecimal.ONE,
+            markup = BigDecimal.ZERO
         )
 
         val savedPriceItem = transactionalTemplate.execute {
@@ -272,6 +275,7 @@ class AccountancyResourceTest @Autowired constructor(
         val priceItem = PriceItem(
             productId = 1L,
             price = BigDecimal("10.00"),
+            markup = BigDecimal.ZERO
         )
 
         // and
@@ -284,7 +288,7 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/product-price",
             GET,
             null,
-            respTypeRef<Map<Long?, BigDecimal>>()
+            respTypeRef<List<PriceItemResponse>>()
         )
 
         // then
@@ -293,7 +297,7 @@ class AccountancyResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.size).isEqualTo(1)
-        assertThat(body[1L]).isEqualTo(BigDecimal("10.00"))
+        assertThat(body[0].price).isEqualTo(BigDecimal("10.00"))
     }
 
     @Test
@@ -311,14 +315,17 @@ class AccountancyResourceTest @Autowired constructor(
                     PriceItem(
                         productId = 1L,
                         price = BigDecimal.ONE,
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 2L,
                         price = BigDecimal.ONE,
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 3L,
                         price = BigDecimal.ONE,
+                        markup = BigDecimal.ZERO
                     )
                 )
             )
@@ -648,10 +655,12 @@ class AccountancyResourceTest @Autowired constructor(
                     PriceItem(
                         productId = 1L,
                         price = BigDecimal.ONE,
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 2L,
                         price = BigDecimal.TEN,
+                        markup = BigDecimal.ZERO
                     )
                 )
             )
@@ -676,6 +685,148 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
+    fun `should get markups`() {
+
+        // given
+        transactionalTemplate.execute {
+            priceItemRepository.deleteAll()
+        } ?: fail("result is expected")
+
+        transactionalTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal.ONE,
+                        markup = BigDecimal("0.20")
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal.TEN,
+                        markup = BigDecimal("0.20")
+                    )
+                )
+            )
+        }?: fail("result is expected")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/price-item/markup",
+            GET,
+            null,
+            respTypeRef<List<MarkupUpdateResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.size).isEqualTo(2)
+        assertThat(body[0].markup).isEqualTo(BigDecimal("0.20"))
+        assertThat(body[1].markup).isEqualTo(BigDecimal("0.20"))
+    }
+
+    @Test
+    fun `should get markups by price items ids`() {
+
+        // given
+        transactionalTemplate.execute {
+            priceItemRepository.deleteAll()
+        } ?: fail("result is expected")
+
+        val saved = transactionalTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal.ONE,
+                        markup = BigDecimal("0.10")
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal.TEN,
+                        markup = BigDecimal("0.20")
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/price-item/markup?ids=${saved[0].id}",
+            GET,
+            null,
+            respTypeRef<List<MarkupUpdateResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.size).isEqualTo(1)
+        assertThat(body[0].markup).isEqualTo(BigDecimal("0.10"))
+    }
+
+    @Test
+    fun `should update markups`() {
+
+        // given
+        transactionalTemplate.execute {
+            priceItemRepository.deleteAll()
+        } ?: fail("result is expected")
+
+        val saved = transactionalTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal.ONE,
+                        markup = BigDecimal("0.10")
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal.TEN,
+                        markup = BigDecimal("0.20")
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val httpEntity = HttpEntity(
+            listOf(
+                MarkupUpdateRequest(
+                    priceItemId = saved[0].id ?: -1,
+                    markup = BigDecimal("0.30")
+                ),
+                MarkupUpdateRequest(
+                    priceItemId = saved[1].id ?: -1,
+                    markup = BigDecimal("0.30")
+                )
+            )
+        )
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/price-item/markup",
+            PUT,
+            httpEntity,
+            respTypeRef<List<MarkupUpdateResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.size).isEqualTo(2)
+        assertThat(body[0].markup).isEqualTo(BigDecimal("0.30"))
+        assertThat(body[1].markup).isEqualTo(BigDecimal("0.30"))
+    }
+
+    @Test
     fun `should create purchased costs`() {
 
         // setup
@@ -696,7 +847,8 @@ class AccountancyResourceTest @Autowired constructor(
             priceItemRepository.save(
                 PriceItem(
                     productId = 1L,
-                    price = BigDecimal("25.50")
+                    price = BigDecimal("25.50"),
+                    markup = BigDecimal.ZERO
                 )
             )
         } ?: fail("result is expected")

@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
@@ -786,7 +787,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // then
         assertThat(actual).isNotNull
-        assertThat(saved.price).isEqualTo(actual[1])
+        assertThat(saved.price).isEqualTo(actual[0].price)
     }
 
     @Test
@@ -803,18 +804,20 @@ class AccountancyServiceTest @Autowired constructor(
                 listOf(
                     PriceItem(
                         productId = 1L,
-                        price = BigDecimal("25.50")
+                        price = BigDecimal("25.50"),
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 2L,
-                        price = BigDecimal("35.50")
+                        price = BigDecimal("35.50"),
+                        markup = BigDecimal.ZERO
                     ),
                 )
             )
         } ?: fail("result is expected")
 
         // when
-        val actual = service.getProductsPriceByProductIds(listOf(1L, 2L))
+        val actual = service.getProductsPriceByProductIds(listOf(1L, 2L), true)
 
         // then
         assertThat(actual).isNotNull
@@ -837,15 +840,18 @@ class AccountancyServiceTest @Autowired constructor(
                 listOf(
                     PriceItem(
                         productId = 1L,
-                        price = BigDecimal("25.50")
+                        price = BigDecimal("25.50"),
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 2L,
-                        price = BigDecimal("35.50")
+                        price = BigDecimal("35.50"),
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 3L,
-                        price = BigDecimal("45.50")
+                        price = BigDecimal("45.50"),
+                        markup = BigDecimal.ZERO
                     )
                 )
             )
@@ -854,7 +860,7 @@ class AccountancyServiceTest @Autowired constructor(
         val ids = saved.map { it.id }
 
         // when
-        val actual = service.getPriceItemsByIds(ids as List<Long>)
+        val actual = service.getPriceItemsByIds(ids as List<Long>, true)
 
         // then
         assertThat(actual).isNotNull
@@ -862,6 +868,92 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual[0].price).isEqualTo(BigDecimal("25.50"))
         assertThat(actual[1].price).isEqualTo(BigDecimal("35.50"))
         assertThat(actual[2].price).isEqualTo(BigDecimal("45.50"))
+    }
+
+    @Test
+    fun `should get price items by ids with markup`() {
+
+        // given
+        transactionTemplate.execute {
+            priceItemRepository.deleteAllInBatch()
+        }
+
+        // given
+        val saved = transactionTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal("25.50"),
+                        markup = BigDecimal(0.20)
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal("35.50"),
+                        markup = BigDecimal(0.30)
+                    ),
+                    PriceItem(
+                        productId = 3L,
+                        price = BigDecimal("45.50"),
+                        markup = BigDecimal(0.20)
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        val ids = saved.map { it.id }
+
+        // when
+        val actual = service.getPriceItemsByIds(ids as List<Long>, true)
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual.size).isEqualTo(3)
+        assertThat(actual[0].price).isEqualTo(BigDecimal("30.60"))
+        assertThat(actual[1].price).isEqualTo(BigDecimal("46.15"))
+        assertThat(actual[2].price).isEqualTo(BigDecimal("54.60"))
+    }
+
+    @Test
+    fun `should update markups in price items`() {
+
+        // given
+        transactionTemplate.execute {
+            priceItemRepository.deleteAllInBatch()
+        }
+
+        // given
+        val saved = transactionTemplate.execute {
+            priceItemRepository.saveAll(
+                listOf(
+                    PriceItem(
+                        productId = 1L,
+                        price = BigDecimal("25.50"),
+                        markup = BigDecimal(0.10)
+                    ),
+                    PriceItem(
+                        productId = 2L,
+                        price = BigDecimal("25.50"),
+                        markup = BigDecimal(0.05)
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val markupUpdateRequests = listOf(
+            MarkupUpdateRequest(saved[0].id ?: -1, BigDecimal(0.20)),
+            MarkupUpdateRequest(saved[1].id ?: -1, BigDecimal(0.20)),
+        )
+
+        // when
+        val actual = service.updateMarkups(markupUpdateRequests)
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual.size).isEqualTo(2)
+        assertThat(actual[0].markup).isEqualTo(BigDecimal("0.20"))
+        assertThat(actual[1].markup).isEqualTo(BigDecimal("0.20"))
     }
 
     @Test
@@ -884,7 +976,8 @@ class AccountancyServiceTest @Autowired constructor(
             priceItemRepository.save(
                 PriceItem(
                     productId = 1,
-                    price = BigDecimal("25.50")
+                    price = BigDecimal("25.50"),
+                    markup = BigDecimal.ZERO
                 )
             )
         } ?: fail("result is expected")

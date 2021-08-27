@@ -14,31 +14,51 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 
 @SpringBootApplication
-internal class GetProductsPriceFeignClientWireMockTestApp
+internal class GetMarkupFeignClientWireMockTestApp
 
-@DisplayName("Get Products Price Feign Client WireMock test")
-@ContextConfiguration(classes = [GetProductsPriceFeignClientWireMockTestApp::class])
-class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Update markup Feign Client WireMock test")
+@ContextConfiguration(classes = [GetMarkupFeignClientWireMockTestApp::class])
+class GetMarkupFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should get products price`() {
+    fun `should get markups`() {
 
         // given
-        val responseExpected = listOf(
-            PriceItemResponse(
-                price = BigDecimal("20.00")
+        val request = listOf(
+            MarkupUpdateRequest(
+                priceItemId = 1L,
+                markup = BigDecimal("0.20")
+            ),
+            MarkupUpdateRequest(
+                priceItemId = 2L,
+                markup = BigDecimal("0.30")
             )
         )
 
-        // and
+        //and
+        val responseExpected = listOf(
+            MarkupUpdateResponse(
+                priceItemId = 1L,
+                price = BigDecimal("12.00"),
+                markup = request[0].markup
+            ),
+            MarkupUpdateResponse(
+                priceItemId = 2L,
+                price = BigDecimal("22.00"),
+                markup = request[1].markup
+            )
+        )
+
+        //and
         stubFor(
-            get("/api/v1/accountancy/product-price")
+            get("/api/v1/accountancy/price-item/markup?ids=1&ids=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -47,16 +67,17 @@ class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.OK.value())
+                        .withStatus(HttpStatus.CREATED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = accountancyClient.getProductsPrice()
+        val responseActual = accountancyClient.getMarkups(listOf(1L,2L))
 
-        // then
-        assertThat(responseActual.size).isEqualTo(1)
-        assertThat(responseActual[0].price).isEqualTo(BigDecimal("20.00"))
+        //  then
+        assertThat(responseActual[0].priceItemId).isEqualTo(1L)
+        assertThat(responseActual[0].markup).isEqualTo(request[0].markup)
+        assertThat(responseActual[1].markup).isEqualTo(request[1].markup)
     }
 }

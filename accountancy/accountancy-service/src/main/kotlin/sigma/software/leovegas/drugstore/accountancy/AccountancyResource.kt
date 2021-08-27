@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
@@ -44,6 +46,11 @@ class AccountancyResource(private val service: AccountancyService) {
         service.updatePriceItem(id, priceItemRequest)
 
     @ResponseStatus(ACCEPTED)
+    @PutMapping("/price-item/markup")
+    fun updateMarkup(@RequestBody markupUpdateRequests: List<MarkupUpdateRequest>): List<MarkupUpdateResponse> =
+        service.updateMarkups(markupUpdateRequests)
+
+    @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/pay/{id}")
     fun payInvoice(@PathVariable id: Long): InvoiceResponse =
         service.payInvoice(id)
@@ -60,7 +67,7 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(OK)
     @GetMapping("/product-price")
-    fun getProductsPrice(): Map<Long?, BigDecimal> = service.getProductsPrice()
+    fun getProductsPrice(): List<PriceItemResponse> = service.getProductsPrice()
 
     @ResponseStatus(OK)
     @GetMapping("/invoice/{id}")
@@ -72,13 +79,25 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(OK)
     @GetMapping("/price-by-product-ids")
-    fun getProductsPriceByProductIds(@RequestParam ids: List<Long>): List<PriceItemResponse> =
-        service.getProductsPriceByProductIds(ids)
+    fun getProductsPriceByProductIds(
+        @RequestParam ids: List<Long>,
+        @RequestParam(defaultValue = "true") markup: Boolean
+    ): List<PriceItemResponse> =
+        service.getProductsPriceByProductIds(ids, markup)
 
     @ResponseStatus(OK)
     @GetMapping("/price-items-by-ids")
-    fun getPriceItemsByIds(@RequestParam ids: List<Long>): List<PriceItemResponse> =
-        service.getPriceItemsByIds(ids)
+    fun getPriceItemsByIds(
+        @RequestParam ids: List<Long>,
+        @RequestParam(defaultValue = "true") markup: Boolean
+    ): List<PriceItemResponse> =
+        service.getPriceItemsByIds(ids, markup)
+
+    @ResponseStatus(OK)
+    @GetMapping("/price-item/markup")
+    fun getMarkups(
+        @RequestParam(defaultValue = "") ids: List<Long>,
+    ): List<MarkupUpdateResponse> = service.getMarkUps(ids)
 
     @ResponseStatus(CREATED)
     @PostMapping("/purchased-costs")

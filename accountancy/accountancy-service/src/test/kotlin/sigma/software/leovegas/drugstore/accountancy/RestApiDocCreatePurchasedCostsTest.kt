@@ -56,7 +56,8 @@ class RestApiDocCreatePurchasedCostsTest @Autowired constructor(
             priceItemRepository.save(
                 PriceItem(
                     productId = 1L,
-                    price = BigDecimal("25.50")
+                    price = BigDecimal("25.50"),
+                    markup = BigDecimal.ZERO
                 )
             )
         } ?: fail("result is expected")

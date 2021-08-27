@@ -1,7 +1,9 @@
 package sigma.software.leovegas.drugstore.accountancy
 
+import java.math.BigDecimal
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
@@ -12,7 +14,8 @@ import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 
 fun PriceItemRequest.toEntity() = PriceItem(
     productId = productId,
-    price = price
+    price = price,
+    markup = BigDecimal.ZERO
 )
 
 // PriceItem entity -> PriceResponse
@@ -74,3 +77,13 @@ fun PurchasedCosts.toPurchasedCostsResponse() = PurchasedCostsResponse(
 )
 
 fun List<PurchasedCosts>.toPurchasedCostsResponseList() = this.map(PurchasedCosts::toPurchasedCostsResponse)
+
+// PriceItem entity -> MarkupUpdateResponse
+
+fun PriceItem.toMarkupUpdateResponse(): MarkupUpdateResponse = MarkupUpdateResponse(
+    priceItemId = id ?: -1,
+    price = price,
+    markup = markup
+)
+
+fun List<PriceItem>.toMarkupUpdateResponse(): List<MarkupUpdateResponse> = this.map(PriceItem::toMarkupUpdateResponse)

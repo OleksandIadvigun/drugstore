@@ -193,8 +193,8 @@ Feature: Store
 
 Feature: Accounting
 
-  Scenario: As a user I should create price item (first time added product with price)
-    Given product id, price
+  Scenario: As a user I should create price item (first time added product with price and markup if necessary)
+    Given product id, price, markup
     When send Post Request with given content
     Then receive response with response body:
     """
@@ -218,6 +218,13 @@ Feature: Accounting
     Given previously created price items
     When send Get Request
     Then receive response with response body equal to price items
+     """
+     id,
+    product id,
+    price,
+    createdAt,
+    updatedAt
+    """
 
   Scenario: As a user I should get price items by ids
     When send Get Request with ids
@@ -282,6 +289,26 @@ Feature: Accounting
     invoice status = PAID
     """
 
+  Scenario: As a user I should get markups
+    Given previously created price items
+    When send GET request
+    Then receive response with response body equal price item with markup:
+    """
+    priceItemId,
+    price,
+    markup
+    """
+    
+  Scenario: As a user I should update markups
+    Given previously created price items
+    When send PUT request
+    Then receive response with response body equal price item with status:
+    """
+    priceItemId,
+    price,
+    markup
+    """
+    
   Scenario: As a user I should create purchased costs
     Given previously created price item
     When send Post request

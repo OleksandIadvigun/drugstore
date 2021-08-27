@@ -21,7 +21,7 @@ internal class GetPriceItemsByIdsFeignClientWireMockApp
 
 @DisplayName("Get Price Items By Ids Feign Client WireMock test")
 @ContextConfiguration(classes = [GetPriceItemsByIdsFeignClientWireMockApp::class])
-class GetProductsPriceByIdsFeignClientWireMock @Autowired constructor(
+class GetProductsPriceByIdsFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
@@ -45,7 +45,7 @@ class GetProductsPriceByIdsFeignClientWireMock @Autowired constructor(
 
         //and
         stubFor(
-            get("/api/v1/accountancy/price-items-by-ids/ids=1,2")
+            get("/api/v1/accountancy/price-items-by-ids/ids=1,2&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

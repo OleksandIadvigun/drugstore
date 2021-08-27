@@ -13,8 +13,8 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 
-@DisplayName("Create Products Price REST API Doc test")
-class RestApiDocGetProductsPriceTest @Autowired constructor(
+@DisplayName("Get markups REST API Doc test")
+class RestApiDocGetMarkupsOfPriceItemsTest @Autowired constructor(
     val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
@@ -22,9 +22,8 @@ class RestApiDocGetProductsPriceTest @Autowired constructor(
     val priceItemRepo: PriceItemRepository
 ) : RestApiDocumentationTest(accountancyProperties) {
 
-
     @Test
-    fun `should get products price`() {
+    fun `should get markups `() {
 
         //given
         transactionTemplate.execute {
@@ -38,12 +37,12 @@ class RestApiDocGetProductsPriceTest @Autowired constructor(
                     PriceItem(
                         productId = 1L,
                         price = BigDecimal("10.00"),
-                        markup = BigDecimal.ZERO
+                        markup = BigDecimal("10.00")
                     ),
                     PriceItem(
                         productId = 2L,
                         price = BigDecimal("10.00"),
-                        markup = BigDecimal.ZERO
+                        markup = BigDecimal("20.00")
                     )
                 )
             )
@@ -51,13 +50,13 @@ class RestApiDocGetProductsPriceTest @Autowired constructor(
 
         // given
 
-        of("get-products-price").`when`()
+        of("get-markups").`when`()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/product-price")
+            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/price-item/markup")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", equalTo(2))
-            .assertThat().body("[0].createdAt", not(emptyString()))
-            .assertThat().body("[0].updatedAt", not(emptyString()))
+            .assertThat().body("[0].markup", equalTo(10.0F))
+            .assertThat().body("[1].markup", equalTo(20.0F))
     }
 }

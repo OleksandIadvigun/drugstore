@@ -34,15 +34,18 @@ class RestApiDocGetProductsPriceByProductsIdsTest @Autowired constructor(
                 listOf(
                     PriceItem(
                         productId = 1L,
-                        price = BigDecimal("10.00")
+                        price = BigDecimal("10.00"),
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 2L,
-                        price = BigDecimal("10.00")
+                        price = BigDecimal("10.00"),
+                        markup = BigDecimal.ZERO
                     ),
                     PriceItem(
                         productId = 3L,
-                        price = BigDecimal("10.00")
+                        price = BigDecimal("10.00"),
+                        markup = BigDecimal.ZERO
                     )
                 )
             )

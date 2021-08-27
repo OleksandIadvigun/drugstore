@@ -17,28 +17,33 @@ import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 
 @SpringBootApplication
-internal class GetProductsPriceFeignClientWireMockTestApp
+internal class GetProductsPriceByProductIdsFeignClientWireMockApp
 
-@DisplayName("Get Products Price Feign Client WireMock test")
-@ContextConfiguration(classes = [GetProductsPriceFeignClientWireMockTestApp::class])
-class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Get Products Price By Products Ids Feign Client WireMock test")
+@ContextConfiguration(classes = [GetProductsPriceByProductIdsFeignClientWireMockApp::class])
+class GetProductsPriceByProductIdsFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should get products price`() {
+    fun `should get products price by products ids`() {
 
         // given
         val responseExpected = listOf(
             PriceItemResponse(
+                productId = 1L,
                 price = BigDecimal("20.00")
+            ),
+            PriceItemResponse(
+                productId = 2L,
+                price = BigDecimal("40.00")
             )
         )
 
-        // and
+        //and
         stubFor(
-            get("/api/v1/accountancy/product-price")
+            get("/api/v1/accountancy/price-by-product-ids/ids=1,2&markup=true")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -53,10 +58,11 @@ class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.getProductsPrice()
+        val responseActual = accountancyClient.getProductsPriceByProductIds(listOf(1L, 2L))
 
-        // then
-        assertThat(responseActual.size).isEqualTo(1)
+        //  then
+        assertThat(responseActual.size).isEqualTo(2)
         assertThat(responseActual[0].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(responseActual[1].price).isEqualTo(BigDecimal("40.00"))
     }
 }

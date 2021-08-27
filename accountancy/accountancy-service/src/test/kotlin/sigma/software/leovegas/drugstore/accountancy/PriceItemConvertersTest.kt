@@ -15,7 +15,7 @@ class PriceItemConvertersTest {
     fun `should convert to PriceItemResponse`() {
 
         // given
-        val priceItem = PriceItem(productId = 1L, price = BigDecimal.TEN)
+        val priceItem = PriceItem(productId = 1L, price = BigDecimal.TEN, markup = BigDecimal.ZERO)
         val priceItemResponse = PriceItemResponse(productId = 1L, price = BigDecimal.TEN)
 
         // when
@@ -29,8 +29,8 @@ class PriceItemConvertersTest {
     fun `should convert to PriceItem`() {
 
         // given
-        val priceItemRequest = PriceItemRequest(productId = 1L, price = BigDecimal.TEN)
-        val priceItem = PriceItem(productId = 1L, price = BigDecimal.TEN)
+        val priceItemRequest = PriceItemRequest(productId = 1L, price = BigDecimal.TEN, markup = BigDecimal.ZERO)
+        val priceItem = PriceItem(productId = 1L, price = BigDecimal.TEN, markup = BigDecimal.ZERO)
 
         // when
         val actual = priceItemRequest.toEntity()
@@ -43,7 +43,7 @@ class PriceItemConvertersTest {
     fun `should convert list of priceItems to list of DTOs`() {
 
         // given
-        val priceItem = PriceItem(productId = 1L, price = BigDecimal.TEN)
+        val priceItem = PriceItem(productId = 1L, price = BigDecimal.TEN, markup = BigDecimal.ZERO)
         val priceItemResponse = PriceItemResponse(productId = 1L, price = BigDecimal.TEN)
         val priceItems = mutableListOf(priceItem, priceItem)
 

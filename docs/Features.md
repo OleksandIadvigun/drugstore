@@ -58,7 +58,11 @@
 - [X] Create purchased costs
 - [ ] Create costs
 - [ ] Update costs
+- [X] Get markups
+- [X] Update markups
 - [ ] Get past purchased items
+- [ ] Calculate last month income
+- [ ] Calculate last month purchase costs
 - [ ] Credit, debit ??? account details
 
 ### Analytics
