@@ -20,17 +20,17 @@ import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
 
 @SpringBootApplication
-internal class GetInvoiceByOrderIdFeignClientWireMockTestApp
+internal class GetInvoiceByIdFeignClientWireMockTestApp
 
-@DisplayName("Get Invoice By Order Id Feign Client WireMock test")
-@ContextConfiguration(classes = [GetInvoiceByOrderIdFeignClientWireMockTestApp::class])
-class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Get Invoice By Id Feign Client WireMock test")
+@ContextConfiguration(classes = [CreateProductFeignClientWireMockTestApp::class])
+class GetInvoiceByIdFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should get invoice by order id`() {
+    fun `should get invoice by id`() {
 
         // given
         val responseExpected = InvoiceResponse(
@@ -51,7 +51,7 @@ class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/order-id/1")
+            get("/api/v1/accountancy/invoice/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -66,7 +66,7 @@ class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.getInvoiceByOrderId(1L)
+        val responseActual = accountancyClient.getInvoiceById(1L)
 
         // then
         assertThat(responseActual.id).isEqualTo(1L)

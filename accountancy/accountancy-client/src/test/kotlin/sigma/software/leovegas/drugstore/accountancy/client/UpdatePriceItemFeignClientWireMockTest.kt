@@ -62,7 +62,7 @@ class UpdatePriceItemFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.CREATED.value())
+                        .withStatus(HttpStatus.ACCEPTED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )

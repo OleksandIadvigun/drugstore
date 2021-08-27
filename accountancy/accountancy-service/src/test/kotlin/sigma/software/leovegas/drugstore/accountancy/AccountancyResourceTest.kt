@@ -31,6 +31,7 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
@@ -406,6 +407,67 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.id).isEqualTo(savedInvoice.id)
         assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
         assertThat(body.total).isEqualTo(BigDecimal("90.00"))
+    }
+
+    @Test
+    fun `should pay invoice`() {
+
+        // given
+        val savedInvoice = transactionalTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.CREATED,
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    ),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        stubFor(
+            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.PAID)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.PAID))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/invoice/pay/${savedInvoice.id}",
+            PUT,
+            null,
+            respTypeRef<InvoiceResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isNotNull
+        assertThat(body.status).isEqualTo(InvoiceStatusDTO.PAID)
     }
 
     @Test

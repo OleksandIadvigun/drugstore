@@ -255,6 +255,90 @@ class AccountancyServiceTest @Autowired constructor(
     }
 
     @Test
+    fun `should pay invoice`() {
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.CREATED,
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    ),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        stubFor(
+            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(OrderStatusDTO.PAID)
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.PAID))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val actual = service.payInvoice(savedInvoice.id ?: -1)
+
+        // then
+        assertThat(actual.id).isEqualTo(savedInvoice.id)
+        assertThat(actual.status).isEqualTo(InvoiceStatusDTO.PAID)
+    }
+
+    @Test
+    fun `should not pay invoice without status created`() {
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.CANCELLED,
+                    productItems = setOf(
+                        ProductItem(
+                            priceItemId = 1L,
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    ),
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val exception = assertThrows<InvalidStatusOfInvoice> {
+            service.payInvoice(savedInvoice.id ?: -1)
+        }
+
+        // then
+        assertThat(exception.message)
+            .contains("The invoice status should be CREATED to be paid, but status found is invalid")
+    }
+
+    @Test
     fun `should cancel invoice by id`() {
 
         // setup

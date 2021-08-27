@@ -24,19 +24,27 @@ include::{snippets}/update-price-item/http-response.adoc[]
 
 == Get price by Product ids
 
-.PriceItemRequest
+.Request
 include::{snippets}/get-products-price-by-products-ids/http-request.adoc[]
 
-.PriceItemResponse
+.Response
 include::{snippets}/get-products-price-by-products-ids/http-response.adoc[]
+
+== Get price by Product ids
+
+.Request
+include::{snippets}/get-products-price/http-request.adoc[]
+
+.Response
+include::{snippets}/get-products-price/http-response.adoc[]
 
 == Get price by ids
 
 .PriceItemRequest
-include::{snippets}/get-products-price-by-ids/http-request.adoc[]
+include::{snippets}/get-price-items-by-ids/http-request.adoc[]
 
 .PriceItemResponse
-include::{snippets}/get-products-price-by-ids/http-response.adoc[]
+include::{snippets}/get-price-items-by-ids/http-response.adoc[]
 
 == Create purchased costs
 
@@ -46,4 +54,42 @@ include::{snippets}/create-purchased-costs/http-request.adoc[]
 .PriceItemResponse
 include::{snippets}/create-purchased-costs/http-response.adoc[]
 
+== Create invoice
 
+.InvoiceRequest
+include::{snippets}/create-invoice/http-request.adoc[]
+
+.InvoiceResponse
+include::{snippets}/create-invoice/http-response.adoc[]
+
+== Pay invoice
+
+.Request
+include::{snippets}/pay-invoice/http-request.adoc[]
+
+.InvoiceResponse
+include::{snippets}/pay-invoice/http-response.adoc[]
+
+== Cancel invoice
+
+.Request
+include::{snippets}/pay-invoice/http-request.adoc[]
+
+.InvoiceResponse
+include::{snippets}/pay-invoice/http-response.adoc[]
+
+== Get invoice by id
+
+.Request
+include::{snippets}/get-invoice-by-id/http-request.adoc[]
+
+.InvoiceResponse
+include::{snippets}/get-invoice-by-id/http-response.adoc[]
+
+== Get invoice by  order id
+
+.Request
+include::{snippets}/get-invoice-by-order-id/http-request.adoc[]
+
+.InvoiceResponse
+include::{snippets}/get-invoice-by-order-id/http-response.adoc[]

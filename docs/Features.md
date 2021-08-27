@@ -56,15 +56,15 @@
 - [ ] Get Refund
 - [ ] Pay Invoice
 - [X] Create purchased costs
+- [ ] Create costs
+- [ ] Update costs
 - [ ] Get past purchased items
-- [ ] Calculate last month income
-- [ ] Calculate last month purchase costs
 - [ ] Credit, debit ??? account details
 
 ### Analytics
 
-- [ ] Add costs
-- [ ] Update costs
+- [ ] Calculate last month income
+- [ ] Calculate last month purchase costs
 - [ ] Calculate last month costs
 - [ ] Calculate last month profit
 - [ ] Calculate zero date

@@ -11,4 +11,3 @@ class InsufficientAmountOfStoreItemException(id: Long) : RuntimeException(
 class InvoiceNotPaidException(id: Long) : RuntimeException(
     "Invoice with id = $id not paid !"
 )
-

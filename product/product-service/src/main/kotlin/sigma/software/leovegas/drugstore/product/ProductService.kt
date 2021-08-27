@@ -6,7 +6,6 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.ProductRequest
@@ -44,7 +43,8 @@ class ProductService(
             val totalElements = responseList.totalElements
             val convertedToDto = responseList.content.toProductResponseList().associateBy { it.id }
             var response = listOf<ProductResponse?>()
-            val productsWithPrice: List<ProductResponse?> = prices.map { el -> convertedToDto[el.productId]?.copy(price = el.price) }
+            val productsWithPrice: List<ProductResponse?> =
+                prices.map { el -> convertedToDto[el.productId]?.copy(price = el.price) }
             when (sortField) {
                 "name" -> {
                     response = if (sortDirection == "DESC") {

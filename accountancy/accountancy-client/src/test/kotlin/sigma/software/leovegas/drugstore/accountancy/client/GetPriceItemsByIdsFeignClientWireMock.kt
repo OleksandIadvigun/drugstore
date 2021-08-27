@@ -54,7 +54,7 @@ class GetProductsPriceByIdsFeignClientWireMock @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.ACCEPTED.value())
+                        .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )

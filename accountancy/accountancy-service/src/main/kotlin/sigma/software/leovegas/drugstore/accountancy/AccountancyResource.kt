@@ -44,6 +44,11 @@ class AccountancyResource(private val service: AccountancyService) {
         service.updatePriceItem(id, priceItemRequest)
 
     @ResponseStatus(ACCEPTED)
+    @PutMapping("/invoice/pay/{id}")
+    fun payInvoice(@PathVariable id: Long): InvoiceResponse =
+        service.payInvoice(id)
+
+    @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/cancel/{id}")
     fun cancelInvoice(@PathVariable id: Long): InvoiceResponse =
         service.cancelInvoice(id)
@@ -80,6 +85,7 @@ class AccountancyResource(private val service: AccountancyService) {
         val status = when (e) {
             is ResourceNotFoundException -> HttpStatus.BAD_REQUEST
             is PriceItemNotFoundException -> HttpStatus.BAD_REQUEST
+            is InvalidStatusOfInvoice -> HttpStatus.BAD_REQUEST
             else -> HttpStatus.BAD_REQUEST
         }
         ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))
