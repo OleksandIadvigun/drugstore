@@ -11,3 +11,5 @@ class InvalidStatusOfInvoice() : RuntimeException(
 )
 
 class NotPaidInvoiceException(id: Long) : RuntimeException("The invoice with id = $id is not paid")
+
+class PurchasedCostsNotFoundException(id: Long) : RuntimeException("The purchased costs with id = $id was not found")

@@ -3,14 +3,16 @@ package sigma.software.leovegas.drugstore.accountancy.client
 import feign.Headers
 import feign.Param
 import feign.RequestLine
+import java.time.LocalDateTime
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
-import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsCreateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 
 @Headers("Content-Type: application/json")
@@ -56,7 +58,16 @@ interface AccountancyClient {
     fun getPriceItemsByIds(@Param ids: List<Long>, @Param markup: Boolean = true): List<PriceItemResponse>
 
     @RequestLine("POST api/v1/accountancy/purchased-costs")
-    fun createPurchasedCosts(request: PurchasedCostsRequest): PurchasedCostsResponse
+    fun createPurchasedCosts(request: PurchasedCostsCreateRequest): PurchasedCostsResponse
+
+    @RequestLine("PUT api/v1/accountancy/purchased-costs/{id}")
+    fun updatePurchasedCosts(@Param("id") id: Long, request: PurchasedCostsUpdateRequest): PurchasedCostsResponse
+
+    @RequestLine("GET api/v1/accountancy/purchased-costs?dateFrom={dateFrom}&dateTo={dateTo}")
+    fun getPurchasedCosts(
+        @Param dateFrom: LocalDateTime? = null,
+        @Param dateTo: LocalDateTime? = null
+    ): List<PurchasedCostsResponse>
 
     @RequestLine("GET api/v1/accountancy/past-purchased-items")
     fun getPastPurchasedItems(): List<PurchasedItemDTO>

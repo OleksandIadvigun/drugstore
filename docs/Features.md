@@ -56,8 +56,13 @@
 - [X] Get Refund
 - [X] Pay Invoice
 - [X] Create purchased costs
+- [X] Update purchased costs
+- [X] Get purchased costs
+- [ ] Create costs
+- [ ] Update costs
 - [X] Get markups
 - [X] Update markups
+- [ ] Get past purchased items
 - [X] Get past purchased items
 - [ ] Create costs
 - [ ] Update costs

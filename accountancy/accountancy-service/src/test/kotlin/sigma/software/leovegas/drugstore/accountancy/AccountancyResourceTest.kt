@@ -36,8 +36,9 @@ import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
-import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsCreateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
@@ -916,7 +917,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val httpEntity = HttpEntity(
-            PurchasedCostsRequest(
+            PurchasedCostsCreateRequest(
                 priceItemId = priceItem.id ?: -1,
                 quantity = 10,
             )
@@ -941,6 +942,299 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.dateOfPurchase).isBeforeOrEqualTo(LocalDateTime.now())
 
         wireMockServerStoreClient.stop()
+    }
+
+    @Test
+    fun `should update purchased costs`() {
+
+        // setup
+        wireMockServerStoreClient.start()
+
+        // given
+        transactionalTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionalTemplate.execute {
+            purchasedCostsRepository.save(
+                PurchasedCosts(
+                    priceItemId = 1,
+                    quantity = 5,
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val storeReduceResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = purchasedCosts.priceItemId,
+                quantity = 5
+            )
+        )
+
+        // and
+        val storeIncreaseResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = purchasedCosts.priceItemId,
+                quantity = 10
+            )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/reduce")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(
+                                        purchasedCosts.priceItemId, purchasedCosts.quantity
+                                    )
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeReduceResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/increase")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(
+                                        purchasedCosts.priceItemId, 10
+                                    )
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeIncreaseResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // and
+        val httpEntity = HttpEntity(PurchasedCostsUpdateRequest(10))
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/purchased-costs/${purchasedCosts.id}",
+            PUT,
+            httpEntity,
+            respTypeRef<PurchasedCostsResponse>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body.id).isEqualTo(purchasedCosts.id ?: -1)
+        assertThat(body.quantity).isEqualTo(10)
+
+        wireMockServerStoreClient.stop()
+    }
+
+    @Test
+    fun `should get all purchased costs`() {
+
+        // given
+        transactionalTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionalTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/purchased-costs",
+            GET,
+            null,
+            respTypeRef<List<PurchasedCostsResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(2)
+    }
+
+    @Test
+    fun `should get purchased costs before date`() {
+
+        // given
+        transactionalTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionalTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val dateTo = LocalDateTime.now().plusDays(2)
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/purchased-costs?dateTo=${dateTo}",
+            GET,
+            null,
+            respTypeRef<List<PurchasedCostsResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(2)
+        assertThat(body[0].dateOfPurchase).isBefore(dateTo)
+        assertThat(body[1].dateOfPurchase).isBefore(dateTo)
+    }
+
+    @Test
+    fun `should get purchased costs after date`() {
+
+        // given
+        transactionalTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionalTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val dateFrom = LocalDateTime.now().minusDays(1)
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/purchased-costs?dateFrom=${dateFrom}",
+            GET,
+            null,
+            respTypeRef<List<PurchasedCostsResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(2)
+        assertThat(body[0].dateOfPurchase).isAfter(dateFrom)
+        assertThat(body[1].dateOfPurchase).isAfter(dateFrom)
+    }
+
+    @Test
+    fun `should get purchased costs between date`() {
+
+        // given
+        transactionalTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionalTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val dateFrom = LocalDateTime.now().minusDays(1)
+        val dateTo = LocalDateTime.now().plusDays(1)
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/purchased-costs?dateFrom=${dateFrom}&dateTo=${dateTo}",
+            GET,
+            null,
+            respTypeRef<List<PurchasedCostsResponse>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(2)
+        assertThat(body[0].dateOfPurchase).isBetween(dateFrom, dateTo)
+        assertThat(body[1].dateOfPurchase).isBetween(dateFrom, dateTo)
     }
 
     @Test

@@ -50,6 +50,24 @@ include::{snippets}/create-purchased-costs/http-request.adoc[]
 .PriceItemResponse
 include::{snippets}/create-purchased-costs/http-response.adoc[]
 
+== Update purchased costs
+
+.PriceItemRequest
+include::{snippets}/update-purchased-costs/http-request.adoc[]
+
+.PriceItemResponse
+include::{snippets}/update-purchased-costs/http-response.adoc[]
+
+== Get purchased costs
+
+request parameters "dateFrom" and "dateTo" are optional
+
+.PriceItemRequest
+include::{snippets}/get-purchased-costs/http-request.adoc[]
+
+.PriceItemResponse
+include::{snippets}/get-purchased-costs/http-response.adoc[]
+
 == Get markups
 
 .request

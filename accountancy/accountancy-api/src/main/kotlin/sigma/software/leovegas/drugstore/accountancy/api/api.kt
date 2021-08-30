@@ -20,8 +20,12 @@ data class InvoiceRequest(
     val orderId: Long = -1,
 )
 
-data class PurchasedCostsRequest(
+data class PurchasedCostsCreateRequest(
     val priceItemId: Long = -1,
+    val quantity: Int = -1,
+)
+
+data class PurchasedCostsUpdateRequest(
     val quantity: Int = -1,
 )
 
@@ -51,6 +55,13 @@ data class InvoiceResponse(
     val expiredAt: LocalDateTime? = null,
 )
 
+data class PurchasedCostsResponse(
+    val id: Long = -1,
+    val priceItemId: Long = -1,
+    val quantity: Int = -1,
+    val dateOfPurchase: LocalDateTime? = null,
+)
+
 // DTOs
 
 enum class InvoiceStatusDTO {
@@ -67,12 +78,9 @@ data class ProductItemDTO(
     val quantity: Int = 0
 )
 
-
-data class PurchasedCostsResponse(
-    val id: Long = -1,
-    val priceItemId: Long = -1,
-    val quantity: Int = -1,
-    val dateOfPurchase: LocalDateTime? = null,
+data class CostDateFilterDTO(
+    val dateFrom: LocalDateTime? = null,
+    val dateTo: LocalDateTime? = null,
 )
 
 data class PurchasedItemDTO(

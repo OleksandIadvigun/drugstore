@@ -1,5 +1,7 @@
 package sigma.software.leovegas.drugstore.accountancy
 
+import java.time.LocalDateTime
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.ACCEPTED
 import org.springframework.http.HttpStatus.CREATED
@@ -15,14 +17,16 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import sigma.software.leovegas.drugstore.accountancy.api.CostDateFilterDTO
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
-import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsCreateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 import sigma.software.leovegas.drugstore.api.ApiError
 
@@ -101,8 +105,22 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(CREATED)
     @PostMapping("/purchased-costs")
-    fun createPurchasedCosts(@RequestBody purchasedCostsRequest: PurchasedCostsRequest): PurchasedCostsResponse =
-        service.createPurchasedCosts(purchasedCostsRequest)
+    fun createPurchasedCosts(@RequestBody purchasedCostsCreateRequest: PurchasedCostsCreateRequest): PurchasedCostsResponse =
+        service.createPurchasedCosts(purchasedCostsCreateRequest)
+
+    @ResponseStatus(ACCEPTED)
+    @PutMapping("/purchased-costs/{id}")
+    fun updatePurchasedCosts(
+        @PathVariable id: Long,
+        @RequestBody purchasedCostsUpdateRequest: PurchasedCostsUpdateRequest
+    ) = service.updatePurchaseCosts(id, purchasedCostsUpdateRequest)
+
+    @ResponseStatus(OK)
+    @GetMapping("/purchased-costs")
+    fun getPurchasedCosts(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) dateFrom: LocalDateTime? = null,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) dateTo: LocalDateTime? = null
+    ) = service.getPurchaseCosts(CostDateFilterDTO(dateFrom, dateTo))
 
     @ResponseStatus(OK)
     @GetMapping("/past-purchased-items")
@@ -115,6 +133,7 @@ class AccountancyResource(private val service: AccountancyService) {
             is ResourceNotFoundException -> HttpStatus.BAD_REQUEST
             is PriceItemNotFoundException -> HttpStatus.BAD_REQUEST
             is InvalidStatusOfInvoice -> HttpStatus.BAD_REQUEST
+            is PurchasedCostsNotFoundException -> HttpStatus.BAD_REQUEST
             else -> HttpStatus.BAD_REQUEST
         }
         ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))

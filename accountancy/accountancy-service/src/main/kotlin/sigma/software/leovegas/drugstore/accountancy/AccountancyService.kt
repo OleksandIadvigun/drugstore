@@ -6,14 +6,16 @@ import java.time.LocalDateTime
 import javax.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import sigma.software.leovegas.drugstore.accountancy.api.CostDateFilterDTO
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
-import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsCreateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.client.OrderClient
@@ -51,8 +53,8 @@ class AccountancyService @Autowired constructor(
     fun getProductsPrice(): List<PriceItemResponse> =
         priceItemRepository.findAll().toPriceItemResponseList()
 
-    fun createPurchasedCosts(purchasedCostsRequest: PurchasedCostsRequest): PurchasedCostsResponse =
-        purchasedCostsRequest.run {
+    fun createPurchasedCosts(purchasedCostsCreateRequest: PurchasedCostsCreateRequest): PurchasedCostsResponse =
+        purchasedCostsCreateRequest.run {
             priceItemRepository.findById(this.priceItemId)
                 .orElseThrow { throw PriceItemNotFoundException(this.priceItemId) }
             when {
@@ -63,7 +65,7 @@ class AccountancyService @Autowired constructor(
                     storeClient.increaseQuantity(listOf(UpdateStoreRequest(this.priceItemId, this.quantity)))
                 }
             }
-            purchasedCostsRepository.save(purchasedCostsRequest.toEntity()).toPurchasedCostsResponse()
+            purchasedCostsRepository.save(purchasedCostsCreateRequest.toEntity()).toPurchasedCostsResponse()
         }
 
     fun getProductsPriceByProductIds(ids: List<Long>, markup: Boolean): List<PriceItemResponse> {
@@ -181,6 +183,37 @@ class AccountancyService @Autowired constructor(
         }
         return invoiceToCancelList.toInvoiceResponseList()
     }
+
+    fun updatePurchaseCosts(id: Long, purchasedCostsUpdateRequest: PurchasedCostsUpdateRequest)
+            : PurchasedCostsResponse {
+        val purchaseCostsToUpdate = purchasedCostsRepository
+            .findById(id)
+            .orElseThrow { PurchasedCostsNotFoundException(id) }
+        storeClient.reduceQuantity(
+            listOf(UpdateStoreRequest(purchaseCostsToUpdate.priceItemId, purchaseCostsToUpdate.quantity))
+        )
+        storeClient.increaseQuantity(
+            listOf(UpdateStoreRequest(purchaseCostsToUpdate.priceItemId, purchasedCostsUpdateRequest.quantity))
+        )
+        val toSave = purchaseCostsToUpdate.copy(quantity = purchasedCostsUpdateRequest.quantity)
+        return purchasedCostsRepository.saveAndFlush(toSave).toPurchasedCostsResponse()
+    }
+
+    fun getPurchaseCosts(dateFilter: CostDateFilterDTO): List<PurchasedCostsResponse> =
+        dateFilter.run {
+            when {
+                this.dateTo == null && this.dateFrom == null -> purchasedCostsRepository.findAll()
+                this.dateFrom == null -> purchasedCostsRepository
+                    .findAllByDateOfPurchaseIsBefore(this.dateTo ?: LocalDateTime.now())
+                this.dateTo == null -> purchasedCostsRepository
+                    .findAllByDateOfPurchaseIsAfter(this.dateFrom ?: LocalDateTime.now())
+                else -> purchasedCostsRepository
+                    .findAllByDateOfPurchaseIsBetween(
+                        this.dateFrom ?: LocalDateTime.now(),
+                        this.dateTo ?: LocalDateTime.now()
+                    )
+            }.toPurchasedCostsResponseList()
+        }
 
     fun getPastPurchasedItems(): List<PurchasedItemDTO> {
         val ids = invoiceRepository

@@ -24,12 +24,14 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.CostDateFilterDTO
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.MarkupUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
-import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsCreateRequest
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsUpdateRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
@@ -75,7 +77,7 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual.id).isNotNull
         assertEquals(priceItemResponse.productId, actual.productId)
         assertEquals(priceItemResponse.price, actual.price)
-        assertThat(actual.createdAt).isBefore(LocalDateTime.now())
+        assertThat(actual.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test
@@ -261,7 +263,7 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual).isNotNull
         assertThat(actual.id).isNotNull
         assertThat(actual.total).isEqualTo(savedInvoice.total)
-        assertThat(actual.createdAt).isBefore(LocalDateTime.now())
+        assertThat(actual.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test
@@ -983,7 +985,7 @@ class AccountancyServiceTest @Autowired constructor(
         } ?: fail("result is expected")
 
         // and
-        val purchasedCostsRequest = PurchasedCostsRequest(
+        val purchasedCostsCreateRequest = PurchasedCostsCreateRequest(
             priceItemId = priceItem.id ?: -1,
             quantity = 10,
         )
@@ -1049,7 +1051,7 @@ class AccountancyServiceTest @Autowired constructor(
         )
 
         // when
-        val actual = service.createPurchasedCosts(purchasedCostsRequest)
+        val actual = service.createPurchasedCosts(purchasedCostsCreateRequest)
 
         // then
         assertThat(actual).isNotNull
@@ -1065,18 +1067,293 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not create purchased costs with not existing price item`() {
 
         // given
-        val purchasedCostsRequest = PurchasedCostsRequest(
+        val purchasedCostsCreateRequest = PurchasedCostsCreateRequest(
             priceItemId = -1,
             quantity = 10,
         )
 
         // when
         val exception = assertThrows<PriceItemNotFoundException> {
-            service.createPurchasedCosts(purchasedCostsRequest)
+            service.createPurchasedCosts(purchasedCostsCreateRequest)
         }
 
         // then
         assertThat(exception.message).contains("Price Item with id", "was not found")
+
+    }
+
+    @Test
+    fun `should update purchased costs`() {
+
+        // setup
+        wireMockServerStoreClient.start()
+
+        // given
+        transactionTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionTemplate.execute {
+            purchasedCostsRepository.save(
+                PurchasedCosts(
+                    priceItemId = 1,
+                    quantity = 5,
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val purchasedCostsUpdateRequest = PurchasedCostsUpdateRequest(
+            quantity = 10,
+        )
+
+        // and
+        val storeReduceResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = purchasedCosts.priceItemId,
+                quantity = 5
+            )
+        )
+
+        // and
+        val storeIncreaseResponse = listOf(
+            StoreResponse(
+                id = 1,
+                priceItemId = purchasedCosts.priceItemId,
+                quantity = 10
+            )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/reduce")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(
+                                        purchasedCosts.priceItemId, purchasedCosts.quantity
+                                    )
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeReduceResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // and
+        wireMockServerStoreClient.stubFor(
+            put("/api/v1/store/increase")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(
+                                listOf(
+                                    UpdateStoreRequest(
+                                        purchasedCosts.priceItemId, purchasedCostsUpdateRequest.quantity
+                                    )
+                                )
+                            )
+                    )
+                )
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(storeIncreaseResponse)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        // when
+        val actual = service.updatePurchaseCosts(purchasedCosts.id ?: -1, purchasedCostsUpdateRequest)
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual.id).isEqualTo(purchasedCosts.id ?: -1)
+        assertThat(actual.quantity).isEqualTo(10)
+
+        wireMockServerStoreClient.stop()
+    }
+
+    @Test
+    fun `should not update non-existing purchased costs`() {
+
+        // and
+        val purchasedCostsUpdateRequest = PurchasedCostsUpdateRequest(
+            quantity = 10,
+        )
+
+        // when
+        val exception = assertThrows<PurchasedCostsNotFoundException> {
+            service.updatePurchaseCosts(-1, purchasedCostsUpdateRequest)
+        }
+
+        // then
+        assertThat(exception.message).contains("The purchased costs with id =", "was not found")
+    }
+
+    @Test
+    fun `should get all purchased costs`() {
+
+        // given
+        transactionTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val actual = service.getPurchaseCosts(CostDateFilterDTO())
+
+        // then
+        assertThat(actual).hasSize(2)
+    }
+
+    @Test
+    fun `should get purchased costs between certain date`() {
+
+        // given
+        transactionTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val dateBetween = CostDateFilterDTO(
+            LocalDateTime.now().minusDays(1),
+            LocalDateTime.now().plusDays(1)
+        )
+
+        // when
+        val actual = service.getPurchaseCosts(dateBetween)
+
+        // then
+        assertThat(actual).hasSize(2)
+        assertThat(actual[0].dateOfPurchase).isBetween(dateBetween.dateFrom, dateBetween.dateTo)
+        assertThat(actual[1].dateOfPurchase).isBetween(dateBetween.dateFrom, dateBetween.dateTo)
+    }
+
+    @Test
+    fun `should get purchased costs before certain date`() {
+
+        // given
+        transactionTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val dateTo = CostDateFilterDTO(
+            dateTo = LocalDateTime.now().plusDays(1)
+        )
+
+        // when
+        val actual = service.getPurchaseCosts(dateTo)
+
+        // then
+        assertThat(actual).hasSize(2)
+        assertThat(actual[0].dateOfPurchase).isBefore(dateTo.dateTo)
+        assertThat(actual[1].dateOfPurchase).isBefore(dateTo.dateTo)
+    }
+
+    @Test
+    fun `should get purchased costs after certain date`() {
+
+        // given
+        transactionTemplate.execute {
+            purchasedCostsRepository.deleteAll()
+        }
+
+        // and
+        val purchasedCosts = transactionTemplate.execute {
+            purchasedCostsRepository.saveAll(
+                listOf(
+                    PurchasedCosts(
+                        priceItemId = 1,
+                        quantity = 5,
+                    ),
+                    PurchasedCosts(
+                        priceItemId = 2,
+                        quantity = 5,
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val dateFrom = CostDateFilterDTO(
+            dateFrom = LocalDateTime.now().minusDays(1)
+        )
+
+        // when
+        val actual = service.getPurchaseCosts(dateFrom)
+
+        // then
+        assertThat(actual).hasSize(2)
+        assertThat(actual[0].dateOfPurchase).isAfter(dateFrom.dateFrom)
+        assertThat(actual[1].dateOfPurchase).isAfter(dateFrom.dateFrom)
     }
 
     @Test
