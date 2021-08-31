@@ -75,3 +75,8 @@ data class PurchasedCostsResponse(
     val dateOfPurchase: LocalDateTime? = null,
 )
 
+data class PurchasedItemDTO(
+    val name: String = "undefined",
+    val price: BigDecimal = BigDecimal.ZERO,
+    val quantity: Int = -1
+)

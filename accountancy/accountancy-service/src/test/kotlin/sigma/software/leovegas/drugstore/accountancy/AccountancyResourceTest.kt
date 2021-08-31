@@ -38,6 +38,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
@@ -940,5 +941,91 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.dateOfPurchase).isBeforeOrEqualTo(LocalDateTime.now())
 
         wireMockServerStoreClient.stop()
+    }
+
+    @Test
+    fun `should get purchased items`() {
+
+        // given
+        transactionalTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
+        // and
+        val created = transactionalTemplate.execute {
+            invoiceRepository.saveAll(
+                listOf(
+                    Invoice(
+                        orderId = 1,
+                        total = BigDecimal("50.00"),
+                        status = InvoiceStatus.PAID,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 1,
+                                name = "test1",
+                                price = BigDecimal.TEN,
+                                quantity = 5
+                            )
+                        )
+                    ),
+                    Invoice(
+                        orderId = 2,
+                        total = BigDecimal("50.00"),
+                        status = InvoiceStatus.PAID,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 1,
+                                name = "test1",
+                                price = BigDecimal.TEN,
+                                quantity = 5
+                            )
+                        )
+                    ),
+                    Invoice(
+                        orderId = 3,
+                        total = BigDecimal("20.00"),
+                        status = InvoiceStatus.PAID,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 2,
+                                name = "test1",
+                                price = BigDecimal.ONE,
+                                quantity = 2
+                            )
+                        )
+                    ),
+                    Invoice(
+                        orderId = 4,
+                        total = BigDecimal("20.00"),
+                        status = InvoiceStatus.CREATED,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 2,
+                                name = "test1",
+                                price = BigDecimal.ONE,
+                                quantity = 2
+                            )
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/past-purchased-items",
+            GET,
+            null,
+            respTypeRef<List<PurchasedItemDTO>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(2)
+        assertThat(body[0].quantity).isEqualTo(10)
+        assertThat(body[1].quantity).isEqualTo(2)
     }
 }

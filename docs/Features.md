@@ -58,7 +58,7 @@
 - [X] Create purchased costs
 - [X] Get markups
 - [X] Update markups
-- [ ] Get past purchased items
+- [X] Get past purchased items
 - [ ] Create costs
 - [ ] Update costs
 - [ ] Credit, debit ??? account details

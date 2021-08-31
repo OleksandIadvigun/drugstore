@@ -23,6 +23,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 import sigma.software.leovegas.drugstore.api.ApiError
 
 @RestController
@@ -102,6 +103,11 @@ class AccountancyResource(private val service: AccountancyService) {
     @PostMapping("/purchased-costs")
     fun createPurchasedCosts(@RequestBody purchasedCostsRequest: PurchasedCostsRequest): PurchasedCostsResponse =
         service.createPurchasedCosts(purchasedCostsRequest)
+
+    @ResponseStatus(OK)
+    @GetMapping("/past-purchased-items")
+    fun getPastPurchasedItems(): List<PurchasedItemDTO> =
+        service.getPastPurchasedItems()
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

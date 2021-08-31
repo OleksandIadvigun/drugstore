@@ -1078,4 +1078,82 @@ class AccountancyServiceTest @Autowired constructor(
         // then
         assertThat(exception.message).contains("Price Item with id", "was not found")
     }
+
+    @Test
+    fun `should get purchased items`() {
+
+        // given
+        transactionTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
+        // and
+        val created = transactionTemplate.execute {
+            invoiceRepository.saveAll(
+                listOf(
+                    Invoice(
+                        orderId = 1,
+                        total = BigDecimal("50.00"),
+                        status = InvoiceStatus.PAID,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 1,
+                                name = "test1",
+                                price = BigDecimal.TEN,
+                                quantity = 5
+                            )
+                        )
+                    ),
+                    Invoice(
+                        orderId = 2,
+                        total = BigDecimal("50.00"),
+                        status = InvoiceStatus.PAID,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 1,
+                                name = "test1",
+                                price = BigDecimal.TEN,
+                                quantity = 5
+                            )
+                        )
+                    ),
+                    Invoice(
+                        orderId = 3,
+                        total = BigDecimal("20.00"),
+                        status = InvoiceStatus.PAID,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 2,
+                                name = "test1",
+                                price = BigDecimal.ONE,
+                                quantity = 2
+                            )
+                        )
+                    ),
+                    Invoice(
+                        orderId = 4,
+                        total = BigDecimal("20.00"),
+                        status = InvoiceStatus.CREATED,
+                        productItems = setOf(
+                            ProductItem(
+                                priceItemId = 2,
+                                name = "test1",
+                                price = BigDecimal.ONE,
+                                quantity = 2
+                            )
+                        )
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+
+        // when
+        val actual = service.getPastPurchasedItems()
+
+        // then
+        assertThat(actual).hasSize(2)
+        assertThat(actual[0].quantity).isEqualTo(10)
+        assertThat(actual[1].quantity).isEqualTo(2)
+    }
 }

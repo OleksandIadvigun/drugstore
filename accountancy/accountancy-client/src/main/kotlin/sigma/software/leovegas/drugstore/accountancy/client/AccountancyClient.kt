@@ -11,6 +11,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 
 @Headers("Content-Type: application/json")
 interface AccountancyClient {
@@ -56,4 +57,7 @@ interface AccountancyClient {
 
     @RequestLine("POST api/v1/accountancy/purchased-costs")
     fun createPurchasedCosts(request: PurchasedCostsRequest): PurchasedCostsResponse
+
+    @RequestLine("GET api/v1/accountancy/past-purchased-items")
+    fun getPastPurchasedItems(): List<PurchasedItemDTO>
 }

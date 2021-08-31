@@ -14,6 +14,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.PriceItemRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
+import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
@@ -179,5 +180,13 @@ class AccountancyService @Autowired constructor(
             cancelInvoice(it.id ?: -1)
         }
         return invoiceToCancelList.toInvoiceResponseList()
+    }
+
+    fun getPastPurchasedItems(): List<PurchasedItemDTO> {
+        val ids = invoiceRepository
+            .findAllByStatus(InvoiceStatus.PAID)
+            .map { it.productItems.map { item -> item.id ?: -1 } }
+            .flatten()
+        return invoiceRepository.getPurchasedItems(ids)
     }
 }
