@@ -8,16 +8,16 @@ services:
     container_name: product
     image: drugstore/product-service
     build:
-      context: ./product/product-service
-      dockerfile: Dockerfile
+      context: ../product/product-service/
+      dockerfile: ./Dockerfile
     ports: [ '8081:8081' ]
     networks: [ drugstore ]
   order-service:
     container_name: order
     image: drugstore/order-service
     build:
-      context: ./order/order-service
-      dockerfile: Dockerfile
+      context: ../order/order-service/
+      dockerfile: ./Dockerfile
     ports: [ '8082:8082' ]
     networks: [ drugstore ]
     depends_on: [ product-service ]
@@ -25,17 +25,15 @@ services:
     container_name: store
     image: drugstore/store-service
     build:
-      context: ./store/store-service
-      dockerfile: Dockerfile
+      context: ../store/store-service/
+      dockerfile: ./Dockerfile
     ports: [ '8083:8083' ]
     networks: [ drugstore ]
   accountancy-service:
     container_name: accountancy
     image: drugstore/accountancy-service
     build:
-      context: ./accountancy/accountancy-service
-      dockerfile: Dockerfile
+      context: ../accountancy/accountancy-service/
+      dockerfile: ./Dockerfile
     ports: [ '8084:8084' ]
     networks: [ drugstore ]
-
-

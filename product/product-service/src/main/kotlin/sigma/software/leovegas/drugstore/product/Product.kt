@@ -15,6 +15,7 @@ import org.hibernate.annotations.UpdateTimestamp
 @Entity
 @Table(name = "product")
 data class Product(
+
     @Id
     @NotNull
     @GeneratedValue(strategy = IDENTITY)
@@ -22,7 +23,7 @@ data class Product(
     val id: Long? = null,
 
     @NotEmpty
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, updatable = false)
     val name: String,
 
     @NotNull
@@ -35,4 +36,3 @@ data class Product(
     @Column(name = "updated_at", nullable = false)
     val updatedAt: LocalDateTime? = null
 )
-

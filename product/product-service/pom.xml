@@ -123,6 +123,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <skip>${skipDocumentation}</skip>
                     <sourceDirectory>${project.basedir}/src/main/docs</sourceDirectory>
                     <doctype>docbook</doctype>
                     <sourceDocumentName>index.adoc</sourceDocumentName>

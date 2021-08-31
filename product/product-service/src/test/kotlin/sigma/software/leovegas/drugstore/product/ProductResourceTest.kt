@@ -105,7 +105,7 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body.name).isEqualTo(httpEntity.body?.name)
-        assertThat(body.createdAt).isBefore(body.updatedAt)
+        assertThat(body.createdAt).isBeforeOrEqualTo(body.updatedAt)
     }
 
     @Test

@@ -1,0 +1,8 @@
+POST http://localhost:{{productPort}}/api/v1/products
+Content-Type: application/json
+
+{
+  "name": "test product"
+}
+
+###
