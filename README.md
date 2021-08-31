@@ -1,5 +1,7 @@
 # drugstore
 
+## test
+
 _unix_
 
 ```bash
@@ -11,6 +13,11 @@ _windows_
 ```cmd
 mvnw
 ```
+
+## TODO
+
+Add build and run instructions or update asciidoc documentation
+accordingly
 
 <!--
 
