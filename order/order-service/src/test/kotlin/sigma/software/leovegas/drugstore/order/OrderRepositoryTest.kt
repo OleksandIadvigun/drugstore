@@ -60,6 +60,7 @@ class OrderRepositoryTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 1,
@@ -68,6 +69,7 @@ class OrderRepositoryTest @Autowired constructor(
                         )
                     ),
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 1,
@@ -76,25 +78,30 @@ class OrderRepositoryTest @Autowired constructor(
                         )
                     ),
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 2,
                                 quantity = 5
                             )
                         )
-                    )
+                    ),
                 )
             )
-        } ?: org.junit.jupiter.api.fail("result is expected")
+        } ?: fail("result is expected")
+
+        val ids = created.map { it.orderItems.map { item -> item.id ?: -1 } }.flatten()
 
         // when
         val actual = transactionTemplate.execute {
-            orderRepository.getIdToQuantity()
-        } ?: org.junit.jupiter.api.fail("result is expected")
+            orderRepository.getIdToQuantity(ids)
+        } ?: fail("result is expected")
 
         //then
         assertThat(actual).hasSize(2)
-        assertThat(actual[0].quantity).isEqualTo(5)
         assertThat(actual[0].priceItemId).isEqualTo(2)
+        assertThat(actual[0].quantity).isEqualTo(5)
+        assertThat(actual[1].priceItemId).isEqualTo(1)
+        assertThat(actual[1].quantity).isEqualTo(4)
     }
 }

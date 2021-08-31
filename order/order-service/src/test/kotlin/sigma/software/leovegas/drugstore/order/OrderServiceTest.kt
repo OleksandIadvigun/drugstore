@@ -400,6 +400,7 @@ class OrderServiceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 3,
@@ -408,6 +409,7 @@ class OrderServiceTest @Autowired constructor(
                         )
                     ),
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 5,
@@ -416,6 +418,7 @@ class OrderServiceTest @Autowired constructor(
                         )
                     ),
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 1,
@@ -424,6 +427,15 @@ class OrderServiceTest @Autowired constructor(
                             OrderItem(
                                 priceItemId = 5,
                                 quantity = 2
+                            )
+                        )
+                    ),
+                    Order(
+                        orderStatus = OrderStatus.CREATED,
+                        orderItems = setOf(
+                            OrderItem(
+                                priceItemId = 2,
+                                quantity = 5
                             )
                         )
                     )

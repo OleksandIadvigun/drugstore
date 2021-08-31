@@ -400,6 +400,7 @@ class OrderResourceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 4,
@@ -408,6 +409,7 @@ class OrderResourceTest @Autowired constructor(
                         ),
                     ),
                     Order(
+                        orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
                                 priceItemId = 5,

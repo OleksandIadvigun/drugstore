@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
+import sigma.software.leovegas.drugstore.order.OrderStatus.PAID
 import sigma.software.leovegas.drugstore.order.OrderStatus.UPDATED
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
@@ -79,7 +80,11 @@ class OrderService @Autowired constructor(
     }
 
     fun getProductsIdToQuantity(): Map<Long, Int> {
-        return orderRepository.getIdToQuantity().associate { it.priceItemId to it.quantity }
+        val ids = orderRepository
+            .getAllByOrderStatus(PAID)
+            .map { it.orderItems.map { item -> item.id ?: -1 } }
+            .flatten()
+        return orderRepository.getIdToQuantity(ids).associate { it.priceItemId to it.quantity }
     }
 
     fun changeOrderStatus(id: Long, orderStatus: OrderStatusDTO) =
