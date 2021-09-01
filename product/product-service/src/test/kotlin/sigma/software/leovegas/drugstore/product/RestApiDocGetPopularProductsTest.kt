@@ -19,8 +19,8 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 
 @AutoConfigureWireMock(port = 8082)
-@DisplayName("Get products REST API Doc test")
-class RestApiDocGetProductsTest @Autowired constructor(
+@DisplayName("Get popular products REST API Doc test")
+class RestApiDocGetPopularProductsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
@@ -30,7 +30,7 @@ class RestApiDocGetProductsTest @Autowired constructor(
 
 
     @Test
-    fun `should get products by search sorted by popularity  `() {
+    fun `should get popular products`() {
 
         // given
         transactionTemplate.execute {
@@ -54,7 +54,7 @@ class RestApiDocGetProductsTest @Autowired constructor(
                         status = ProductStatus.RECEIVED,
                     ),
                     Product(
-                        name = "test3",
+                        name = "mostPopular",
                         price = BigDecimal("10.00"),
                         quantity = 7,
                         status = ProductStatus.RECEIVED,
@@ -72,21 +72,24 @@ class RestApiDocGetProductsTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(mapOf(savedProducts[1].id to 5, savedProducts[0].id to 1))
+                                .writeValueAsString(mapOf(
+                                    savedProducts[2].id to 8,
+                                    savedProducts[0].id to 5,
+                                    savedProducts[1].id to 2)
+                                )
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
-        of("get-products").`when`()
-            .get("http://${productProperties.host}:$port/api/v1/products/search?search=test")
+        of("get-popular-products").`when`()
+            .get("http://${productProperties.host}:$port/api/v1/products/popular")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("totalElements", `is`(2))
-            .assertThat().body("content[0].name", Matchers.equalTo("test2"))
-            .assertThat().body("content[0].price", Matchers.equalTo(30.0F))
-            .assertThat().body("content[0].quantity", Matchers.equalTo(3))
+            .assertThat().body("totalElements", `is`(3))
+            .assertThat().body("content[0].name", Matchers.equalTo("mostPopular"))
             .assertThat().body("content[1].name", Matchers.equalTo("test"))
+            .assertThat().body("content[2].name", Matchers.equalTo("test2"))
     }
 }

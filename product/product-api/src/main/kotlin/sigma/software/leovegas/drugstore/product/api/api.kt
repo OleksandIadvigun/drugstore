@@ -5,18 +5,63 @@ import java.time.LocalDateTime
 
 // Request
 
-data class ProductRequest(
+data class CreateProductRequest(
     val name: String = "undefined",
+    val quantity: Int = 0,
+    val price: BigDecimal = BigDecimal.ZERO,
+)
+
+data class ReduceProductQuantityRequest(
+    val id: Long = -1,
+    val quantity: Int = 0,
 )
 
 // Response
 
-data class ProductResponse(
+data class SearchProductResponse(
     val id: Long = -1,
     val name: String = "undefined",
-    val totalBuys: Int = 0,
-    val priceItemId: Long = -1,
     val price: BigDecimal = BigDecimal.ZERO,
+    val quantity: Int = 0,
     val createdAt: LocalDateTime? = null,
     val updatedAt: LocalDateTime? = null
 )
+
+data class ProductDetailsResponse(
+    val id: Long = -1,
+    val name: String = "undefined",
+    val price: BigDecimal = BigDecimal.ZERO,
+    val quantity: Int = -1,
+)
+
+data class GetProductResponse(
+    val id: Long = -1,
+    val name: String = "undefined",
+)
+
+data class CreateProductResponse(
+    val id: Long = -1,
+    val status: ProductStatusDTO = ProductStatusDTO.NONE,
+    val name: String = "undefined",
+    val price: BigDecimal = BigDecimal.ZERO,
+    val quantity: Int = 0,
+    val createdAt: LocalDateTime? = null,
+    val updatedAt: LocalDateTime? = null
+)
+
+data class ReduceProductQuantityResponse(
+    val id: Long = -1,
+    val quantity: Int = 0,
+    val updatedAt: LocalDateTime? = null
+)
+
+data class ReceiveProductResponse(
+    val id: Long = -1,
+    val status: ProductStatusDTO = ProductStatusDTO.NONE
+)
+
+// DTOs
+
+enum class ProductStatusDTO {
+    CREATED, RECEIVED, NONE
+}

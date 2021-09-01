@@ -6,6 +6,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import java.math.BigDecimal
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -14,8 +16,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.product.api.ProductRequest
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 
 @SpringBootApplication
 internal class CreateProductFeignClientWireMockTestApp
@@ -31,14 +34,25 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
     fun `should create product`() {
 
         // given
-        val request = ProductRequest(
-            name = "test",
+        val request = listOf(
+            CreateProductRequest(
+                name = "test1",
+                quantity = 1,
+                price = BigDecimal.ONE
+            )
         )
 
         //and
-        val responseExpected = ProductResponse(
-            id = 1L,
-            name = request.name,
+        val responseExpected = listOf(
+            CreateProductResponse(
+                id=1,
+                name = "test1",
+                quantity = 1,
+                price = BigDecimal.ONE,
+                status = ProductStatusDTO.CREATED,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now()
+            )
         )
 
         //and
@@ -68,7 +82,10 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
         val responseActual = productClient.createProduct(request)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1L)
-        assertThat(responseActual.name).isEqualTo(request.name)
+        assertThat(responseActual[0].id).isEqualTo(1L)
+        assertThat(responseActual[0].name).isEqualTo("test1")
+        assertThat(responseActual[0].quantity).isEqualTo(1)
+        assertThat(responseActual[0].price).isEqualTo(BigDecimal.ONE)
+        assertThat(responseActual[0].status).isEqualTo(ProductStatusDTO.CREATED)
     }
 }

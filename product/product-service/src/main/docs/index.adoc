@@ -14,33 +14,33 @@ include::{snippets}/create-product/http-request.adoc[]
 .ProductResponse
 include::{snippets}/create-product/http-response.adoc[]
 
-== Update product
+== Reduce products quantity
 
 .ProductRequest
-include::{snippets}/update-product/http-request.adoc[]
+include::{snippets}/reduce-products-quantity/http-request.adoc[]
 
 .ProductResponse
-include::{snippets}/update-product/http-response.adoc[]
+include::{snippets}/reduce-products-quantity/http-response.adoc[]
 
-== Get product By Id
+== Receive products
+
+.ProductRequest
+include::{snippets}/receive-products/http-request.adoc[]
+
+.ProductResponse
+include::{snippets}/receive-products/http-response.adoc[]
+
+== Get product details By Ids
 
 .Request
-include::{snippets}/get-product-by-id/http-request.adoc[]
+include::{snippets}/get-products-details-by-ids/http-request.adoc[]
 
 .ProductResponse
-include::{snippets}/get-product-by-id/http-response.adoc[]
-
-== Get product By Ids
-
-.Request
-include::{snippets}/get-products-by-ids/http-request.adoc[]
-
-.ProductResponse
-include::{snippets}/get-products-by-ids/http-response.adoc[]
+include::{snippets}/get-products-details-by-ids/http-response.adoc[]
 
 == Get products
 
-By default is sorted by popularity without price with 5 items on 1 page
+By default is sorted by popularity with 5 items on 1 page
 
 === Possible path variables:
 
@@ -56,3 +56,15 @@ include::{snippets}/get-products/http-request.adoc[]
 .ProductResponse
 include::{snippets}/get-products/http-response.adoc[]
 
+== Get popular products
+
+=== Possible path variables:
+
+- page (number of the page)
+- size (how many items on the page)
+
+.Request
+include::{snippets}/get-popular-products/http-request.adoc[]
+
+.ProductResponse
+include::{snippets}/get-popular-products/http-response.adoc[]

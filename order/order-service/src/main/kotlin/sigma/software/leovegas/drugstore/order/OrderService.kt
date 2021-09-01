@@ -62,7 +62,7 @@ class OrderService @Autowired constructor(
         val priceItems = accountancyClient.getPriceItemsByIds(priceItemIds)
         val productMap = priceItems.associate { it.id to it.productId }
         val priceMap = priceItems.associate { it.id to it.price }
-        val nameMap = productClient.getProductsByIds(productMap.values.toList()).associate { it.id to it.name }
+        val nameMap = productClient.getProductsDetailsByIds(productMap.values.toList()).associate { it.id to it.name }
         var orderItemDetails: List<OrderItemDetailsDTO> =
             orderById.orderItems.map {
                 OrderItemDetailsDTO(

@@ -3,20 +3,17 @@ package sigma.software.leovegas.drugstore.product
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.Query
 
 interface ProductRepository : JpaRepository<Product, Long> {
 
-    @Query(
-        value = "SELECT p FROM Product p WHERE p.name like %?1%",
-        countQuery = "SELECT COUNT(p.id) FROM Product p WHERE p.name like %?1%"
-    )
-    fun findAll(search: String?, pageable: Pageable?): Page<Product>
+    fun findAllByNameContainingAndStatus(name: String?, status: ProductStatus, pageable: Pageable?): Page<Product>
 
-    @Query(
-        value = "SELECT p FROM Product p WHERE p.name like %?1%",
-        countQuery = "SELECT COUNT(p.id) FROM Product p WHERE p.name like %?1%"
-    )
-    fun findAllById(keyword: String, ids: Set<Long>, pageable: Pageable?): Page<Product>
+    fun findAllByNameContainingAndIdInAndStatus(
+        search: String,
+        ids: Set<Long>,
+        status: ProductStatus,
+        pageable: Pageable?
+    ): Page<Product>
+
+    fun findAllByIdInAndStatus(ids: Set<Long>, status: ProductStatus, pageable: Pageable?): Page<Product>
 }
-

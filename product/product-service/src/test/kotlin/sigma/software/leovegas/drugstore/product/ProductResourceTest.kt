@@ -1,7 +1,6 @@
 package sigma.software.leovegas.drugstore.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
@@ -12,7 +11,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -21,16 +19,22 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
-import sigma.software.leovegas.drugstore.product.api.ProductRequest
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.GetProductResponse
+import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
+import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
+import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
+import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityResponse
+import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @AutoConfigureWireMock(port = 8082)
 @DisplayName("ProductResource test")
@@ -38,7 +42,6 @@ import sigma.software.leovegas.drugstore.product.api.ProductResponse
 class ProductResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val restTemplate: TestRestTemplate,
-    val service: ProductService,
     val transactionalTemplate: TransactionTemplate,
     val repository: ProductRepository,
     val objectMapper: ObjectMapper,
@@ -46,7 +49,6 @@ class ProductResourceTest @Autowired constructor(
 ) {
 
     lateinit var baseUrl: String
-    val wiremockAccountancyServer = WireMockServer(8084)
 
     @BeforeEach
     fun setup() {
@@ -58,58 +60,70 @@ class ProductResourceTest @Autowired constructor(
 
         // given
         val httpEntity = HttpEntity(
-            ProductRequest(
-                name = "test product",
+            listOf(
+                CreateProductRequest(
+                    name = "test1",
+                    quantity = 1,
+                    price = BigDecimal.ONE
+                ),
+                CreateProductRequest(
+                    name = "test2",
+                    quantity = 2,
+                    price = BigDecimal.TEN
+                )
             )
         )
 
         // when
-        val response =
-            restTemplate.exchange("$baseUrl/api/v1/products", POST, httpEntity, respTypeRef<ProductResponse>())
+        val response = restTemplate
+            .exchange("$baseUrl/api/v1/products", POST, httpEntity, respTypeRef<List<CreateProductResponse>>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isNotNull
-        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(body).hasSize(2)
+        assertThat(body[0].createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(body[0].status).isEqualTo(ProductStatusDTO.CREATED)
     }
 
     @Test
-    fun `should update product`() {
+    fun `should receive product`() {
 
         // given
-        val newProduct = ProductRequest(
-            name = "test",
-        )
-
-        val savedProduct = transactionalTemplate.execute {
-            service.create(newProduct)
+        val saved = transactionalTemplate.execute {
+            repository.save(
+                Product(
+                    name = "test",
+                    quantity = 10,
+                    status = ProductStatus.CREATED
+                )
+            )
         } ?: fail("result is expected")
 
-        val httpEntity = HttpEntity(
-            ProductRequest(
-                name = "test product edited",
-            )
-        )
+        val httpEntity = HttpEntity(listOf(saved.id))
 
         // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products/${savedProduct.id}", HttpMethod.PUT, httpEntity, respTypeRef<ProductResponse>()
-        )
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/products/receive",
+                PUT,
+                httpEntity,
+                respTypeRef<List<ReceiveProductResponse>>()
+            )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.name).isEqualTo(httpEntity.body?.name)
-        assertThat(body.createdAt).isBeforeOrEqualTo(body.updatedAt)
+        assertThat(body).hasSize(1)
+        assertThat(body[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
     }
 
     @Test
-    fun `should get products`() {
+    fun `should get products details by ids`() {
 
         // given
         transactionalTemplate.execute {
@@ -117,21 +131,81 @@ class ProductResourceTest @Autowired constructor(
         }
 
         // and
-        val savedProducts = transactionalTemplate.execute {
+        val ids = transactionalTemplate.execute {
             repository.saveAll(
                 listOf(
                     Product(
-                        name = "test",
+                        name = "test1",
+                        price = BigDecimal("20.00"),
+                        quantity = 1
                     ),
+                    Product(
+                        name = "test2",
+                        price = BigDecimal("30.00"),
+                        quantity = 2
+                    )
+                )
+            ).map { it.id }
+        } ?: fail("result is expected")
+
+        // when
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/products/details?ids=${ids[0]}&ids=${ids[1]}",
+                GET,
+                null,
+                respTypeRef<List<ProductDetailsResponse>>()
+            )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(2)
+        assertThat(body[0].name).isEqualTo("test1")
+        assertThat(body[0].quantity).isEqualTo(1)
+        assertThat(body[0].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(body[1].name).isEqualTo("test2")
+        assertThat(body[1].quantity).isEqualTo(2)
+        assertThat(body[1].price).isEqualTo(BigDecimal("30.00"))
+    }
+
+    @Test
+    fun `should get popular products`() {
+
+        // given
+        transactionalTemplate.execute {
+            repository.deleteAll()
+        }
+
+        // and
+        val saved = transactionalTemplate.execute {
+            repository.saveAll(
+                listOf(
                     Product(
                         name = "aspirin",
+                        status = ProductStatus.RECEIVED
                     ),
                     Product(
-                        name = "bca",
+                        name = "aspirin2",
+                        status = ProductStatus.RECEIVED
+
+                    ),
+                    Product(
+                        name = "mostPopular",
+                        status = ProductStatus.CREATED
+                    ),
+                    Product(
+                        name = "some2",
+                        status = ProductStatus.RECEIVED
                     )
                 )
             )
         } ?: fail("result is expected")
+
+        //and
+        val responseExpected = mapOf(saved[2].id to 9, saved[1].id to 5, saved[0].id to 1)
 
         // and
         stubFor(
@@ -142,7 +216,7 @@ class ProductResourceTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(mapOf(savedProducts[1].id to 5, savedProducts[0].id to 3))
+                                .writeValueAsString(responseExpected)
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -150,410 +224,142 @@ class ProductResourceTest @Autowired constructor(
         )
 
         // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products",
-            GET,
-            null,
-            respTypeRef<RestResponsePage<ProductResponse>>()
-        )
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-
-        // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.content.size).isEqualTo(3)
-        assertThat(body.content[0].totalBuys).isEqualTo(5)
-        assertThat(body.content[1].totalBuys).isEqualTo(3)
-        assertThat(body.content[2].totalBuys).isEqualTo(0)
-    }
-
-    @Test
-    fun `should get products sorted by name ascendant`() {
-
-        // given
-        wiremockAccountancyServer.start()
-
-        // and
-        transactionalTemplate.execute {
-            repository.deleteAll()
-        }
-
-        // and
-        val savedProducts = transactionalTemplate.execute {
-            repository.saveAll(
-                listOf(
-                    Product(
-                        name = "test",
-                    ),
-                    Product(
-                        name = "aspirin",
-                    ),
-                    Product(
-                        name = "bca",
-                    )
-                )
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/products/popular",
+                GET,
+                null,
+                respTypeRef<RestResponsePage<GetProductResponse>>()
             )
-        } ?: fail("result is expected")
-
-        // and
-        wiremockAccountancyServer.stubFor(
-            get(
-                "/api/v1/accountancy/price-by-product-ids?ids=${savedProducts[1].id}&ids=${savedProducts[2].id}" +
-                        "&ids=${savedProducts[0].id}&markup=true"
-            )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    listOf(
-                                        PriceItemResponse(
-                                            productId = savedProducts[0].id ?: -1,
-                                            price = BigDecimal("20.00")
-                                        ),
-                                        PriceItemResponse(
-                                            productId = savedProducts[2].id ?: -1,
-                                            price = BigDecimal("40.00"),
-                                        ),
-                                        PriceItemResponse(
-                                            productId = savedProducts[1].id ?: -1,
-                                            price = BigDecimal("25.00")
-                                        )
-                                    )
-                                )
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                )
-        )
-
-        // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products?sortField=name&sortDirection=ASC",
-            GET,
-            null,
-            respTypeRef<RestResponsePage<ProductResponse>>()
-        )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.content.size).isEqualTo(3)
-        assertThat(body.content[0].name).isEqualTo("aspirin")
-        assertThat(body.content[1].name).isEqualTo("bca")
-        assertThat(body.content[2].name).isEqualTo("test")
-
-        // and
-        wiremockAccountancyServer.stop()
-    }
-
-    @Test
-    fun `should get products sorted by creation date ascendant`() {
-
-        // given
-        wiremockAccountancyServer.start()
-
-        // and
-        transactionalTemplate.execute {
-            repository.deleteAll()
-        }
-
-        // and
-        val savedProduct1 = transactionalTemplate.execute {
-            repository.save(Product(name = "test"))
-        } ?: fail("result is expected")
-
-        // and
-        val savedProduct2 = transactionalTemplate.execute {
-            repository.save(Product(name = "aspirin"))
-        } ?: fail("result is expected")
-
-        // and
-        wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids?ids=${savedProduct1.id}&ids=${savedProduct2.id}&markup=true")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    listOf(
-                                        PriceItemResponse(
-                                            productId = savedProduct1.id ?: -1,
-                                            price = BigDecimal("20.00")
-                                        ),
-                                        PriceItemResponse(
-                                            productId = savedProduct2.id ?: -1,
-                                            price = BigDecimal("40.00"),
-                                        )
-                                    )
-                                )
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                )
-        )
-
-        // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products?sortField=createdAt&sortDirection=ASC",
-            GET,
-            null,
-            respTypeRef<RestResponsePage<ProductResponse>>()
-        )
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-
-        // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.content.size).isEqualTo(2)
-        assertThat(body.content[0].name).isEqualTo("test")
+        assertThat(body).hasSize(2)
+        assertThat(body.content[0].id).isEqualTo(saved[1].id)
+        assertThat(body.content[0].name).isEqualTo("aspirin2")
+        assertThat(body.content[1].id).isEqualTo(saved[0].id)
         assertThat(body.content[1].name).isEqualTo("aspirin")
-
-        // and
-        wiremockAccountancyServer.stop()
     }
 
     @Test
-    fun `should get products sorted by price descendant`() {
+    fun `should search products by search word sorted by price ascendant`() {
 
         // given
-        wiremockAccountancyServer.start()
-
-        // and
         transactionalTemplate.execute {
-            repository.deleteAll()
+            repository.deleteAllInBatch()
         }
 
         // and
-        val savedProducts = transactionalTemplate.execute {
+
+        val saved = transactionalTemplate.execute {
             repository.saveAll(
                 listOf(
                     Product(
-                        name = "test",
+                        name = "aspirin",
+                        price = BigDecimal("10.00"),
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        name = "aspirin2",
+                        price = BigDecimal("50.00"),
+                        status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin",
+                        price = BigDecimal("5.00"),
+                        status = ProductStatus.CREATED
                     ),
                     Product(
-                        name = "bca",
+                        name = "some2",
+                        price = BigDecimal("30.00"),
+                        status = ProductStatus.RECEIVED
                     )
                 )
             )
         } ?: fail("result is expected")
 
-        // and
-        wiremockAccountancyServer.stubFor(
-            get(
-                "/api/v1/accountancy/price-by-product-ids?ids=${savedProducts[0].id}&ids=${savedProducts[1].id}" +
-                        "&ids=${savedProducts[2].id}&markup=true"
-            )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    listOf(
-                                        PriceItemResponse(
-                                            productId = savedProducts[0].id ?: -1,
-                                            price = BigDecimal("20.00")
-                                        ),
-                                        PriceItemResponse(
-                                            productId = savedProducts[2].id ?: -1,
-                                            price = BigDecimal("40.00"),
-                                        ),
-                                        PriceItemResponse(
-                                            productId = savedProducts[1].id ?: -1,
-                                            price = BigDecimal("25.00")
-                                        )
-                                    )
-                                )
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                )
-        )
-
         // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products?sortField=price&sortDirection=DESC",
-            GET,
-            null,
-            respTypeRef<RestResponsePage<ProductResponse>>()
-        )
-
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/products/search?search=aspirin&sortField=price&sortDirection=ASC",
+                GET,
+                null,
+                respTypeRef<RestResponsePage<SearchProductResponse>>()
+            )
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.content.size).isEqualTo(3)
-        assertThat(body.content[0].name).isEqualTo("bca")
-        assertThat(body.content[1].name).isEqualTo("aspirin")
-        assertThat(body.content[2].name).isEqualTo("test")
-
-        // and
-        wiremockAccountancyServer.stop()
+        assertThat(body).hasSize(2)
+        assertThat(body.content[0].id).isEqualTo(saved[0].id)
+        assertThat(body.content[0].price).isEqualTo(BigDecimal("10.00"))
+        assertThat(body.content[1].id).isEqualTo(saved[1].id)
+        assertThat(body.content[1].price).isEqualTo(BigDecimal("50.00"))
     }
 
     @Test
-    fun `should get products by search word`() {
+    fun `should search products by search word sorted by price descendant`() {
 
         // given
-        wiremockAccountancyServer.start()
-
-        // and
         transactionalTemplate.execute {
-            repository.deleteAll()
+            repository.deleteAllInBatch()
         }
 
         // and
-        val savedProducts = transactionalTemplate.execute {
+
+        val saved = transactionalTemplate.execute {
             repository.saveAll(
                 listOf(
                     Product(
-                        name = "test",
+                        name = "aspirin",
+                        price = BigDecimal("10.00"),
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        name = "aspirin2",
+                        price = BigDecimal("50.00"),
+                        status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin",
+                        price = BigDecimal("5.00"),
+                        status = ProductStatus.CREATED
                     ),
                     Product(
-                        name = "bca",
+                        name = "some2",
+                        price = BigDecimal("30.00"),
+                        status = ProductStatus.RECEIVED
                     )
                 )
             )
         } ?: fail("result is expected")
 
-        // and
-        stubFor(
-            get("/api/v1/orders/total-buys")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(mapOf(savedProducts[1].id to 5))
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                )
-        )
-
         // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products?search=aspirin",
-            GET,
-            null,
-            respTypeRef<RestResponsePage<ProductResponse>>()
-        )
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-
-        // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.content.size).isEqualTo(1)
-        assertThat(body.content[0].name).isEqualTo("aspirin")
-
-        // and
-        wiremockAccountancyServer.stop()
-    }
-
-    @Test
-    fun `should get products by search word sorted by price`() {
-
-        // given
-        wiremockAccountancyServer.start()
-
-        // and
-        transactionalTemplate.execute {
-            repository.deleteAll()
-        }
-
-        // and
-        val savedProducts = transactionalTemplate.execute {
-            repository.saveAll(
-                listOf(
-                    Product(
-                        name = "test",
-                    ),
-                    Product(
-                        name = "aspirin",
-                    ),
-                    Product(
-                        name = "CCC",
-                    )
-                )
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/products/search?search=aspirin&sortField=price&sortDirection=DESC",
+                GET,
+                null,
+                respTypeRef<RestResponsePage<SearchProductResponse>>()
             )
-        } ?: fail("result is expected")
-
-        wiremockAccountancyServer.stubFor(
-            get("/api/v1/accountancy/price-by-product-ids?ids=${savedProducts[1].id}&markup=true")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    listOf(
-                                        PriceItemResponse(
-                                            productId = savedProducts[1].id ?: -1,
-                                            price = BigDecimal("20.00")
-                                        ),
-                                        PriceItemResponse(
-                                            productId = savedProducts[1].id ?: -1,
-                                            price = BigDecimal("40.00"),
-                                        ),
-                                        PriceItemResponse(
-                                            productId = savedProducts[1].id ?: -1,
-                                            price = BigDecimal("25.00")
-                                        )
-                                    )
-                                )
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                )
-        )
-
-        // when
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products?search=aspirin&sortField=price",
-            GET,
-            null,
-            respTypeRef<RestResponsePage<ProductResponse>>()
-        )
-
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.content.size).isEqualTo(3)
-        assertThat(body.content[0].name).isEqualTo("aspirin")
-        assertThat(body.content[0].price).isEqualTo(BigDecimal("40.00"))
-        assertThat(body.content[1].name).isEqualTo("aspirin")
-        assertThat(body.content[1].price).isEqualTo(BigDecimal("25.00"))
-        assertThat(body.content[2].name).isEqualTo("aspirin")
-        assertThat(body.content[2].price).isEqualTo(BigDecimal("20.00"))
-
-        // and
-        wiremockAccountancyServer.stop()
+        assertThat(body).hasSize(2)
+        assertThat(body.content[0].id).isEqualTo(saved[1].id)
+        assertThat(body.content[0].price).isEqualTo(BigDecimal("50.00"))
+        assertThat(body.content[1].id).isEqualTo(saved[0].id)
+        assertThat(body.content[1].price).isEqualTo(BigDecimal("10.00"))
     }
 
     @Test
-    fun `should get products by ids`() {
+    fun `should search products by search word sorted by popularity descendant`() {
 
         // given
         transactionalTemplate.execute {
@@ -565,82 +371,103 @@ class ProductResourceTest @Autowired constructor(
             repository.saveAll(
                 listOf(
                     Product(
-                        name = "test1",
+                        name = "aspirin",
+                        status = ProductStatus.RECEIVED
                     ),
                     Product(
-                        name = "test2",
+                        name = "aspirin2",
+                        status = ProductStatus.RECEIVED
+
+                    ),
+                    Product(
+                        name = "aspirin",
+                        status = ProductStatus.CREATED
+                    ),
+                    Product(
+                        name = "some2",
+                        status = ProductStatus.RECEIVED
+
                     )
                 )
-            ).map { it.id ?: -1 }.toList()
-        } ?: listOf(-1L)
+            )
+        }?.map { it.id } ?: fail("result is expected")
+
+        //and
+        val responseExpected = mapOf(ids[2] to 9, ids[1] to 5, ids[0] to 1)
+
+        // and
+        stubFor(
+            get("/api/v1/orders/total-buys")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(responseExpected)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
 
         // when
         val response = restTemplate
             .exchange(
-                "$baseUrl/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}",
+                "$baseUrl/api/v1/products/search?search=aspirin&sortField=popularity&sortDirection=DESC",
                 GET,
                 null,
-                respTypeRef<List<ProductResponse>>()
+                respTypeRef<RestResponsePage<SearchProductResponse>>()
+            )
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(2)
+        assertThat(body.content[0].id).isEqualTo(ids[1])
+        assertThat(body.content[1].id).isEqualTo(ids[0])
+    }
+
+    @Test
+    fun `should reduce quantity in product`() {
+
+        // given
+        val saved = transactionalTemplate.execute {
+            repository.save(
+                Product(
+                    name = "test",
+                    quantity = 10
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val httpEntity = HttpEntity(
+            listOf(
+                ReduceProductQuantityRequest(
+                    id = saved.id ?: -1,
+                    quantity = 3
+                )
+            )
+        )
+
+        // when
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/products/reduce-quantity",
+                PUT,
+                httpEntity,
+                respTypeRef<List<ReduceProductQuantityResponse>>()
             )
 
         // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body).isNotNull
-        assertThat(body).hasSize(2)
-        assertThat(body[0].id).isEqualTo(ids[0])
-        assertThat(body[1].id).isEqualTo(ids[1])
-    }
-
-    @Test
-    fun `should get product by id`() {
-
-        // given
-        val newProduct = ProductRequest(
-            name = "test",
-        )
-
-        // when
-        val savedProduct = transactionalTemplate.execute {
-            service.create(newProduct)
-        } ?: fail("result is expected")
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products/${savedProduct.id}", GET, null, respTypeRef<ProductResponse>()
-        )
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isEqualTo(savedProduct.id)
-        assertThat(body.name).isEqualTo(savedProduct.name)
-        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
-    }
-
-    @Test
-    fun `should delete product by id`() {
-
-        // given
-        val newProduct = ProductRequest(
-            name = "test",
-        )
-
-        // when
-        val savedProduct = transactionalTemplate.execute {
-            service.create(newProduct)
-        } ?: fail("result is expected")
-        val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products/${savedProduct.id}", HttpMethod.DELETE, null, respTypeRef<ProductResponse>()
-        )
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.NO_CONTENT)
-
-        // and
-        assertThrows<ResourceNotFoundException> {
-            service.getOne(savedProduct.id)
-        }
+        assertThat(body).hasSize(1)
+        assertThat(body[0].quantity).isEqualTo(7)  // 10 - 3
+        assertThat(body[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 }

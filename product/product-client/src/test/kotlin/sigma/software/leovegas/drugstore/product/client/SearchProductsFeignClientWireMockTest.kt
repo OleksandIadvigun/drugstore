@@ -2,48 +2,54 @@ package sigma.software.leovegas.drugstore.product.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @SpringBootApplication
-internal class GetProductsFeignClientWireMockTestApp
+internal class SearchProductsFeignClientWireMockTestApp
 
-@DisplayName("Get Products Feign Client WireMock test")
-@ContextConfiguration(classes = [GetProductsFeignClientWireMockTestApp::class])
-class GetProductsFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Search Products Feign Client WireMock test")
+@ContextConfiguration(classes = [SearchProductsFeignClientWireMockTestApp::class])
+class SearchProductsFeignClientWireMockTest @Autowired constructor(
     val productClient: ProductClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should get products`() {
+    fun `should search products by search word`() {
 
         // given
-        val responseExpected: List<ProductResponse> = listOf(
-            ProductResponse(
-                name = "test",
-            ),
-            ProductResponse(
-                name = "test2",
+        val responseExpected = ResponsePage(
+            listOf(
+                SearchProductResponse(
+                    id = 1,
+                    name = "aspirin",
+                    price = BigDecimal.ONE,
+                    quantity = 1
+                )
             )
         )
 
-        //and
+        // and
         stubFor(
-            get("/api/v1/products")
+            get("/api/v1/products/search?page=0&size=5&search=aspirin&sortField=popularity&sortDirection=DESC")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
-                    WireMock.aResponse()
+                    aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
@@ -55,9 +61,10 @@ class GetProductsFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = productClient.getProducts()
+        val responseActual = productClient.searchProducts(search = "aspirin")
 
-        //  then
-        Assertions.assertThat(responseActual.size).isEqualTo(2)
+        // then
+        assertThat(responseActual).hasSize(1)
+        assertThat(responseActual.content[0].id).isEqualTo(1)
     }
 }

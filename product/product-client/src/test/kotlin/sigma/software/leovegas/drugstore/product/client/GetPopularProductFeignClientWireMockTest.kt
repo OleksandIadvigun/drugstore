@@ -10,33 +10,40 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 
 @SpringBootApplication
-internal class GetProductByIdFeignClientWireMockTestApp
+internal class GetPopularProductsFeignClientWireMockTestApp
 
-@DisplayName("Get Product By Id Feign Client WireMock test")
-@ContextConfiguration(classes = [GetProductByIdFeignClientWireMockTestApp::class])
-class GetProductByIdFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Get Popular Product Feign Client WireMock test")
+@ContextConfiguration(classes = [GetPopularProductsFeignClientWireMockTestApp::class])
+class GetPopularProductsFeignClientWireMockTest @Autowired constructor(
     val productClient: ProductClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should get product by id`() {
+    fun `should get popular product `() {
 
         // given
-        val responseExpected = ProductResponse(
-            id = 1L,
-            name = "test",
-        )
+        val responseExpected = ResponsePage(listOf(
+           GetProductResponse(
+               id =1,
+               name = "test1"
+           ),
+            GetProductResponse(
+                id =2,
+                name = "test2"
+            )
+        ))
 
-        //and
+        // and
         stubFor(
-            get("/api/v1/products/1")
+            get("/api/v1/products/popular?page=0&size=5")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -51,10 +58,12 @@ class GetProductByIdFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = productClient.getProductById(1)
+        val responseActual = productClient.getPopularProducts()
 
-        //  then
-        assertThat(responseActual.id).isEqualTo(1L)
-        assertThat(responseActual.name).isEqualTo(responseExpected.name)
+        // then
+        assertThat(responseActual.content[0].id).isEqualTo(1)
+        assertThat(responseActual.content[0].name).isEqualTo("test1")
+        assertThat(responseActual.content[1].id).isEqualTo(2)
+        assertThat(responseActual.content[1].name).isEqualTo("test2")
     }
 }

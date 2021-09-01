@@ -6,88 +6,90 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.order.client.OrderClient
-import sigma.software.leovegas.drugstore.product.api.ProductRequest
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.GetProductResponse
+import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Service
 @Transactional
 class ProductService(
-    private val repo: ProductRepository,
+    private val productRepository: ProductRepository,
     val orderClient: OrderClient,
-    val accountancyClient: AccountancyClient
 ) {
 
     companion object {
         private const val exceptionMessage = "This product with id: %d doesn't exist!"
     }
 
-    fun getAll(page: Int, size: Int, search: String, sortField: String, sortDirection: String): Page<ProductResponse> {
-        val pageable: Pageable = PageRequest.of(page, size, SortUtil.getSort(sortField, sortDirection))
-        if (sortField == "default") {
-            val productsIdsToQuantityMap = orderClient.getProductsIdToQuantity()
-            val products = repo.findAllById(search, productsIdsToQuantityMap.keys, pageable)
-            val totalElements = products.totalElements
-            val productResponseList = products.content.toProductResponseList()
-            val responseList =
-                productResponseList.map { p -> p.copy(totalBuys = productsIdsToQuantityMap[p.id] ?: 0) }
-            val sortedByTotalBuys =
-                if (sortDirection == "DESC") {
-                    responseList.sortedByDescending { e -> e.totalBuys }
-                } else responseList.sortedBy { e -> e.totalBuys }
-            return PageImpl(sortedByTotalBuys, pageable, totalElements)
-        } else if (sortField == "name" || sortField == "price" || sortField == "createdAt") {
-            val responseList = repo.findAll(search, pageable)
-            val prices = accountancyClient.getProductsPriceByProductIds(responseList.content.map { el -> el.id ?: -1 })
-            val totalElements = responseList.totalElements
-            val convertedToDto = responseList.content.toProductResponseList().associateBy { it.id }
-            var response = listOf<ProductResponse?>()
-            val productsWithPrice: List<ProductResponse?> =
-                prices.map { el -> convertedToDto[el.productId]?.copy(price = el.price, priceItemId = el.id) }
-            when (sortField) {
-                "name" -> {
-                    response = if (sortDirection == "DESC") {
-                        productsWithPrice.sortedByDescending { it?.name }
-                    } else productsWithPrice.sortedBy { it?.name }
-                }
-                "price" -> {
-                    response = if (sortDirection == "DESC") {
-                        productsWithPrice.sortedByDescending { it?.price }
-                    } else productsWithPrice.sortedBy { it?.price }
-                }
-                "createdAt" -> {
-                    response = if (sortDirection == "DESC") {
-                        productsWithPrice.sortedByDescending { it?.createdAt }
-                    } else productsWithPrice.sortedBy { it?.createdAt }
-                }
+    fun searchProducts(page: Int, size: Int, search: String, sortField: String, sortDirection: String)
+            : Page<SearchProductResponse> {
+        if (search == "") throw NotCorrectRequestException("Search field can not be empty!")
+        if (sortField == "popularity") {
+            val pageableForPopularity: Pageable = PageRequest.of(page, size)
+            val productsIdToQuantity: Map<Long, Int>
+            try {
+                 productsIdToQuantity = orderClient.getProductsIdToQuantity()
+            }catch (e: Exception){
+                throw InternalServerNotAvailableException("Something's wrong, please try again later")
             }
-
-            return PageImpl(response, pageable, totalElements)
+            val products = productRepository
+                .findAllByNameContainingAndIdInAndStatus(
+                    search,
+                    productsIdToQuantity.keys,
+                    ProductStatus.RECEIVED,
+                    pageableForPopularity
+                )
+                .map(Product::toSearchProductResponse)
+            val index = productsIdToQuantity.keys.withIndex().associate { it.value to it.index }
+            val sortedContent = products.sortedBy { index[it.id] }
+            return PageImpl(sortedContent, pageableForPopularity, products.totalElements)
         }
-        throw ResourceNotFoundException("Incorrect sort field name")
+        val pageable: Pageable = PageRequest.of(page, size, SortUtil.getSort(sortField, sortDirection))
+        val products = productRepository.findAllByNameContainingAndStatus(search, ProductStatus.RECEIVED, pageable)
+        return products.map(Product::toSearchProductResponse)
     }
 
-    fun getProductsByIds(ids: List<Long>): List<ProductResponse> = repo.findAllById(ids).toProductResponseList()
-
-    fun create(productRequest: ProductRequest): ProductResponse = productRequest.run {
-        repo.save(toEntity()).toProductResponse()
+    fun getPopularProducts(page: Int, size: Int):
+            Page<GetProductResponse> {
+        val pageableForPopularity: Pageable = PageRequest.of(page, size)
+        val productsIdToQuantity: Map<Long, Int>
+        try {
+            productsIdToQuantity = orderClient.getProductsIdToQuantity()
+        }catch (e: Exception){
+            throw InternalServerNotAvailableException("Something's wrong, please try again later")
+        }
+        val products = productRepository
+            .findAllByIdInAndStatus(productsIdToQuantity.keys, ProductStatus.RECEIVED, pageableForPopularity)
+            .map(Product::toGetProductResponse)
+        val index = productsIdToQuantity.keys.withIndex().associate { it.value to it.index }
+        val sortedContent = products.sortedBy { index[it.id] }
+        return PageImpl(sortedContent, pageableForPopularity, products.totalElements)
     }
 
-    fun getOne(id: Long): ProductResponse =
-        repo.findById(id).orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
-            .toProductResponse()
+    fun getProductsDetailsByIds(ids: List<Long>) = productRepository.findAllById(ids).toProductDetailsResponseList()
 
-    fun update(id: Long, productRequest: ProductRequest): ProductResponse = productRequest.run {
-        val toUpdate = repo
-            .findById(id)
-            .orElseThrow { throw ResourceNotFoundException(String.format(exceptionMessage, id)) }
-            .copy(name = name)
-        repo.saveAndFlush(toUpdate).toProductResponse()
+    fun createProduct(productRequest: List<CreateProductRequest>) = productRequest.run {
+        productRepository.saveAll(toEntityList()).toCreateProductResponseList()
     }
 
-    fun delete(id: Long) {
-        getOne(id)
-        repo.deleteById(id)
+    fun receiveProducts(ids: List<Long>) =
+        productRepository
+            .findAllById(ids)
+            .map { it.copy(status = ProductStatus.RECEIVED) }
+            .toReceiveProductResponseList()
+
+    fun reduceQuantity(productRequest: List<ReduceProductQuantityRequest>) = productRequest.run {
+        val idsToQuantity = associate { it.id to it.quantity }
+        val toUpdate = productRepository
+            .findAllById(this.map { it.id })
+            .map {
+                if (it.quantity < (idsToQuantity[it.id] ?: -1)) {
+                    throw NotEnoughQuantityProductException("Not enough available quantity of product with id: ${it.id}")
+                }
+                it.copy(quantity = it.quantity.minus(idsToQuantity[it.id] ?: -1))
+            }
+        productRepository.saveAllAndFlush(toUpdate).toReduceProductQuantityResponseList()
     }
 }

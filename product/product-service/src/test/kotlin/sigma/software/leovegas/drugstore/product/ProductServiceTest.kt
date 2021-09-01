@@ -1,7 +1,6 @@
 package sigma.software.leovegas.drugstore.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
@@ -9,10 +8,10 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
@@ -20,13 +19,13 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.PriceItemResponse
-import sigma.software.leovegas.drugstore.product.api.ProductRequest
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
+import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
 
 @AutoConfigureTestDatabase
 @AutoConfigureWireMock(port = 8082)
-@DisplayName("ProductService test")
+@DisplayName("Product service test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductServiceTest @Autowired constructor(
     val service: ProductService,
@@ -36,7 +35,39 @@ class ProductServiceTest @Autowired constructor(
 ) {
 
     @Test
-    fun `should get products`() {
+    fun `should create product`() {
+
+        // given
+        val productRequest = listOf(
+            CreateProductRequest(
+                name = "test1",
+                quantity = 1,
+                price = BigDecimal.ONE
+            ),
+            CreateProductRequest(
+                name = "test2",
+                quantity = 2,
+                price = BigDecimal.TEN
+            )
+        )
+
+        // when
+        val actual = service.createProduct(productRequest)
+
+        // when
+        assertThat(actual).hasSize(2)
+        assertThat(actual[0].name).isEqualTo("test1")
+        assertThat(actual[0].name).isEqualTo("test1")
+        assertThat(actual[0].status).isEqualTo(ProductStatusDTO.CREATED)
+        assertThat(actual[0].createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(actual[1].name).isEqualTo("test2")
+        assertThat(actual[1].status).isEqualTo(ProductStatusDTO.CREATED)
+        assertThat(actual[1].createdAt).isBeforeOrEqualTo(LocalDateTime.now())
+
+    }
+
+    @Test
+    fun `should search products by search word sorted by popularity descendant`() {
 
         // given
         transactionTemplate.execute {
@@ -44,28 +75,33 @@ class ProductServiceTest @Autowired constructor(
         }
 
         // and
-        var saved = mutableListOf<Product>()
-        transactionTemplate.execute {
-            saved = repository.saveAll(
+        val ids = transactionTemplate.execute {
+            repository.saveAll(
                 listOf(
                     Product(
                         name = "aspirin",
+                        status = ProductStatus.RECEIVED
                     ),
                     Product(
-                        name = "test2",
+                        name = "aspirin2",
+                        status = ProductStatus.RECEIVED
+
                     ),
                     Product(
-                        name = "some",
+                        name = "aspirin",
+                        status = ProductStatus.CREATED
                     ),
                     Product(
                         name = "some2",
+                        status = ProductStatus.RECEIVED
+
                     )
                 )
             )
-        }
+        }?.map { it.id } ?: fail("result is expected")
 
         //and
-        val responseExpected = mapOf<Long, Int>(saved[0].id!! to 5, saved[1].id!! to 2, saved[2].id!! to 9)
+        val responseExpected = mapOf(ids[2] to 9, ids[1] to 5, ids[0] to 1)
 
         // and
         stubFor(
@@ -84,19 +120,215 @@ class ProductServiceTest @Autowired constructor(
         )
 
         // when
-        val all = service.getAll(0, 5, "", "default", "DESC")
+        val all = service.searchProducts(0, 5, "aspirin", "popularity", "DESC")
 
         // then
         assertThat(all).isNotNull
-        assertThat(all.totalElements).isEqualTo(4)
-        assertThat(all.content[0].totalBuys).isEqualTo(9)
-        assertThat(all.content[1].totalBuys).isEqualTo(5)
-        assertThat(all.content[2].totalBuys).isEqualTo(2)
-        assertThat(all.content[3].totalBuys).isEqualTo(0)
+        assertThat(all.totalElements).isEqualTo(2)
+        assertThat(all.content[0].id).isEqualTo(ids[1])
+        assertThat(all.content[1].id).isEqualTo(ids[0])
     }
 
     @Test
-    fun `should get products by ids`() {
+    fun `should search products by search word sorted by price descendant`() {
+
+        // given
+        transactionTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // and
+
+        val saved = transactionTemplate.execute {
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "aspirin",
+                        price = BigDecimal("10.00"),
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        name = "aspirin2",
+                        price = BigDecimal("50.00"),
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        name = "aspirin",
+                        price = BigDecimal("40.00"),
+                        status = ProductStatus.CREATED
+                    ),
+                    Product(
+                        name = "some2",
+                        price = BigDecimal("30.00"),
+                        status = ProductStatus.RECEIVED
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val all = service.searchProducts(0, 5, "aspirin", "price", "DESC")
+
+        // then
+        assertThat(all).isNotNull
+        assertThat(all.totalElements).isEqualTo(2)
+        assertThat(all.content[0].id).isEqualTo(saved[1].id)
+        assertThat(all.content[0].price).isEqualTo(saved[1].price)
+        assertThat(all.content[1].id).isEqualTo(saved[0].id)
+        assertThat(all.content[1].price).isEqualTo(saved[0].price)
+    }
+
+    @Test
+    fun `should search products by search word sorted by price ascendant`() {
+
+        // given
+        transactionTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // and
+
+        val saved = transactionTemplate.execute {
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "aspirin",
+                        price = BigDecimal("10.00"),
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        name = "aspirin2",
+                        price = BigDecimal("50.00"),
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        name = "aspirin",
+                        price = BigDecimal("5.00"),
+                        status = ProductStatus.CREATED
+                    ),
+                    Product(
+                        name = "some2",
+                        price = BigDecimal("30.00"),
+                        status = ProductStatus.RECEIVED
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        // when
+        val all = service.searchProducts(0, 5, "aspirin", "price", "ASC")
+
+        // then
+        assertThat(all).isNotNull
+        assertThat(all.totalElements).isEqualTo(2)
+        assertThat(all.content[0].id).isEqualTo(saved[0].id)
+        assertThat(all.content[0].price).isEqualTo(saved[0].price)
+        assertThat(all.content[1].id).isEqualTo(saved[1].id)
+        assertThat(all.content[1].price).isEqualTo(saved[1].price)
+    }
+
+    @Test
+    fun `should not search products by empty search word`() {
+
+        // when
+        val exception = assertThrows<NotCorrectRequestException> {
+            service.searchProducts(0, 5, "", "price", "DESC")
+        }
+
+        //then
+        assertThat(exception.message).isEqualTo("Search field can not be empty!")
+    }
+
+    @Test
+    fun `should not get products if internal server is unavailable`() {
+
+        // when
+        val exception = assertThrows<InternalServerNotAvailableException> {
+            service.searchProducts(0, 5, "aspirin", "popularity", "DESC")
+        }
+
+        //then
+        assertThat(exception.message).isEqualTo("Something's wrong, please try again later")
+    }
+
+    @Test
+    fun `should not get popular products if internal server is unavailable`() {
+
+        // when
+        val exception = assertThrows<InternalServerNotAvailableException> {
+            service.getPopularProducts(0, 5)
+        }
+
+        //then
+        assertThat(exception.message).isEqualTo("Something's wrong, please try again later")
+    }
+
+    @Test
+    fun `should get popular products`() {
+
+        // given
+        transactionTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // and
+        val saved = transactionTemplate.execute {
+            repository.saveAll(
+                listOf(
+                    Product(
+                        name = "aspirin",
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        name = "aspirin2",
+                        status = ProductStatus.RECEIVED
+
+                    ),
+                    Product(
+                        name = "mostPopular",
+                        status = ProductStatus.CREATED
+                    ),
+                    Product(
+                        name = "some2",
+                        status = ProductStatus.RECEIVED
+                    )
+                )
+            )
+        } ?: fail("result is expected")
+
+        //and
+        val responseExpected = mapOf(saved[2].id to 9, saved[1].id to 5, saved[0].id to 1)
+
+        // and
+        stubFor(
+            get("/api/v1/orders/total-buys")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(responseExpected)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // when
+        val all = service.getPopularProducts(0, 5)
+
+        // then
+        assertThat(all).isNotNull
+        assertThat(all.totalElements).isEqualTo(2)
+        assertThat(all.content[0].id).isEqualTo(saved[1].id)
+        assertThat(all.content[0].name).isEqualTo("aspirin2")
+        assertThat(all.content[1].id).isEqualTo(saved[0].id)
+        assertThat(all.content[1].name).isEqualTo("aspirin")
+    }
+
+    @Test
+    fun `should get products details by ids`() {
 
         // given
         transactionTemplate.execute {
@@ -109,238 +341,109 @@ class ProductServiceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test1",
+                        price = BigDecimal("20.00"),
+                        quantity = 1
                     ),
                     Product(
                         name = "test2",
+                        price = BigDecimal("30.00"),
+                        quantity = 2
                     )
                 )
             ).map { it.id }
         }
 
         // when
-        val products = service.getProductsByIds(ids as List<Long>)
+        val products = service.getProductsDetailsByIds(ids as List<Long>)
 
         // then
         assertThat(products).hasSize(2)
         assertThat(products[0].name).isEqualTo("test1")
+        assertThat(products[0].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(products[0].quantity).isEqualTo(1)
         assertThat(products[1].name).isEqualTo("test2")
+        assertThat(products[1].price).isEqualTo(BigDecimal("30.00"))
+        assertThat(products[1].quantity).isEqualTo(2)
+
+    }
+
+
+    @Test
+    fun `should reduce quantity in product`() {
+
+        // given
+        val saved = transactionTemplate.execute {
+            repository.save(
+                Product(
+                    name = "test",
+                    quantity = 10
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val updatedProductRequest = ReduceProductQuantityRequest(
+            id = saved.id ?: -1,
+            quantity = 3
+        )
+
+        // when
+        val actual = service.reduceQuantity(listOf(updatedProductRequest))
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual[0].quantity).isEqualTo(7)  // 10 - 3
+        assertThat(actual[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 
     @Test
-    fun `should get products sorted by price descendant`() {
+    fun `should not reduce products quantity by if not enough`() {
 
         // given
-        val wiremockAccountancyServer = WireMockServer(8084)
-        wiremockAccountancyServer.start()
+        val saved = transactionTemplate.execute {
+            repository.save(
+                Product(
+                    name = "test",
+                    quantity = 5
+                )
+            )
+        } ?: fail("result is expected")
 
-        // and
-        transactionTemplate.execute {
-            repository.deleteAllInBatch()
-        }
-
-        // and
-        var saved = mutableListOf<Product>()
-        transactionTemplate.execute {
-            saved = repository.saveAll(
+        // when
+        val exception = assertThrows<NotEnoughQuantityProductException> {
+            service.reduceQuantity(
                 listOf(
-                    Product(
-                        name = "aspirin",
-                    ),
-                    Product(
-                        name = "test2",
-                    ),
-                    Product(
-                        name = "some",
+                    ReduceProductQuantityRequest(
+                        id = saved.id ?: -1,
+                        quantity = 7
                     )
                 )
             )
         }
 
-        //and
-        val responseExpected = mapOf<Long, Int>(saved[0].id!! to 5, saved[1].id!! to 2, saved[2].id!! to 9)
-
-        // and
-        wiremockAccountancyServer.stubFor(
-            get(
-                "/api/v1/accountancy/price-by-product-ids?ids=${saved[0].id}&ids=${saved[1].id}" +
-                        "&ids=${saved[2].id}&markup=true"
-            )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    listOf(
-                                        PriceItemResponse(
-                                            id = 1L,
-                                            productId = saved[0].id ?: -1,
-                                            price = BigDecimal("20.00")
-                                        ),
-                                        PriceItemResponse(
-                                            id = 2L,
-                                            productId = saved[2].id ?: -1,
-                                            price = BigDecimal("40.00"),
-                                        ),
-                                        PriceItemResponse(
-                                            id = 3L,
-                                            productId = saved[1].id ?: -1,
-                                            price = BigDecimal("25.00")
-                                        )
-                                    )
-                                )
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                )
-        )
-
-        // when
-        val all = service.getAll(0, 5, "", "price", "DESC")
-
-        // then
-        assertThat(all).isNotNull
-        assertThat(all.totalElements).isEqualTo(3)
-        assertThat(all.content[0].price).isEqualTo(BigDecimal("40.00"))
-        assertThat(all.content[0].priceItemId).isEqualTo(2L)
-        assertThat(all.content[1].price).isEqualTo(BigDecimal("25.00"))
-        assertThat(all.content[1].priceItemId).isEqualTo(3L)
-        assertThat(all.content[2].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(all.content[2].priceItemId).isEqualTo(1L)
-
-        // and
-        wiremockAccountancyServer.stop()
-    }
-
-    @Test
-    fun `should get product by id`() {
-
-        // given
-        val productRequest = ProductRequest(
-            name = "test",
-        )
-
-        // and
-        val saved = transactionTemplate.execute {
-            repository.save(productRequest.toEntity()).toProductResponse()
-        } ?: fail("result is expected")
-
-        // when
-        val actual = service.getOne(saved.id)
-
-        // then
-        assertThat(actual).isNotNull
-        assertThat(actual.id).isEqualTo(saved.id)
-        assertThat(actual.name).isEqualTo(saved.name)
-    }
-
-    @Test
-    fun `should not get not exist product`() {
-
-        // given
-        val id = Long.MAX_VALUE
-
-        // when
-        val exception = assertThrows<ResourceNotFoundException> {
-            service.getOne(id)
-        }
-
         //then
-        assertThat(exception.message).isEqualTo("This product with id: $id doesn't exist!")
+        assertThat(exception.message).isEqualTo("Not enough available quantity of product with id: ${saved.id}")
     }
 
     @Test
-    fun `should create product`() {
+    fun `should receive products`() {
 
         // given
-        val productRequest = ProductRequest(
-            name = "test",
-        )
-
-        //and
-        val productResponse = ProductResponse(
-            name = "test",
-        )
-
-        // when
-        val actual = service.create(productRequest)
-
-        // then
-        assertThat(actual).isNotNull
-        assertThat(actual.id).isNotNull
-        assertThat(productResponse.name).isEqualTo(actual.name)
-        assertThat(actual.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
-    }
-
-    @Test
-    fun `should update product`() {
-
-        // given
-        val productRequest = ProductRequest(
-            name = "test",
-        )
-
-        // and
         val saved = transactionTemplate.execute {
-            repository.save(productRequest.toEntity()).toProductResponse()
+            repository.save(
+                Product(
+                    name = "test",
+                    quantity = 10,
+                    status = ProductStatus.CREATED
+                )
+            )
         } ?: fail("result is expected")
 
-        // and
-        val randomName = Math.random().toString()
-        val updatedProductRequest = ProductRequest(
-            name = randomName,
-        )
-
         // when
-        val actual = service.update(saved.id, updatedProductRequest)
+        val actual = service.receiveProducts(listOf(saved.id ?: -1))
 
         // then
         assertThat(actual).isNotNull
-        assertThat(randomName).isEqualTo(actual.name)
-        assertThat(actual.createdAt).isBeforeOrEqualTo(actual.updatedAt)
-    }
-
-    @Test
-    fun `should not update not existing product`() {
-
-        // given
-        val id = Long.MAX_VALUE
-
-        // and
-        val productRequest = ProductRequest(
-            name = "test",
-        )
-
-        // when
-        val exception = assertThrows<ResourceNotFoundException> {
-            service.update(Long.MAX_VALUE, productRequest)
-        }
-
-        // then
-        assertThat(exception.message).isEqualTo("This product with id: $id doesn't exist!")
-    }
-
-    @Test
-    fun `should delete product`() {
-
-        // given
-        val productRequest = ProductRequest(
-            name = "test",
-        )
-
-        // and
-        val product = service.create(productRequest)
-
-        // when
-        service.delete(product.id)
-
-        // then
-        val exception = assertThrows<ResourceNotFoundException> {
-            service.getOne(product.id)
-        }
-
-        //and
-        assertThat(exception.message).isEqualTo("This product with id: ${product.id} doesn't exist!")
+        assertThat(actual[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
     }
 }

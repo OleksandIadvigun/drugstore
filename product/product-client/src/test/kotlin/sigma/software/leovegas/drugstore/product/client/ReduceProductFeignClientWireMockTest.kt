@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -14,36 +15,45 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.product.api.ProductRequest
-import sigma.software.leovegas.drugstore.product.api.ProductResponse
+
+import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
+import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
+import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityResponse
 
 @SpringBootApplication
-internal class UpdateProductFeignClientWireMockTestApp
+internal class ReduceProductFeignClientWireMockTestApp
 
-@DisplayName("Update Product Feign Client WireMock test")
-@ContextConfiguration(classes = [UpdateProductFeignClientWireMockTestApp::class])
-class UpdateProductFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Reduce Product Feign Client WireMock test")
+@ContextConfiguration(classes = [ReduceProductFeignClientWireMockTestApp::class])
+class ReduceProductFeignClientWireMockTest @Autowired constructor(
     val productClient: ProductClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should update product`() {
+    fun `should receive product`() {
 
-        // given
-        val request = ProductRequest(
-            name = "test",
+        // and
+        val request =   listOf(
+            ReduceProductQuantityRequest(
+                id = 1,
+                quantity = 3
+            )
         )
 
         //and
-        val responseExpected = ProductResponse(
-            id = 1L,
-            name = request.name,
+        val responseExpected = listOf(
+            ReduceProductQuantityResponse(
+                id = 1L,
+                quantity = 7,
+                updatedAt = LocalDateTime.now()
+            )
         )
 
         //and
         stubFor(
-            put("/api/v1/products/1")
+            put("/api/v1/products/reduce-quantity")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
                     EqualToPattern(
@@ -65,10 +75,11 @@ class UpdateProductFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = productClient.updateProduct(1, request)
+        val responseActual = productClient.reduceQuantity(request)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1L)
-        assertThat(responseActual.name).isEqualTo(request.name)
+        assertThat(responseActual[0].id).isEqualTo(1L)
+        assertThat(responseActual[0].quantity).isEqualTo(7)
+        assertThat(responseActual[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 }

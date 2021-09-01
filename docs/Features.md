@@ -1,5 +1,25 @@
 # Features
 
+
+                                 P DB (products)                              __O
+                                                                                |\
+                                  ^                                            / \
+                                  |                                             |
+                                         GET order items available for sail     V
+        +-------(W2)-------->  PRODUCT  <-------------(R)-------------------  ORDER --> O DB (orders)
+        |                                                                       
+        |                         ^                                             ^
+        |                         | POST invoice                                |
+        NP -> STORE                      (W) what                                      (W) POST
+        ^                         |  how many                                   |   pid: qty
+        |                         |  price per product                          |
+        |    GET by invoice id                                                  |
+        +--------(R1)-------> ACCOUNTANT <--------------------------------------+
+
+                                  |
+                                  V
+                                 A DB (invoices) 
+
 ## Table of Content
 
 | №| Feature |

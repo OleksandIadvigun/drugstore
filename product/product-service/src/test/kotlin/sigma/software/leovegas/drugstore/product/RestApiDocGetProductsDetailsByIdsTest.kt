@@ -1,14 +1,16 @@
 package sigma.software.leovegas.drugstore.product
 
+import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
 
-@DisplayName("Get products by Ids REST API Doc test")
-class RestApiDocGetProductsByIdsTest @Autowired constructor(
+@DisplayName("Get products details by Ids REST API Doc test")
+class RestApiDocGetProductsDetailsByIdsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
@@ -17,11 +19,11 @@ class RestApiDocGetProductsByIdsTest @Autowired constructor(
 
 
     @Test
-    fun `should get products by ids`() {
+    fun `should get products details by ids`() {
 
         // given
         transactionTemplate.execute {
-            productRepository.deleteAllInBatch()
+            productRepository.deleteAll()
         }
 
         // given
@@ -30,19 +32,27 @@ class RestApiDocGetProductsByIdsTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "test1",
+                        price = BigDecimal("20.00"),
+                        quantity = 5,
+                        status = ProductStatus.RECEIVED,
                     ),
                     Product(
                         name = "test2",
+                        price = BigDecimal("20.00"),
+                        quantity = 3,
+                        status = ProductStatus.RECEIVED,
                     )
                 )
             ).map { it.id ?: -1 }.toList()
         } ?: listOf(-1L)
 
-        of("get-products-by-ids").`when`()
-            .get("http://${productProperties.host}:$port/api/v1/products-by-ids/?ids=${ids[0]}&ids=${ids[1]}")
+        of("get-products-details-by-ids").`when`()
+            .get("http://${productProperties.host}:$port/api/v1/products/details?ids=${ids[0]}&ids=${ids[1]}")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", `is`(2))
-
+            .assertThat().body("[0].name",equalTo("test1"))
+            .assertThat().body("[0].quantity",equalTo(5))
+            .assertThat().body("[0].price",equalTo(20.0F))
     }
 }
