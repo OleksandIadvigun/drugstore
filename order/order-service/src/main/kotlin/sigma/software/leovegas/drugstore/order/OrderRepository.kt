@@ -13,8 +13,8 @@ interface OrderRepository : JpaRepository<Order, Long> {
 
     @Query(
         """
-      select new sigma.software.leovegas.drugstore.order.View(priceItemId, cast(sum(quantity) int))
-From OrderItem where id in (:ids) group by priceItemId order by sum(quantity) DESC
+      select new sigma.software.leovegas.drugstore.order.View(productId, cast(sum(quantity) int))
+From OrderItem where id in (:ids) group by productId order by sum(quantity) DESC
     """
     )
     fun getIdToQuantity(@Param("ids") ids: List<Long>): List<View>

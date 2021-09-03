@@ -21,7 +21,7 @@ data class OrderItem(
 
     @NotNull
     @Column(name = "price_item_id", nullable = false)
-    val priceItemId: Long = -1L,
+    val productId: Long = -1L,
 
     @NotNull
     @Min(1)

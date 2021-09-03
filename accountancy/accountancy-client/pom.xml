@@ -40,5 +40,9 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.order.api</groupId>
+            <artifactId>order-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

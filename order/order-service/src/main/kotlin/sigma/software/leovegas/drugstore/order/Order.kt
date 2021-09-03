@@ -23,6 +23,7 @@ enum class OrderStatus {
     CREATED,
     CANCELLED,
     UPDATED,
+    CONFIRMED,
     PAID,
     REFUND,
     BOOKED,

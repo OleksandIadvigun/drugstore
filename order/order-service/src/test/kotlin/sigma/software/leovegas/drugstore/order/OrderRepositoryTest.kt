@@ -29,7 +29,7 @@ class OrderRepositoryTest @Autowired constructor(
                 Order(
                     orderItems = setOf(
                         OrderItem(
-                            priceItemId = 1,
+                            productId = 1,
                             quantity = 3
                         )
                     ),
@@ -63,7 +63,7 @@ class OrderRepositoryTest @Autowired constructor(
                         orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
-                                priceItemId = 1,
+                                productId = 1,
                                 quantity = 3
                             )
                         )
@@ -72,7 +72,7 @@ class OrderRepositoryTest @Autowired constructor(
                         orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
-                                priceItemId = 1,
+                                productId = 1,
                                 quantity = 1
                             )
                         )
@@ -81,7 +81,7 @@ class OrderRepositoryTest @Autowired constructor(
                         orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
-                                priceItemId = 2,
+                                productId = 2,
                                 quantity = 5
                             )
                         )

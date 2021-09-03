@@ -99,13 +99,13 @@ class AccountancyServiceTest @Autowired constructor(
         val orderDetail = OrderDetailsDTO(
             orderItemDetails = listOf(
                 OrderItemDetailsDTO(
-                    priceItemId = 1L,
+                    productId = 1L,
                     name = "test1",
                     price = BigDecimal("20.00"),
                     quantity = 3,
                 ),
                 OrderItemDetailsDTO(
-                    priceItemId = 2L,
+                    productId = 2L,
                     name = "test2",
                     price = BigDecimal("10.00"),
                     quantity = 3,

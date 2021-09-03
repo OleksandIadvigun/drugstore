@@ -68,13 +68,13 @@ class RestApiDocCreateInvoiceTest @Autowired constructor(
         val orderDetail = OrderDetailsDTO(
             orderItemDetails = listOf(
                 OrderItemDetailsDTO(
-                    priceItemId = 1,
+                    productId = 1,
                     name = "test1",
                     price = BigDecimal("20.00"),
                     quantity = 3,
                 ),
                 OrderItemDetailsDTO(
-                    priceItemId = 2,
+                    productId = 2,
                     name = "test2",
                     price = BigDecimal("10.00"),
                     quantity = 3,

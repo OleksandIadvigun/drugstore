@@ -34,7 +34,7 @@ class GetOrderDetailsFeignClientWireMockTest @Autowired constructor(
         val responseExpected = OrderDetailsDTO(
             orderItemDetails = listOf(
                 OrderItemDetailsDTO(
-                    priceItemId = 1,
+                    productId = 1,
                     name = "test1",
                     price = BigDecimal.TEN,
                     quantity = 3,
@@ -64,7 +64,7 @@ class GetOrderDetailsFeignClientWireMockTest @Autowired constructor(
         //  then
         assertThat(responseActual.orderItemDetails).hasSize(1)
         assertThat(responseActual.orderItemDetails.iterator().next().name).isEqualTo("test1")
-        assertThat(responseActual.orderItemDetails.iterator().next().priceItemId).isEqualTo(1)
+        assertThat(responseActual.orderItemDetails.iterator().next().productId).isEqualTo(1)
         assertThat(responseActual.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal.TEN)
         assertThat(responseActual.orderItemDetails.iterator().next().quantity).isEqualTo(3)
         assertThat(responseActual.total).isEqualTo(BigDecimal("30").setScale(2))

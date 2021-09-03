@@ -20,10 +20,10 @@ import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
 @SpringBootApplication
-internal class ChaneOrderStatusFeignClientWireMockTestApp
+internal class ChangeOrderStatusFeignClientWireMockTestApp
 
 @DisplayName("Change Order Status Feign Client WireMock test")
-@ContextConfiguration(classes = [ChaneOrderStatusFeignClientWireMockTestApp::class])
+@ContextConfiguration(classes = [ChangeOrderStatusFeignClientWireMockTestApp::class])
 class ChangeOrderStatusFeignClientWireMockTest @Autowired constructor(
     val orderClient: OrderClient,
     val objectMapper: ObjectMapper,
@@ -41,7 +41,7 @@ class ChangeOrderStatusFeignClientWireMockTest @Autowired constructor(
             orderStatus = OrderStatusDTO.BOOKED,
             orderItems = listOf(
                 OrderItemDTO(
-                    priceItemId = 1,
+                    productId = 1,
                     quantity = 2
                 )
             ),
@@ -81,7 +81,7 @@ class ChangeOrderStatusFeignClientWireMockTest @Autowired constructor(
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and
-        assertThat(responseActual.orderItems.iterator().next().priceItemId).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
         assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(2)
     }
 }

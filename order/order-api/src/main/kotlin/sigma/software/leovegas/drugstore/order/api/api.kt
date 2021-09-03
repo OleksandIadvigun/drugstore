@@ -31,14 +31,15 @@ enum class OrderStatusDTO {
     CREATED,
     CANCELLED,
     UPDATED,
+    CONFIRMED,
     REFUND,
     PAID,
     BOOKED,
-    DELIVERED
+    DELIVERED,
 }
 
 data class OrderItemDTO(
-    val priceItemId: Long = -1,
+    val productId: Long = -1,
     val quantity: Int = -1,
 )
 
@@ -48,7 +49,7 @@ data class OrderDetailsDTO(
 )
 
 data class OrderItemDetailsDTO(
-    val priceItemId: Long = -1,
+    val productId: Long = -1,
     val name: String = "undefined",
     val price: BigDecimal = BigDecimal("-1"),
     val quantity: Int = -1,

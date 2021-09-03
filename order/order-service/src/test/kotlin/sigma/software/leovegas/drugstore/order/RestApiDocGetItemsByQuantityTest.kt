@@ -33,7 +33,7 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
                         orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
-                                priceItemId = 1,
+                                productId = 1,
                                 quantity = 3
                             )
                         ),
@@ -42,7 +42,7 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
                         orderStatus = OrderStatus.PAID,
                         orderItems = setOf(
                             OrderItem(
-                                priceItemId = 2,
+                                productId = 2,
                                 quantity = 5
                             )
                         ),

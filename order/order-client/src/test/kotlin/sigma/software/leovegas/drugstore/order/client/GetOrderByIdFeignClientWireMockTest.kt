@@ -38,7 +38,7 @@ class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
             orderStatus = CREATED,
             orderItems = listOf(
                 OrderItemDTO(
-                    priceItemId = 1,
+                    productId = 1,
                     quantity = 2
                 )
             ),
@@ -72,7 +72,7 @@ class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and
-        assertThat(responseActual.orderItems.iterator().next().priceItemId).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
         assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(2)
     }
 }

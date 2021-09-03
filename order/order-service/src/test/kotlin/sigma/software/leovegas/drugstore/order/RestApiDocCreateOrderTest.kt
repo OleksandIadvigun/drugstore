@@ -30,7 +30,7 @@ class RestApiDocCreateOrderTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            priceItemId = 1L,
+                            productId = 1L,
                             quantity = 3
                         )
                     )
@@ -46,7 +46,7 @@ class RestApiDocCreateOrderTest @Autowired constructor(
             .assertThat().body("orderStatus", equalTo("CREATED"))
             .assertThat().body("createdAt", not(emptyString()))
             .assertThat().body("updatedAt", not(emptyString()))
-            .assertThat().body("orderItems[0].priceItemId", equalTo(1))
+            .assertThat().body("orderItems[0].productId", equalTo(1))
             .assertThat().body("orderItems[0].quantity", equalTo(3))
 
     }

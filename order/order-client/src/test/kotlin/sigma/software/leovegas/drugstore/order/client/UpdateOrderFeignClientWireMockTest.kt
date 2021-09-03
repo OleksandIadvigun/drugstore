@@ -37,7 +37,7 @@ class UpdateOrderFeignClientWireMockTest @Autowired constructor(
         val request = UpdateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    priceItemId = 1L,
+                    productId = 1L,
                     quantity = 4
                 )
             )
@@ -86,7 +86,7 @@ class UpdateOrderFeignClientWireMockTest @Autowired constructor(
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and
-        assertThat(responseActual.orderItems.iterator().next().priceItemId).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
         assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(4)
     }
 }

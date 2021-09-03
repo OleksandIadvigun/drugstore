@@ -54,3 +54,26 @@ include::{snippets}/get-orders/http-request.adoc[]
 .GetOrderResponse
 include::{snippets}/get-orders/http-response.adoc[]
 
+== Confirm Orders
+
+.Request
+include::{snippets}/confirm-order/http-request.adoc[]
+
+.Invoice
+include::{snippets}/confirm-order/http-response.adoc[]
+
+== Change Order Status
+
+.Request
+include::{snippets}/change-order/http-request.adoc[]
+
+.GetOrderResponse
+include::{snippets}/change-order/http-response.adoc[]
+
+== Get Product id to Quantity
+
+.Request
+include::{snippets}/get-sorted-items/http-request.adoc[]
+
+.Map
+include::{snippets}/get-sorted-items/http-response.adoc[]

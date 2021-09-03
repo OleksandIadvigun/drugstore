@@ -14,6 +14,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsCreateReq
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsResponse
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedCostsUpdateRequest
 import sigma.software.leovegas.drugstore.accountancy.api.PurchasedItemDTO
+import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @Headers("Content-Type: application/json")
 interface AccountancyClient {
@@ -23,6 +24,9 @@ interface AccountancyClient {
 
     @RequestLine("POST api/v1/accountancy/invoice")
     fun createInvoice(request: InvoiceRequest): InvoiceResponse
+
+    @RequestLine("POST api/v1/accountancy/invoice/outcome")
+    fun createOutcomeInvoice(orderItems: List<OrderItemDTO>): InvoiceResponse
 
     @RequestLine("PUT api/v1/accountancy/price-item/{id}")
     fun updatePriceItem(@Param id: Long, request: PriceItemRequest): PriceItemResponse

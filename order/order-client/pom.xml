@@ -44,5 +44,17 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
+            <artifactId>product-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.accountancy.api</groupId>
+            <artifactId>accountancy-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

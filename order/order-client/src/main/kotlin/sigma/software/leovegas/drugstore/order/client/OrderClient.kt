@@ -3,6 +3,8 @@ package sigma.software.leovegas.drugstore.order.client
 import feign.Headers
 import feign.Param
 import feign.RequestLine
+import org.springframework.web.bind.annotation.RequestBody
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
@@ -35,4 +37,7 @@ interface OrderClient {
 
     @RequestLine("GET /api/v1/orders/total-buys")
     fun getProductsIdToQuantity(): Map<Long, Int>
+
+    @RequestLine("POST /api/v1/orders/confirm")
+    fun confirmOrder(@RequestBody orderId: Long): InvoiceResponse
 }

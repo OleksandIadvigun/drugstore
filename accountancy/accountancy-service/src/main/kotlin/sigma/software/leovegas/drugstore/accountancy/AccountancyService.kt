@@ -94,7 +94,7 @@ class AccountancyService @Autowired constructor(
         val orderDetails = orderClient.getOrderDetails(orderId)
         val productItems = orderDetails.orderItemDetails.map {
             ProductItem(
-                priceItemId = it.priceItemId,
+                priceItemId = it.productId,
                 name = it.name,
                 price = it.price,
                 quantity = it.quantity,
