@@ -1,5 +1,6 @@
 # Features
 
+```
 
                                  P DB (products)                              __O
                                                                                 |\
@@ -19,6 +20,7 @@
                                   |
                                   V
                                  A DB (invoices) 
+```                                 
 
 ## Table of Content
 
@@ -32,6 +34,7 @@
 
 ### Order
 
+Mandatory
 - [x] Create order
 - [x] Update order
 - [x] Get order by id
@@ -44,6 +47,7 @@
 
 ### Product
 
+Mandatory
 - [x] Create product
 - [x] Reduce Quantity
 - [x] Receive products
@@ -58,6 +62,7 @@
 
 ### Store
 
+Mandatory
 - [ ] Create new transfer acceptance item
 - [ ] Get transfer acceptance items
 - [ ] Get transfer acceptance items by invoice ids
@@ -67,12 +72,14 @@
 
 ### Accountancy
 
+Mandatory
 - [ ] Create Income Invoice
 - [ ] Create Outcome Invoice
 - [ ] Get Invoice by id
 - [ ] Cancel Invoice
 - [ ] Refund Invoice
 - [ ] Pay Invoice
+
 Optional
 - [ ] Create fixed costs
 - [ ] Update fixed costs
