@@ -35,20 +35,20 @@
 ## Order
 
 - [x] Update Cart
-- [x] Clear Cart 
-- [X] Get details 
+- [x] Clear Cart
+- [X] Get details
 - [x] Confirm
 
 ## Product
 
 - [x] Create
-- [x] Process reception 
-- [x] Process delivery 
+- [x] Process reception
+- [x] Process delivery
 - [x] View the most popular
 - [x] Search:
     - by keyword (name...)
     - sorted by popularity (default)
-    - sorted by price 
+    - sorted by price
     - sorted by creation date
 
 ## Store

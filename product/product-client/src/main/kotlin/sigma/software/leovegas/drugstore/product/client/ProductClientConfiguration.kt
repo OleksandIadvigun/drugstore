@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.product.client
 
-import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import feign.Feign
 import feign.Logger
@@ -24,8 +23,8 @@ class ProductClientConfiguration {
             .builder()
             .logger(Slf4jLogger())
             .logLevel(Logger.Level.FULL)
-            .encoder(JacksonEncoder(listOf(JavaTimeModule(),PageJacksonModule(),SortJacksonModule())))
-            .decoder(JacksonDecoder(listOf(JavaTimeModule(),PageJacksonModule(),SortJacksonModule())))
+            .encoder(JacksonEncoder(listOf(JavaTimeModule(), PageJacksonModule(), SortJacksonModule())))
+            .decoder(JacksonDecoder(listOf(JavaTimeModule(), PageJacksonModule(), SortJacksonModule())))
             .target(ProductClient::class.java, "http://${props.host}:${props.port}")
 
     }

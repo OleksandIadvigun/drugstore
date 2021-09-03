@@ -41,9 +41,7 @@ _unix_
 ```
 
 _windows_
-mvnw -DskipTests clean package
-mvnw -f .dev -P down && mvnw -f .dev -P up
-mvnw -f .dev -P logs
+mvnw -DskipTests clean package mvnw -f .dev -P down && mvnw -f .dev -P up mvnw -f .dev -P logs
 
 TODO: low priority.
 

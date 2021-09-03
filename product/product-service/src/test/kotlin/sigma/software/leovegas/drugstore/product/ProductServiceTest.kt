@@ -80,19 +80,23 @@ class ProductServiceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "aspirin",
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin2",
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
 
                     ),
                     Product(
                         name = "aspirin",
+                        quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
                         name = "some2",
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
 
                     )
@@ -145,21 +149,25 @@ class ProductServiceTest @Autowired constructor(
                     Product(
                         name = "aspirin",
                         price = BigDecimal("10.00"),
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin2",
                         price = BigDecimal("50.00"),
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin",
                         price = BigDecimal("40.00"),
+                        quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
                         name = "some2",
                         price = BigDecimal("30.00"),
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     )
                 )
@@ -194,21 +202,25 @@ class ProductServiceTest @Autowired constructor(
                     Product(
                         name = "aspirin",
                         price = BigDecimal("10.00"),
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin2",
                         price = BigDecimal("50.00"),
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin",
                         price = BigDecimal("5.00"),
+                        quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
                         name = "some2",
                         price = BigDecimal("30.00"),
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     )
                 )
@@ -277,19 +289,23 @@ class ProductServiceTest @Autowired constructor(
                 listOf(
                     Product(
                         name = "aspirin",
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
                         name = "aspirin2",
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
 
                     ),
                     Product(
                         name = "mostPopular",
+                        quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
                         name = "some2",
+                        quantity = 10,
                         status = ProductStatus.RECEIVED
                     )
                 )

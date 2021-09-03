@@ -28,7 +28,7 @@ interface ProductClient {
         @Param("size") size: Int = 5,
         @Param("search") search: String = "",
         @Param("sortField") sortField: String = "popularity",
-        @Param("sortDirection")sortDirection: String = "DESC"
+        @Param("sortDirection") sortDirection: String = "DESC"
     ): Page<SearchProductResponse>
 
     @RequestLine("GET api/v1/products/popular?page={page}&size={size}")

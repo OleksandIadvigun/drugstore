@@ -45,7 +45,7 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
         //and
         val responseExpected = listOf(
             CreateProductResponse(
-                id=1,
+                id = 1,
                 name = "test1",
                 quantity = 1,
                 price = BigDecimal.ONE,

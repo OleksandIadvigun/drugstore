@@ -51,8 +51,8 @@ class RestApiDocGetProductsDetailsByIdsTest @Autowired constructor(
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", `is`(2))
-            .assertThat().body("[0].name",equalTo("test1"))
-            .assertThat().body("[0].quantity",equalTo(5))
-            .assertThat().body("[0].price",equalTo(20.0F))
+            .assertThat().body("[0].name", equalTo("test1"))
+            .assertThat().body("[0].quantity", equalTo(5))
+            .assertThat().body("[0].price", equalTo(20.0F))
     }
 }

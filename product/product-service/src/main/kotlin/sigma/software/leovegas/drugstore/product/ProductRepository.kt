@@ -6,14 +6,19 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface ProductRepository : JpaRepository<Product, Long> {
 
-    fun findAllByNameContainingAndStatus(name: String?, status: ProductStatus, pageable: Pageable?): Page<Product>
+    fun findAllByNameContainingAndStatusAndQuantityGreaterThan(
+        name: String?, status: ProductStatus, quantity: Int, pageable: Pageable?
+    ): Page<Product>
 
-    fun findAllByNameContainingAndIdInAndStatus(
+    fun findAllByNameContainingAndIdInAndStatusAndQuantityGreaterThan(
         search: String,
         ids: Set<Long>,
         status: ProductStatus,
+        quantity: Int,
         pageable: Pageable?
     ): Page<Product>
 
-    fun findAllByIdInAndStatus(ids: Set<Long>, status: ProductStatus, pageable: Pageable?): Page<Product>
+    fun findAllByIdInAndStatusAndQuantityGreaterThan(
+        ids: Set<Long>, status: ProductStatus, quantity: Int, pageable: Pageable?
+    ): Page<Product>
 }

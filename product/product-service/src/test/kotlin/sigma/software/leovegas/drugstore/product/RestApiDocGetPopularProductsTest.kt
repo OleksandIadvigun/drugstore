@@ -72,10 +72,12 @@ class RestApiDocGetPopularProductsTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(mapOf(
-                                    savedProducts[2].id to 8,
-                                    savedProducts[0].id to 5,
-                                    savedProducts[1].id to 2)
+                                .writeValueAsString(
+                                    mapOf(
+                                        savedProducts[2].id to 8,
+                                        savedProducts[0].id to 5,
+                                        savedProducts[1].id to 2
+                                    )
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())

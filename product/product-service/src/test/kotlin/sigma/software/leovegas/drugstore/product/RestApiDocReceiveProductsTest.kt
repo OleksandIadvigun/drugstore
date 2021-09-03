@@ -61,7 +61,7 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
             .then()
             .assertThat().statusCode(202)
             .assertThat().body("size()", `is`(2))
-            .assertThat().body("[0].status",equalTo("RECEIVED"))
-            .assertThat().body("[1].status",equalTo("RECEIVED"))
+            .assertThat().body("[0].status", equalTo("RECEIVED"))
+            .assertThat().body("[1].status", equalTo("RECEIVED"))
     }
 }

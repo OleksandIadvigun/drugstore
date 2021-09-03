@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
@@ -30,16 +29,18 @@ class GetPopularProductsFeignClientWireMockTest @Autowired constructor(
     fun `should get popular product `() {
 
         // given
-        val responseExpected = ResponsePage(listOf(
-           GetProductResponse(
-               id =1,
-               name = "test1"
-           ),
-            GetProductResponse(
-                id =2,
-                name = "test2"
+        val responseExpected = ResponsePage(
+            listOf(
+                GetProductResponse(
+                    id = 1,
+                    name = "test1"
+                ),
+                GetProductResponse(
+                    id = 2,
+                    name = "test2"
+                )
             )
-        ))
+        )
 
         // and
         stubFor(

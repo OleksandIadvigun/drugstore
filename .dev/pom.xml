@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>sigma.software.leovegas.drugstore</groupId>
@@ -81,9 +81,11 @@
                                 <argument>${docker-compose-project-name}</argument>
                                 <argument>down</argument>
                                 <argument>-v</argument>
-                                <argument>--remove-orphans</argument> <!--Remove containers for services not defined in the Compose file-->
+                                <argument>--remove-orphans
+                                </argument> <!--Remove containers for services not defined in the Compose file-->
                                 <argument>--rmi</argument>  <!--#Remove images.-->
-                                <argument>local</argument>  <!--Remove only images that don't have a custom tag set by the `image` field-->
+                                <argument>local
+                                </argument>  <!--Remove only images that don't have a custom tag set by the `image` field-->
                                 <argument>-t</argument>     <!--timeout-->
                                 <argument>25</argument>
                             </arguments>

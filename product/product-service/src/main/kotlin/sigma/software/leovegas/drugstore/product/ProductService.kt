@@ -30,15 +30,16 @@ class ProductService(
             val pageableForPopularity: Pageable = PageRequest.of(page, size)
             val productsIdToQuantity: Map<Long, Int>
             try {
-                 productsIdToQuantity = orderClient.getProductsIdToQuantity()
-            }catch (e: Exception){
+                productsIdToQuantity = orderClient.getProductsIdToQuantity()
+            } catch (e: Exception) {
                 throw InternalServerNotAvailableException("Something's wrong, please try again later")
             }
             val products = productRepository
-                .findAllByNameContainingAndIdInAndStatus(
+                .findAllByNameContainingAndIdInAndStatusAndQuantityGreaterThan(
                     search,
                     productsIdToQuantity.keys,
                     ProductStatus.RECEIVED,
+                    0,
                     pageableForPopularity
                 )
                 .map(Product::toSearchProductResponse)
@@ -47,7 +48,9 @@ class ProductService(
             return PageImpl(sortedContent, pageableForPopularity, products.totalElements)
         }
         val pageable: Pageable = PageRequest.of(page, size, SortUtil.getSort(sortField, sortDirection))
-        val products = productRepository.findAllByNameContainingAndStatus(search, ProductStatus.RECEIVED, pageable)
+        val products = productRepository.findAllByNameContainingAndStatusAndQuantityGreaterThan(
+            search, ProductStatus.RECEIVED, 0, pageable
+        )
         return products.map(Product::toSearchProductResponse)
     }
 
@@ -57,11 +60,13 @@ class ProductService(
         val productsIdToQuantity: Map<Long, Int>
         try {
             productsIdToQuantity = orderClient.getProductsIdToQuantity()
-        }catch (e: Exception){
+        } catch (e: Exception) {
             throw InternalServerNotAvailableException("Something's wrong, please try again later")
         }
         val products = productRepository
-            .findAllByIdInAndStatus(productsIdToQuantity.keys, ProductStatus.RECEIVED, pageableForPopularity)
+            .findAllByIdInAndStatusAndQuantityGreaterThan(
+                productsIdToQuantity.keys, ProductStatus.RECEIVED, 0, pageableForPopularity
+            )
             .map(Product::toGetProductResponse)
         val index = productsIdToQuantity.keys.withIndex().associate { it.value to it.index }
         val sortedContent = products.sortedBy { index[it.id] }

@@ -15,9 +15,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-
-import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
-import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
 import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityResponse
 
@@ -35,7 +32,7 @@ class ReduceProductFeignClientWireMockTest @Autowired constructor(
     fun `should receive product`() {
 
         // and
-        val request =   listOf(
+        val request = listOf(
             ReduceProductQuantityRequest(
                 id = 1,
                 quantity = 3
