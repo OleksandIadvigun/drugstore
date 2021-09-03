@@ -32,7 +32,7 @@
 | 4.  | [Accounting](#accounting)
 | 5.  | [Analytics](#analytics)
 
-### Order
+## Order
 
 Mandatory
 - [x] Create order
@@ -45,7 +45,7 @@ Mandatory
 - [x] Get total buys of the order items
 - [x] Checkout order
 
-### Product
+## Product
 
 Mandatory
 - [x] Create product
@@ -60,7 +60,7 @@ Mandatory
     - sorted by price 
     - sorted by creation date
 
-### Store
+## Store
 
 Mandatory
 - [ ] Create new transfer acceptance item
@@ -70,7 +70,7 @@ Mandatory
 - [ ] Deliver products 
 - [ ] Check availability of products
 
-### Accountancy
+## Accountancy
 
 Mandatory
 - [ ] Create Income Invoice
@@ -87,7 +87,7 @@ Optional
 - [ ] Get markups
 - [ ] Update markups
 
-### Analytics(to be done later)
+## Analytics(to be done later)
 
 - [ ] Calculate last month income
 - [ ] Calculate last month purchase costs
