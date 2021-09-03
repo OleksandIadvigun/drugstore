@@ -30,14 +30,12 @@ class SearchProductsFeignClientWireMockTest @Autowired constructor(
     fun `should search products by search word`() {
 
         // given
-        val responseExpected = ResponsePage(
-            listOf(
-                SearchProductResponse(
-                    id = 1,
-                    name = "aspirin",
-                    price = BigDecimal.ONE,
-                    quantity = 1
-                )
+        val responseExpected = listOf(
+            SearchProductResponse(
+                id = 1,
+                name = "aspirin",
+                price = BigDecimal.ONE,
+                quantity = 1
             )
         )
 
@@ -62,6 +60,6 @@ class SearchProductsFeignClientWireMockTest @Autowired constructor(
 
         // then
         assertThat(responseActual).hasSize(1)
-        assertThat(responseActual.content[0].id).isEqualTo(1)
+        assertThat(responseActual[0].id).isEqualTo(1)
     }
 }

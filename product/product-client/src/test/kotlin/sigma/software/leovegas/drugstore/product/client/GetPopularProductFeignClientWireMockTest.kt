@@ -55,16 +55,14 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
     fun `should get popular product`() {
 
         // given
-        val responseExpected = ResponsePage(
-            listOf(
-                GetProductResponse(
-                    id = 1,
-                    name = "test1"
-                ),
-                GetProductResponse(
-                    id = 2,
-                    name = "test2"
-                )
+        val responseExpected = listOf(
+            GetProductResponse(
+                id = 1,
+                name = "test1"
+            ),
+            GetProductResponse(
+                id = 2,
+                name = "test2"
             )
         )
 
@@ -88,9 +86,9 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
         val responseActual = productClient.getPopularProducts()
 
         // then
-        assertThat(responseActual.content[0].id).isEqualTo(1)
-        assertThat(responseActual.content[0].name).isEqualTo("test1")
-        assertThat(responseActual.content[1].id).isEqualTo(2)
-        assertThat(responseActual.content[1].name).isEqualTo("test2")
+        assertThat(responseActual[0].id).isEqualTo(1)
+        assertThat(responseActual[0].name).isEqualTo("test1")
+        assertThat(responseActual[1].id).isEqualTo(2)
+        assertThat(responseActual[1].name).isEqualTo("test2")
     }
 }

@@ -64,9 +64,9 @@ class ProductRepositoryTest @Autowired constructor(
 
         // then
         assertThat(products).hasSize(1)
-        assertThat(products.content[0].name).isEqualTo("aspirin")
-        assertThat(products.content[0].quantity).isGreaterThan(0)
-        assertThat(products.content[0].status).isEqualTo(ProductStatus.RECEIVED)
+        assertThat(products[0].name).isEqualTo("aspirin")
+        assertThat(products[0].quantity).isGreaterThan(0)
+        assertThat(products[0].status).isEqualTo(ProductStatus.RECEIVED)
     }
 
     @Test
@@ -117,9 +117,9 @@ class ProductRepositoryTest @Autowired constructor(
 
         // then
         assertThat(products).hasSize(1)
-        assertThat(products.content[0].id).isIn(saved[0].id ?: -1, saved[1].id ?: -1, saved[2].id ?: -1)
-        assertThat(products.content[0].quantity).isGreaterThan(0)
-        assertThat(products.content[0].status).isEqualTo(ProductStatus.RECEIVED)
+        assertThat(products[0].id).isIn(saved[0].id ?: -1, saved[1].id ?: -1, saved[2].id ?: -1)
+        assertThat(products[0].quantity).isGreaterThan(0)
+        assertThat(products[0].status).isEqualTo(ProductStatus.RECEIVED)
     }
 
     @Test
@@ -177,14 +177,14 @@ class ProductRepositoryTest @Autowired constructor(
 
         // then
         assertThat(products).hasSize(1)
-        assertThat(products.content[0].id).isIn(
+        assertThat(products[0].id).isIn(
             saved[0].id ?: -1,
             saved[1].id ?: -1,
             saved[2].id ?: -1,
             saved[3].id ?: -1
         )
-        assertThat(products.content[0].quantity).isGreaterThan(0)
-        assertThat(products.content[0].name).isEqualTo("aspirin")
-        assertThat(products.content[0].status).isEqualTo(ProductStatus.RECEIVED)
+        assertThat(products[0].quantity).isGreaterThan(0)
+        assertThat(products[0].name).isEqualTo("aspirin")
+        assertThat(products[0].status).isEqualTo(ProductStatus.RECEIVED)
     }
 }

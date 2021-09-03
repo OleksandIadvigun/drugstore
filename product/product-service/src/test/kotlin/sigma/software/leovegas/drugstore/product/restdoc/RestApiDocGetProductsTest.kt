@@ -85,10 +85,10 @@ class RestApiDocGetProductsTest @Autowired constructor(
             .get("http://${productProperties.host}:$port/api/v1/products/search?search=test")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("totalElements", `is`(2))
-            .assertThat().body("content[0].name", Matchers.equalTo("test2"))
-            .assertThat().body("content[0].price", Matchers.equalTo(30.0F))
-            .assertThat().body("content[0].quantity", Matchers.equalTo(3))
-            .assertThat().body("content[1].name", Matchers.equalTo("test"))
+            .assertThat().body("size", `is`(2))
+            .assertThat().body("[0].name", Matchers.equalTo("test2"))
+            .assertThat().body("[0].price", Matchers.equalTo(30.0F))
+            .assertThat().body("[0].quantity", Matchers.equalTo(3))
+            .assertThat().body("[1].name", Matchers.equalTo("test"))
     }
 }

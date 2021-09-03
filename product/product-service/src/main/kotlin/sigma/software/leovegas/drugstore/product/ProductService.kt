@@ -4,8 +4,6 @@ import java.math.BigDecimal
 import javax.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -26,7 +24,7 @@ class ProductService(
     val logger: Logger = LoggerFactory.getLogger(ProductService::class.java)
 
     fun searchProducts(page: Int, size: Int, search: String, sortField: String, sortDirection: String)
-            : Page<SearchProductResponse> {
+            : List<SearchProductResponse> {
         if (search == "") throw NotCorrectRequestException("Search field can not be empty!")
         if (sortField == "popularity") {
             val pageableForPopularity: Pageable = PageRequest.of(page, size)
@@ -45,8 +43,7 @@ class ProductService(
                 )
                 .map(Product::toSearchProductResponse)
             val index = productsQuantity.keys.withIndex().associate { it.value to it.index }
-            val sortedContent = products.sortedBy { index[it.id] }
-            return PageImpl(sortedContent, pageableForPopularity, products.totalElements)
+            return products.sortedBy { index[it.id] }
         }
         val pageable: Pageable = PageRequest.of(page, size, SortUtil.getSort(sortField, sortDirection))
         val products = productRepository.findAllByNameContainingAndStatusAndQuantityGreaterThan(
@@ -56,7 +53,7 @@ class ProductService(
     }
 
     fun getPopularProducts(page: Int, size: Int):
-            Page<GetProductResponse> {
+            List<GetProductResponse> {
         val pageableForPopularity: Pageable = PageRequest.of(page, size)
         val productsIdToQuantity = runCatching { orderClient.getProductsIdToQuantity() }
             .onFailure { throw OrderServerNotAvailableException("Something's wrong, please try again later") }
@@ -69,8 +66,7 @@ class ProductService(
             )
             .map(Product::toGetProductResponse)
         val index = productsIdToQuantity.keys.withIndex().associate { it.value to it.index }
-        val sortedContent = products.sortedBy { index[it.id] }
-        return PageImpl(sortedContent, pageableForPopularity, products.totalElements)
+        return products.sortedBy { index[it.id] }
     }
 
     fun getProductsDetailsByIds(ids: List<Long>) = productRepository.findAllById(ids).toProductDetailsResponseList()

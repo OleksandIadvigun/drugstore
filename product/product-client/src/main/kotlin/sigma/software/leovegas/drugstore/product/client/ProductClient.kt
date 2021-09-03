@@ -4,7 +4,6 @@ import feign.Headers
 import feign.Param
 import feign.RequestLine
 import java.math.BigDecimal
-import org.springframework.data.domain.Page
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
@@ -31,10 +30,10 @@ interface ProductClient {
         @Param("search") search: String = "",
         @Param("sortField") sortField: String = "popularity",
         @Param("sortDirection") sortDirection: String = "DESC"
-    ): Page<SearchProductResponse>
+    ): List<SearchProductResponse>
 
     @RequestLine("GET /api/v1/products/popular?page={page}&size={size}")
-    fun getPopularProducts(@Param("page") page: Int = 0, @Param("size") size: Int = 5): Page<GetProductResponse>
+    fun getPopularProducts(@Param("page") page: Int = 0, @Param("size") size: Int = 5): List<GetProductResponse>
 
     @RequestLine("PUT /api/v1/products/receive")
     fun receiveProducts(ids: List<Long>): List<ReceiveProductResponse>

@@ -3,7 +3,6 @@ package sigma.software.leovegas.drugstore.product
 import java.math.BigDecimal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.ACCEPTED
 import org.springframework.http.HttpStatus.CREATED
@@ -50,14 +49,14 @@ class ProductResource(private val service: ProductService) {
         @RequestParam(defaultValue = "") search: String,
         @RequestParam(defaultValue = "popularity") sortField: String,
         @RequestParam(defaultValue = "DESC") sortDirection: String
-    ): Page<SearchProductResponse> = service.searchProducts(page, size, search, sortField, sortDirection)
+    ): List<SearchProductResponse> = service.searchProducts(page, size, search, sortField, sortDirection)
 
     @ResponseStatus(OK)
     @GetMapping("/popular")
     fun getPopularProducts(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int,
-    ): Page<GetProductResponse> = service.getPopularProducts(page, size)
+    ): List<GetProductResponse> = service.getPopularProducts(page, size)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/deliver")

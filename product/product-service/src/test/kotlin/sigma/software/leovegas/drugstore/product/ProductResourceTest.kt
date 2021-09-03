@@ -269,7 +269,7 @@ class ProductResourceTest @Autowired constructor(
                 "$baseUrl/api/v1/products/popular",
                 GET,
                 null,
-                respTypeRef<RestResponsePage<GetProductResponse>>()
+                respTypeRef<List<GetProductResponse>>()
             )
 
         // then
@@ -278,10 +278,10 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body.content[0].id).isEqualTo(saved[1].id)
-        assertThat(body.content[0].name).isEqualTo("aspirin2")
-        assertThat(body.content[1].id).isEqualTo(saved[0].id)
-        assertThat(body.content[1].name).isEqualTo("aspirin")
+        assertThat(body[0].id).isEqualTo(saved[1].id)
+        assertThat(body[0].name).isEqualTo("aspirin2")
+        assertThat(body[1].id).isEqualTo(saved[0].id)
+        assertThat(body[1].name).isEqualTo("aspirin")
     }
 
     @Test
@@ -331,7 +331,7 @@ class ProductResourceTest @Autowired constructor(
                 "$baseUrl/api/v1/products/search?search=aspirin&sortField=price&sortDirection=ASC",
                 GET,
                 null,
-                respTypeRef<RestResponsePage<SearchProductResponse>>()
+                respTypeRef<List<SearchProductResponse>>()
             )
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -339,10 +339,10 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body.content[0].id).isEqualTo(saved[0].id)
-        assertThat(body.content[0].price).isEqualTo(BigDecimal("10.00"))
-        assertThat(body.content[1].id).isEqualTo(saved[1].id)
-        assertThat(body.content[1].price).isEqualTo(BigDecimal("50.00"))
+        assertThat(body[0].id).isEqualTo(saved[0].id)
+        assertThat(body[0].price).isEqualTo(BigDecimal("10.00"))
+        assertThat(body[1].id).isEqualTo(saved[1].id)
+        assertThat(body[1].price).isEqualTo(BigDecimal("50.00"))
     }
 
     @Test
@@ -392,7 +392,7 @@ class ProductResourceTest @Autowired constructor(
                 "$baseUrl/api/v1/products/search?search=aspirin&sortField=price&sortDirection=DESC",
                 GET,
                 null,
-                respTypeRef<RestResponsePage<SearchProductResponse>>()
+                respTypeRef<List<SearchProductResponse>>()
             )
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -400,10 +400,10 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body.content[0].id).isEqualTo(saved[1].id)
-        assertThat(body.content[0].price).isEqualTo(BigDecimal("50.00"))
-        assertThat(body.content[1].id).isEqualTo(saved[0].id)
-        assertThat(body.content[1].price).isEqualTo(BigDecimal("10.00"))
+        assertThat(body[0].id).isEqualTo(saved[1].id)
+        assertThat(body[0].price).isEqualTo(BigDecimal("50.00"))
+        assertThat(body[1].id).isEqualTo(saved[0].id)
+        assertThat(body[1].price).isEqualTo(BigDecimal("10.00"))
     }
 
     @Test
@@ -469,7 +469,7 @@ class ProductResourceTest @Autowired constructor(
                 "$baseUrl/api/v1/products/search?search=aspirin&sortField=popularity&sortDirection=DESC",
                 GET,
                 null,
-                respTypeRef<RestResponsePage<SearchProductResponse>>()
+                respTypeRef<List<SearchProductResponse>>()
             )
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
@@ -477,8 +477,8 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body.content[0].id).isEqualTo(ids[1])
-        assertThat(body.content[1].id).isEqualTo(ids[0])
+        assertThat(body[0].id).isEqualTo(ids[1])
+        assertThat(body[1].id).isEqualTo(ids[0])
     }
 
     @Test

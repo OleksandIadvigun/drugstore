@@ -91,9 +91,9 @@ class RestApiDocGetPopularProductsTest @Autowired constructor(
             .get("http://${productProperties.host}:$port/api/v1/products/popular")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("totalElements", `is`(3))
-            .assertThat().body("content[0].name", Matchers.equalTo("mostPopular"))
-            .assertThat().body("content[1].name", Matchers.equalTo("test"))
-            .assertThat().body("content[2].name", Matchers.equalTo("test2"))
+            .assertThat().body("size", `is`(3))
+            .assertThat().body("[0].name", Matchers.equalTo("mostPopular"))
+            .assertThat().body("[1].name", Matchers.equalTo("test"))
+            .assertThat().body("[2].name", Matchers.equalTo("test2"))
     }
 }

@@ -127,9 +127,9 @@ class ProductServiceTest @Autowired constructor(
 
         // then
         assertThat(all).isNotNull
-        assertThat(all.totalElements).isEqualTo(2)
-        assertThat(all.content[0].id).isEqualTo(ids[1])
-        assertThat(all.content[1].id).isEqualTo(ids[0])
+        assertThat(all).hasSize(2)
+        assertThat(all[0].id).isEqualTo(ids[1])
+        assertThat(all[1].id).isEqualTo(ids[0])
     }
 
     @Test
@@ -178,11 +178,11 @@ class ProductServiceTest @Autowired constructor(
 
         // then
         assertThat(all).isNotNull
-        assertThat(all.totalElements).isEqualTo(2)
-        assertThat(all.content[0].id).isEqualTo(saved[1].id)
-        assertThat(all.content[0].price).isEqualTo(saved[1].price)
-        assertThat(all.content[1].id).isEqualTo(saved[0].id)
-        assertThat(all.content[1].price).isEqualTo(saved[0].price)
+        assertThat(all).hasSize(2)
+        assertThat(all[0].id).isEqualTo(saved[1].id)
+        assertThat(all[0].price).isEqualTo(saved[1].price)
+        assertThat(all[1].id).isEqualTo(saved[0].id)
+        assertThat(all[1].price).isEqualTo(saved[0].price)
     }
 
     @Test
@@ -231,11 +231,11 @@ class ProductServiceTest @Autowired constructor(
 
         // then
         assertThat(all).isNotNull
-        assertThat(all.totalElements).isEqualTo(2)
-        assertThat(all.content[0].id).isEqualTo(saved[0].id)
-        assertThat(all.content[0].price).isEqualTo(saved[0].price)
-        assertThat(all.content[1].id).isEqualTo(saved[1].id)
-        assertThat(all.content[1].price).isEqualTo(saved[1].price)
+        assertThat(all).hasSize(2)
+        assertThat(all[0].id).isEqualTo(saved[0].id)
+        assertThat(all[0].price).isEqualTo(saved[0].price)
+        assertThat(all[1].id).isEqualTo(saved[1].id)
+        assertThat(all[1].price).isEqualTo(saved[1].price)
     }
 
     @Test
@@ -335,11 +335,11 @@ class ProductServiceTest @Autowired constructor(
 
         // then
         assertThat(all).isNotNull
-        assertThat(all.totalElements).isEqualTo(2)
-        assertThat(all.content[0].id).isEqualTo(saved[1].id)
-        assertThat(all.content[0].name).isEqualTo("aspirin2")
-        assertThat(all.content[1].id).isEqualTo(saved[0].id)
-        assertThat(all.content[1].name).isEqualTo("aspirin")
+        assertThat(all).hasSize(2)
+        assertThat(all[0].id).isEqualTo(saved[1].id)
+        assertThat(all[0].name).isEqualTo("aspirin2")
+        assertThat(all[1].id).isEqualTo(saved[0].id)
+        assertThat(all[1].name).isEqualTo("aspirin")
     }
 
     @Test
