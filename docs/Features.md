@@ -40,55 +40,47 @@
 - [X] Get order details by order id
 - [X] Change order status
 - [x] Get total buys of the order items
+- [x] Checkout order
 
 ### Product
 
 - [x] Create product
-- [x] Update product
-- [x] Get product by id
-- [x] Get products by ids
-- [x] Get products:
-    - sorted by total buys (default)
-    - sorted by name (ASC/DESC)
+- [x] Reduce Quantity
+- [x] Receive products
+- [x] Get products details by ids
+- [x] Get available products:
+    - sorted by popularity (default)
 - [x] Search products:
     - by keyword (name...)
     - sorted by popularity (default)
+    - sorted by price 
+    - sorted by creation date
 
 ### Store
 
-- [X] Create new store item
-- [X] Get store items
-- [X] Get store items by price item ids
-- [X] Increase store item's quantity
-- [X] Reduce store item's quantity
-- [X] Check availability of products
-- [X] Delivery of goods
+- [ ] Create new transfer acceptance item
+- [ ] Get transfer acceptance items
+- [ ] Get transfer acceptance items by invoice ids
+- [ ] Accept products 
+- [ ] Deliver products 
+- [ ] Check availability of products
 
 ### Accountancy
 
-- [X] Create new price item
-- [X] Update new price item
-- [X] Get products' price
-- [X] Get products' price by ids
-- [X] Create Invoice
-- [X] Get Invoice by id
-- [X] Cancel Invoice
-- [X] Get Refund
-- [X] Pay Invoice
-- [X] Create purchased costs
-- [X] Update purchased costs
-- [X] Get purchased costs
-- [ ] Create costs
-- [ ] Update costs
-- [X] Get markups
-- [X] Update markups
-- [ ] Get past purchased items
-- [X] Get past purchased items
-- [ ] Create costs
-- [ ] Update costs
-- [ ] Credit, debit ??? account details
+- [ ] Create Income Invoice
+- [ ] Create Outcome Invoice
+- [ ] Get Invoice by id
+- [ ] Cancel Invoice
+- [ ] Refund Invoice
+- [ ] Pay Invoice
+Optional
+- [ ] Create fixed costs
+- [ ] Update fixed costs
+- [ ] Get fixed costs
+- [ ] Get markups
+- [ ] Update markups
 
-### Analytics
+### Analytics(to be done later)
 
 - [ ] Calculate last month income
 - [ ] Calculate last month purchase costs
