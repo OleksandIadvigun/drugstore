@@ -7,5 +7,4 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 @DisplayName("WireMock test")
 @AutoConfigureWireMock(port = 8079)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-abstract class WireMockTest {
-}
+abstract class WireMockTest

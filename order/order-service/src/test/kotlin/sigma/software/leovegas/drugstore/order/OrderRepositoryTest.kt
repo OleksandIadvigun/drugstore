@@ -24,7 +24,7 @@ class OrderRepositoryTest @Autowired constructor(
         }
 
         // and
-        val created = transactionTemplate.execute {
+        transactionTemplate.execute {
             orderRepository.save(
                 Order(
                     orderItems = setOf(

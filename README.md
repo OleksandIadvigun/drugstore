@@ -29,6 +29,15 @@ rm -rf ~/.m2/repository/sigma/software/leovegas/drugstore
 
 _windows_
 
+```cmd
+rd /s /q %HOMEPATH%\.m2\repository\sigma\software\leovegas\drugstore
+mvnw -DskipTests clean install -pl !:accountancy-service,!:order-service,!:product-service,!:store-service
+start /b mvnw -DskipTests spring-boot:run -f accountancy/accountancy-service & ^
+start /b mvnw -DskipTests spring-boot:run -f order/order-service & ^
+start /b mvnw -DskipTests spring-boot:run -f product/product-service & ^
+start /b mvnw -DskipTests spring-boot:run -f store/store-service &
+```
+
 ## run in docker
 
 _unix_
@@ -41,9 +50,12 @@ _unix_
 ```
 
 _windows_
-mvnw -DskipTests clean package mvnw -f .dev -P down && mvnw -f .dev -P up mvnw -f .dev -P logs
 
-TODO: low priority.
+```cmd
+mvnw -DskipTests clean package
+mvnw -f .dev -P down && mvnw -f .dev -P up 
+mvnw -f .dev -P logs
+```
 
 <!--
 
