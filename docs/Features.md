@@ -66,7 +66,7 @@
 - [ ] Get invoice details
 - [ ] Process payment
 - [ ] Refund
-- [ ] Close 
+- [ ] Close invoice
 
 ### Optional
 
