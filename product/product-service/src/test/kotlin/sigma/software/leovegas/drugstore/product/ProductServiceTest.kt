@@ -20,8 +20,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 
 @AutoConfigureTestDatabase
 @AutoConfigureWireMock(port = 8082)
@@ -385,7 +386,7 @@ class ProductServiceTest @Autowired constructor(
 
 
     @Test
-    fun `should reduce quantity in product`() {
+    fun `should deliver products`() {
 
         // given
         val saved = transactionTemplate.execute {
@@ -398,13 +399,13 @@ class ProductServiceTest @Autowired constructor(
         } ?: fail("result is expected")
 
         // and
-        val updatedProductRequest = ReduceProductQuantityRequest(
+        val updatedProductRequest = DeliverProductsQuantityRequest(
             id = saved.id ?: -1,
             quantity = 3
         )
 
         // when
-        val actual = service.reduceQuantity(listOf(updatedProductRequest))
+        val actual = service.deliverProducts(listOf(updatedProductRequest))
 
         // then
         assertThat(actual).isNotNull
@@ -427,9 +428,9 @@ class ProductServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<NotEnoughQuantityProductException> {
-            service.reduceQuantity(
+            service.deliverProducts(
                 listOf(
-                    ReduceProductQuantityRequest(
+                    DeliverProductsQuantityRequest(
                         id = saved.id ?: -1,
                         quantity = 7
                     )
@@ -461,5 +462,33 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(actual).isNotNull
         assertThat(actual[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
+    }
+
+    @Test
+    fun `should return products`() {
+
+        // given
+        val saved = transactionTemplate.execute {
+            repository.save(
+                Product(
+                    name = "test",
+                    quantity = 10
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val updatedProductRequest = ReturnProductQuantityRequest(
+            id = saved.id ?: -1,
+            quantity = 3
+        )
+
+        // when
+        val actual = service.returnProducts(listOf(updatedProductRequest))
+
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual[0].quantity).isEqualTo(13)  // 10 + 3
+        assertThat(actual[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 }

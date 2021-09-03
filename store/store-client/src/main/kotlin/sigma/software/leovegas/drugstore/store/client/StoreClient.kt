@@ -3,31 +3,27 @@ package sigma.software.leovegas.drugstore.store.client
 import feign.Headers
 import feign.Param
 import feign.RequestLine
-import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
-import sigma.software.leovegas.drugstore.store.api.StoreResponse
-import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
+import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 
 @Headers("Content-Type: application/json")
 interface StoreClient {
 
-    @RequestLine("POST /api/v1/store")
-    fun createStoreItem(createStoreRequest: CreateStoreRequest): StoreResponse
+    @RequestLine("GET /api/v1/store/transfer-certificate")
+    fun getTransferCertificates(): List<TransferCertificateResponse>
 
-    @RequestLine("GET /api/v1/store")
-    fun getStoreItems(): List<StoreResponse>
+    @RequestLine("GET /api/v1/store/transfer-certificate/invoice/{id}")
+    fun getTransferCertificatesByInvoiceId(@Param id: Long): List<TransferCertificateResponse>
 
-    @RequestLine("GET /api/v1/store/price-ids/?ids={ids}")
-    fun getStoreItemsByPriceItemsId(@Param ids: List<Long>): List<StoreResponse>
+    @RequestLine("PUT /api/v1/store/receive")
+    fun receiveProducts(invoiceId: Long): TransferCertificateResponse
 
-    @RequestLine("PUT /api/v1/store/increase")
-    fun increaseQuantity(requests: List<UpdateStoreRequest>): List<StoreResponse>
+    @RequestLine("PUT /api/v1/store/return")
+    fun returnProducts(invoiceId: Long): TransferCertificateResponse
 
-    @RequestLine("PUT /api/v1/store/reduce")
-    fun reduceQuantity(requests: List<UpdateStoreRequest>): List<StoreResponse>
+    @RequestLine("PUT /api/v1/store/deliver")
+    fun deliverProducts(orderId: Long): TransferCertificateResponse
 
-    @RequestLine("PUT /api/v1/store/check")
-    fun checkAvailability(requests: List<UpdateStoreRequest>): List<StoreResponse>
-
-    @RequestLine("PUT /api/v1/store/delivery/{id}")
-    fun deliverGoods(@Param id: Long): String
+    @RequestLine("PUT /api/v1/store/availability")
+    fun checkAvailability(products: List<DeliverProductsQuantityRequest>): List<DeliverProductsQuantityRequest>
 }

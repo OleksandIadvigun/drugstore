@@ -40,7 +40,7 @@ data class Order(
     @Column(name = "id", nullable = false, updatable = false)
     val id: Long? = null,
 
-    @NotEmpty
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     val orderStatus: OrderStatus = OrderStatus.NONE,

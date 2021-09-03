@@ -51,6 +51,7 @@ data class InvoiceResponse(
     val status: InvoiceStatusDTO = InvoiceStatusDTO.CREATED,
     val productItems: Set<ProductItemDTO> = setOf(),
     val total: BigDecimal = BigDecimal.ZERO,
+    val type: InvoiceTypeDTO = InvoiceTypeDTO.NONE,
     val createdAt: LocalDateTime? = null,
     val expiredAt: LocalDateTime? = null,
 )
@@ -68,11 +69,19 @@ enum class InvoiceStatusDTO {
     CREATED,
     CANCELLED,
     PAID,
-    REFUND
+    REFUND,
+    RECEIVED,
+    DELIVERED
+}
+
+enum class InvoiceTypeDTO {
+    OUTCOME,
+    INCOME,
+    NONE
 }
 
 data class ProductItemDTO(
-    val priceItemId: Long = -1,
+    val productId: Long = -1,
     val name: String = "default",
     val price: BigDecimal = BigDecimal.ZERO,
     val quantity: Int = 0

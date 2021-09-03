@@ -28,12 +28,14 @@ import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityResponse
+import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.ReturnProductsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @AutoConfigureWireMock(port = 8082)
@@ -446,7 +448,7 @@ class ProductResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should reduce quantity in product`() {
+    fun `should deliver products`() {
 
         // given
         val saved = transactionalTemplate.execute {
@@ -461,7 +463,7 @@ class ProductResourceTest @Autowired constructor(
         // and
         val httpEntity = HttpEntity(
             listOf(
-                ReduceProductQuantityRequest(
+                DeliverProductsQuantityRequest(
                     id = saved.id ?: -1,
                     quantity = 3
                 )
@@ -471,10 +473,10 @@ class ProductResourceTest @Autowired constructor(
         // when
         val response = restTemplate
             .exchange(
-                "$baseUrl/api/v1/products/reduce-quantity",
+                "$baseUrl/api/v1/products/deliver",
                 PUT,
                 httpEntity,
-                respTypeRef<List<ReduceProductQuantityResponse>>()
+                respTypeRef<List<DeliverProductsResponse>>()
             )
 
         // then
@@ -484,6 +486,48 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body).hasSize(1)
         assertThat(body[0].quantity).isEqualTo(7)  // 10 - 3
+        assertThat(body[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
+    }
+
+    @Test
+    fun `should return products`() {
+
+        // given
+        val saved = transactionalTemplate.execute {
+            repository.save(
+                Product(
+                    name = "test",
+                    quantity = 10
+                )
+            )
+        } ?: fail("result is expected")
+
+        // and
+        val httpEntity = HttpEntity(
+            listOf(
+                ReturnProductQuantityRequest(
+                    id = saved.id ?: -1,
+                    quantity = 3
+                )
+            )
+        )
+
+        // when
+        val response = restTemplate
+            .exchange(
+                "$baseUrl/api/v1/products/return",
+                PUT,
+                httpEntity,
+                respTypeRef<List<ReturnProductsResponse>>()
+            )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
+
+        // and
+        val body = response.body ?: fail("body may not be null")
+        assertThat(body).hasSize(1)
+        assertThat(body[0].quantity).isEqualTo(13)  // 10 + 3 = 13
         assertThat(body[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 }

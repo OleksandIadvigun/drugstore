@@ -5,56 +5,50 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
-import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
-import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 
 @RestController
 @RequestMapping("/api/v1/store")
 class StoreResource(private val storeService: StoreService) {
 
-    @PostMapping(path = ["", "/"])
-    @ResponseStatus(HttpStatus.CREATED)
-    fun createStoreItem(@RequestBody createStoreRequest: CreateStoreRequest) =
-        storeService.createStoreItem(createStoreRequest)
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/transfer-certificate")
+    fun getTransferCertificates() = storeService.getTransferCertificates()
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(path = ["", "/"])
-    fun getStoreItems() = storeService.getStoreItems()
+    @GetMapping("/transfer-certificate/invoice/{id}")
+    fun getTransferCertificateByInvoiceId(@PathVariable("id") id: Long) =
+        storeService.getTransferCertificatesByInvoiceId(id)
 
-    @GetMapping("/price-ids")
-    @ResponseStatus(HttpStatus.OK)
-    fun getStoreItemsByPriceItemsId(@RequestParam("ids") ids: List<Long>) =
-        storeService.getStoreItemsByPriceItemsId(ids)
-
-    @PutMapping("/increase")
+    @PutMapping("/receive")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun increaseQuantity(@RequestBody requests: List<UpdateStoreRequest>) = storeService.increaseQuantity(requests)
+    fun receiveProducts(@RequestBody invoiceId: Long) = storeService.receiveProduct(invoiceId)
 
-    @PutMapping("/reduce")
+    @PutMapping("/return")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun reduceQuantity(@RequestBody requests: List<UpdateStoreRequest>) = storeService.reduceQuantity(requests)
+    fun returnProducts(@RequestBody invoiceId: Long) = storeService.returnProducts(invoiceId)
 
-    @PutMapping("/check")
+    @PutMapping("/deliver")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun checkAvailability(@RequestBody requests: List<UpdateStoreRequest>) = storeService.checkAvailability(requests)
+    fun deliverProducts(@RequestBody orderId: Long) = storeService.deliverProducts(orderId)
 
-    @PutMapping("/delivery/{id}")
+    @PutMapping("/availability")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun deliverGoods(@PathVariable("id") id: Long) = storeService.deliverGoods(id)
+    fun checkAvailability(@RequestBody products: List<DeliverProductsQuantityRequest>) =
+        storeService.checkAvailability(products)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {
-            is StoreItemWithThisPriceItemAlreadyExistException -> HttpStatus.BAD_REQUEST
-            is InsufficientAmountOfStoreItemException -> HttpStatus.BAD_REQUEST
+            is InsufficientAmountOfProductException -> HttpStatus.BAD_REQUEST
+            is IncorrectTypeOfInvoice -> HttpStatus.BAD_REQUEST
+            is IncorrectStatusOfInvoice -> HttpStatus.BAD_REQUEST
             is InvoiceNotPaidException -> HttpStatus.BAD_REQUEST
             else -> HttpStatus.BAD_REQUEST
         }

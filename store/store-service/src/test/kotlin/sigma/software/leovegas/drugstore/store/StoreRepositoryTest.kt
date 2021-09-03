@@ -16,7 +16,7 @@ class StoreRepositoryTest(
 ) {
 
     @Test
-    fun `should get store items`() {
+    fun `should get transfer certificate by invoice id`() {
 
         // given
         transactionalTemplate.execute {
@@ -26,16 +26,17 @@ class StoreRepositoryTest(
         // and
         val created = transactionalTemplate.execute {
             storeRepository.save(
-                Store(
-                    priceItemId = 1,
-                    quantity = 5
+                TransferCertificate(
+                    invoiceId = 1,
+                    status = TransferStatus.DELIVERED,
+                    comment = "Delivered"
                 )
             )
         } ?: fail("result expected")
 
         // when
         val found = transactionalTemplate.execute {
-            storeRepository.getStoreByPriceItemIds(listOf(created.priceItemId))
+            storeRepository.findAllByInvoiceId(1)
         } ?: fail("result expected")
 
         // then

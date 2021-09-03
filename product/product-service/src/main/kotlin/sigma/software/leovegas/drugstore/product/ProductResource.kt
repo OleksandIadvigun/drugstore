@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityResponse
+import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @RestController
@@ -55,13 +55,17 @@ class ProductResource(private val service: ProductService) {
     }
 
     @ResponseStatus(ACCEPTED)
-    @PutMapping("products/reduce-quantity")
-    fun reduceQuantity(@RequestBody products: List<ReduceProductQuantityRequest>): List<ReduceProductQuantityResponse> =
-        service.reduceQuantity(products)
+    @PutMapping("products/deliver")
+    fun deliverProducts(@RequestBody products: List<DeliverProductsQuantityRequest>) =
+        service.deliverProducts(products)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("products/receive")
     fun receiveProducts(@RequestBody ids: List<Long>) = service.receiveProducts(ids)
+
+    @ResponseStatus(ACCEPTED)
+    @PutMapping("products/return")
+    fun returnProducts(@RequestBody products: List<ReturnProductQuantityRequest>) = service.returnProducts(products)
 
     @ResponseStatus(OK)
     @GetMapping("products/details")

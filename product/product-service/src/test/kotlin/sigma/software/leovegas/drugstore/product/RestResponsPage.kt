@@ -5,12 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 
 internal class RestResponsePage<T> : PageImpl<T> {
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     constructor(
-        @JsonProperty("content") content: List<T>?,
+        @JsonProperty("content") content: List<T> = listOf(),
         @JsonProperty("number") number: Int,
         @JsonProperty("size") size: Int,
         @JsonProperty("totalElements") totalElements: Long?,
@@ -24,8 +23,4 @@ internal class RestResponsePage<T> : PageImpl<T> {
         content!!, PageRequest.of(number, size),
         totalElements!!
     )
-
-    constructor(content: List<T>?, pageable: Pageable, total: Long) : super(content!!, pageable, total) {}
-    constructor(content: List<T>?) : super(content!!) {}
-    constructor() : super(ArrayList<T>()) {}
 }

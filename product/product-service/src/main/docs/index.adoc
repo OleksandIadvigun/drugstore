@@ -14,21 +14,29 @@ include::{snippets}/create-product/http-request.adoc[]
 .ProductResponse
 include::{snippets}/create-product/http-response.adoc[]
 
-== Reduce products quantity
+== Deliver products
 
-.ProductRequest
-include::{snippets}/reduce-products-quantity/http-request.adoc[]
+.ProductIds
+include::{snippets}/deliver-products/http-request.adoc[]
 
 .ProductResponse
-include::{snippets}/reduce-products-quantity/http-response.adoc[]
+include::{snippets}/deliver-products/http-response.adoc[]
 
 == Receive products
 
-.ProductRequest
+.ProductIds
 include::{snippets}/receive-products/http-request.adoc[]
 
 .ProductResponse
 include::{snippets}/receive-products/http-response.adoc[]
+
+== Return products
+
+.ProductIds
+include::{snippets}/return-products/http-request.adoc[]
+
+.ProductResponse
+include::{snippets}/return-products/http-response.adoc[]
 
 == Get product details By Ids
 

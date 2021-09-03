@@ -2,20 +2,27 @@ package sigma.software.leovegas.drugstore.store.api
 
 // Requests
 
-data class CreateStoreRequest(
-    val priceItemId: Long = -1,
-    val quantity: Int = -1
-)
-
-data class UpdateStoreRequest(
-    val priceItemId: Long = -1,
-    val quantity: Int = -1
+data class TransferCertificateRequest(
+    val invoiceId: Long = -1,
+    val status: TransferStatusDTO,
+    val comment: String = "undefined",
 )
 
 // Responses
 
-data class StoreResponse(
+data class TransferCertificateResponse(
     val id: Long = -1,
-    val priceItemId: Long = -1,
-    val quantity: Int = -1,
+    val invoiceId: Long = -1,
+    val status: TransferStatusDTO = TransferStatusDTO.NONE,
+    val comment: String = "undefined"
 )
+
+// DTOs
+
+enum class TransferStatusDTO {
+    NONE,
+    RECEIVED,
+    DELIVERED,
+    RETURN,
+    CLOSED
+}

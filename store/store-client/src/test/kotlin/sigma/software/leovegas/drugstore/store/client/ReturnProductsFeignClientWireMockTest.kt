@@ -2,7 +2,7 @@ package sigma.software.leovegas.drugstore.store.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
@@ -14,38 +14,35 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
-import sigma.software.leovegas.drugstore.store.api.StoreResponse
+import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
+import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
 @SpringBootApplication
-internal class CreateStoreItemFeignClientWireMockTestApp
+internal class ReturnProductsFeignClientWireMockTestApp
 
-@DisplayName("Create Store Item Feign Client WireMock test")
-@ContextConfiguration(classes = [CreateStoreItemFeignClientWireMockTestApp::class])
-class CreateStoreItemFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Return Products Feign Client WireMock test")
+@ContextConfiguration(classes = [ReturnProductsFeignClientWireMockTestApp::class])
+class ReturnProductsFeignClientWireMockTest @Autowired constructor(
     val storeClient: StoreClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should create store item`() {
+    fun `should return products`() {
 
         // given
-        val request = CreateStoreRequest(
-            priceItemId = 1,
-            quantity = 10
-        )
+        val request = 1L
 
         // and
-        val responseExpected = StoreResponse(
-            id = 1L,
-            priceItemId = 1,
-            quantity = 10
+        val responseExpected = TransferCertificateResponse(
+            id = 1,
+            invoiceId = 1,
+            status = TransferStatusDTO.RETURN
         )
 
         // and
         stubFor(
-            post("/api/v1/store")
+            put("/api/v1/store/return")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
                     EqualToPattern(
@@ -61,18 +58,17 @@ class CreateStoreItemFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.CREATED.value())
+                        .withStatus(HttpStatus.ACCEPTED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = storeClient.createStoreItem(request)
+        val responseActual = storeClient.returnProducts(request)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1L)
-        assertThat(responseActual.priceItemId).isEqualTo(1)
-        assertThat(responseActual.quantity).isEqualTo(10)
+        assertThat(responseActual.id).isEqualTo(1)
+        assertThat(responseActual.invoiceId).isEqualTo(1)
+        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.RETURN)
     }
 }
-

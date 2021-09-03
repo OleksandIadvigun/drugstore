@@ -1,15 +1,14 @@
 package sigma.software.leovegas.drugstore.store
 
 import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
 
-@DisplayName("Get store items by price item ids REST API Doc test")
-class RestApiDocGetStoreItemsByPriceItemIds @Autowired constructor(
+@DisplayName("Get transfer certificates REST API Doc test")
+class RestApiDocGetTransferCertificatesItemsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val storeProperties: StoreProperties,
     val storeRepository: StoreRepository,
@@ -17,7 +16,7 @@ class RestApiDocGetStoreItemsByPriceItemIds @Autowired constructor(
 ) : RestApiDocumentationTest(storeProperties) {
 
     @Test
-    fun `should create order`() {
+    fun `should get transfer certificates`() {
 
         // given
         transactionTemplate.execute {
@@ -25,28 +24,28 @@ class RestApiDocGetStoreItemsByPriceItemIds @Autowired constructor(
         }
 
         // and
-        val ids = transactionTemplate.execute {
+        transactionTemplate.execute {
             storeRepository.saveAll(
                 listOf(
-                    Store(
-                        priceItemId = 1,
-                        quantity = 10
-                    ), Store(
-                        priceItemId = 2,
-                        quantity = 5
+                    TransferCertificate(
+                        invoiceId = 1,
+                        status = TransferStatus.RECEIVED,
+                        comment = "RECEIVED"
+                    ),
+                    TransferCertificate(
+                        invoiceId = 2,
+                        status = TransferStatus.DELIVERED,
+                        comment = "DELIVERED"
                     )
                 )
             )
-        }?.map { it.priceItemId }
+        }
 
-        of("get-store-items-by-price-ids").`when`()
-            .get("http://${storeProperties.host}:$port/api/v1/store/?ids=${ids?.get(0)}&ids=${ids?.get(1)}")
+        of("get-transfer-certificates").`when`()
+            .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("size()", `is`(2))
-            .assertThat().body("[0].priceItemId", equalTo(1))
-            .assertThat().body("[1].priceItemId", equalTo(2))
-
-
+            .assertThat().body("[0].invoiceId", `is`(1))
+            .assertThat().body("size", `is`(2))
     }
 }

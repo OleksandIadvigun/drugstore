@@ -19,6 +19,10 @@
             <groupId>sigma.software.leovegas.drugstore.store.api</groupId>
             <artifactId>store-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
+            <artifactId>product-api</artifactId>
+        </dependency>
         <!---->
         <!---->
         <dependency>
@@ -43,6 +47,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
+            <artifactId>product-api</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -50,12 +50,12 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
         } ?: listOf(-1L)
 
         // and
-        val orderJson = objectMapper
+        val body = objectMapper
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(ids)
 
         of("receive-products").`when`()
-            .body(orderJson)
+            .body(body)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .put("http://${productProperties.host}:$port/api/v1/products/receive")
             .then()

@@ -2,11 +2,11 @@ package sigma.software.leovegas.drugstore.product
 
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 // CreateProductRequest <-> Product entity
@@ -34,7 +34,7 @@ fun List<Product>.toCreateProductResponseList() = this.map(Product::toCreateProd
 
 // Product entity -> UpdateProductRequest
 
-fun Product.toReduceProductQuantityResponse() = ReduceProductQuantityResponse(
+fun Product.toReduceProductQuantityResponse() = DeliverProductsResponse(
     id = id ?: -1,
     quantity = quantity,
     updatedAt = updatedAt

@@ -22,8 +22,9 @@ class RestApiDocCreateProductTest @Autowired constructor(
 
     @Test
     fun `should create product`() {
+
         // given
-        val orderJson = objectMapper
+        val body = objectMapper
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(
                 listOf(
@@ -36,7 +37,7 @@ class RestApiDocCreateProductTest @Autowired constructor(
             )
 
         of("create-product").`when`()
-            .body(orderJson)
+            .body(body)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .post("http://${productProperties.host}:$port/api/v1/products")
             .then()

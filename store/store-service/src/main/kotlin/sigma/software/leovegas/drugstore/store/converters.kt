@@ -1,21 +1,31 @@
 package sigma.software.leovegas.drugstore.store
 
-import sigma.software.leovegas.drugstore.store.api.CreateStoreRequest
-import sigma.software.leovegas.drugstore.store.api.StoreResponse
+import sigma.software.leovegas.drugstore.store.api.TransferCertificateRequest
+import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
+import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
-// StoreRequest -> Store entity
+// TransferCertificateRequest -> TransferCertificate Entity
 
-fun CreateStoreRequest.toEntity() = Store(
-    priceItemId = priceItemId,
-    quantity = quantity
+fun TransferCertificateRequest.toTransferCertificate() = TransferCertificate(
+    invoiceId = invoiceId,
+    status = status.toEntity(),
+    comment = comment
 )
 
-// Store entity -> StoreResponse
+// TransferCertificate entity -> TransferCertificateResponse
 
-fun Store.toStoreResponseDTO() = StoreResponse(
+fun TransferCertificate.toTransferCertificateResponse() = TransferCertificateResponse(
     id = id ?: -1,
-    priceItemId = priceItemId,
-    quantity = quantity
+    invoiceId = invoiceId,
+    status = status.toDTO(),
+    comment = comment
 )
 
-fun List<Store>.toStoreResponseList() = this.map(Store::toStoreResponseDTO)
+fun List<TransferCertificate>.toTransferCertificateResponseList() =
+    this.map(TransferCertificate::toTransferCertificateResponse)
+
+// TransferStatus <-> TransferStatusDTO
+
+fun TransferStatus.toDTO() = TransferStatusDTO.valueOf(name)
+
+fun TransferStatusDTO.toEntity() = TransferStatus.valueOf(name)

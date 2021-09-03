@@ -40,7 +40,7 @@ class PayInvoiceFeignClientWireMockTest @Autowired constructor(
             status = InvoiceStatusDTO.PAID,
             productItems = setOf(
                 ProductItemDTO(
-                    priceItemId = 1L,
+                    productId = 1L,
                     name = "test",
                     price = BigDecimal("40.00"),
                     quantity = 3

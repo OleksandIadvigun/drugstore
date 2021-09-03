@@ -6,16 +6,17 @@ import feign.RequestLine
 import org.springframework.data.domain.Page
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityResponse
+import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.ReturnProductsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Headers("Content-Type: application/json")
 interface ProductClient {
-
 
     @RequestLine("POST api/v1/products")
     fun createProduct(request: List<CreateProductRequest>): List<CreateProductResponse>
@@ -37,9 +38,12 @@ interface ProductClient {
     @RequestLine("PUT api/v1/products/receive")
     fun receiveProducts(ids: List<Long>): List<ReceiveProductResponse>
 
-    @RequestLine("PUT api/v1/products/reduce-quantity")
-    fun reduceQuantity(products: List<ReduceProductQuantityRequest>): List<ReduceProductQuantityResponse>
+    @RequestLine("PUT api/v1/products/deliver")
+    fun deliverProducts(products: List<DeliverProductsQuantityRequest>): List<DeliverProductsResponse>
 
     @RequestLine("GET api/v1/products/details?ids={ids}")
     fun getProductsDetailsByIds(@Param ids: List<Long>): List<ProductDetailsResponse>
+
+    @RequestLine("PUT api/v1/products/return")
+    fun returnProducts(products: List<ReturnProductQuantityRequest>): List<ReturnProductsResponse>
 }

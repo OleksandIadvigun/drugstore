@@ -10,14 +10,14 @@
           - 202107292029 means YYYYmmDDHHMM
           - 01 sequence number with scale of 2 digits
       -->
-    <changeSet id="V20210817162201" author="VZ">
-        <createTable tableName="store">
+    <changeSet id="V20210903170001" author="VZ">
+        <createTable tableName="transfer_certificate">
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="price_item_id" type="BIGINT"/>
-            <column name="quantity" type="INT"/>
+            <column name="invoice_id" type="BIGINT"/>
+            <column name="store_status" type="VARCHAR(15)"/>
+            <column name="comment" type="VARCHAR(200)"/>
         </createTable>
     </changeSet>
-
 </databaseChangeLog>

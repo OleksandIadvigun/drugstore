@@ -10,10 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 
-@DisplayName("Reduce products quantity REST API Doc test")
-class RestApiDocReduceQuantityProductTest @Autowired constructor(
+@DisplayName("Deliver products quantity REST API Doc test")
+class RestApiDocDeliverProductsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
@@ -23,7 +23,7 @@ class RestApiDocReduceQuantityProductTest @Autowired constructor(
 
 
     @Test
-    fun `should reduce products quantity`() {
+    fun `should deliver products`() {
 
         // given
         transactionTemplate.execute {
@@ -51,25 +51,25 @@ class RestApiDocReduceQuantityProductTest @Autowired constructor(
         } ?: listOf(-1L)
 
         // and
-        val orderJson = objectMapper
+        val body = objectMapper
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(
                 listOf(
-                    ReduceProductQuantityRequest(
+                    DeliverProductsQuantityRequest(
                         id = ids[0],
                         quantity = 2
                     ),
-                    ReduceProductQuantityRequest(
+                    DeliverProductsQuantityRequest(
                         id = ids[1],
                         quantity = 2
                     )
                 )
             )
 
-        of("reduce-products-quantity").`when`()
-            .body(orderJson)
+        of("deliver-products").`when`()
+            .body(body)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .put("http://${productProperties.host}:$port/api/v1/products/reduce-quantity")
+            .put("http://${productProperties.host}:$port/api/v1/products/deliver")
             .then()
             .assertThat().statusCode(202)
             .assertThat().body("size()", `is`(2))

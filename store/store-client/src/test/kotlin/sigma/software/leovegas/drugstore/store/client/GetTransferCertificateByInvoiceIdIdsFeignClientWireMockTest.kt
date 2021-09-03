@@ -13,37 +13,34 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.store.api.StoreResponse
+import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
+import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
 @SpringBootApplication
-internal class GetStoreItemsByPriceIdsFeignClientWireMockTestApp
+internal class GetTransferCertificateByInvoiceIdIdsFeignClientWireMockTestApp
 
-@DisplayName("Get Store Items By Price Ids Feign Client WireMock test")
-@ContextConfiguration(classes = [GetStoreItemsByPriceIdsFeignClientWireMockTestApp::class])
-class GetStoreItemsByPriceIdsFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Get Transfer Certificated by invoice id Feign Client WireMock test")
+@ContextConfiguration(classes = [GetTransferCertificateByInvoiceIdIdsFeignClientWireMockTestApp::class])
+class GetTransferCertificateByInvoiceIdIdsFeignClientWireMockTest @Autowired constructor(
     val storeClient: StoreClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should get store items by price items id`() {
+    fun `should get transfer certificate by invoice id`() {
 
         // given
         val responseExpected = listOf(
-            StoreResponse(
+            TransferCertificateResponse(
                 id = 1,
-                priceItemId = 1,
-                quantity = 10
-            ), StoreResponse(
-                id = 2,
-                priceItemId = 2,
-                quantity = 5
+                invoiceId = 1,
+                status = TransferStatusDTO.DELIVERED
             )
         )
 
         // and
         stubFor(
-            get("/api/v1/store/price-ids/?ids=1&ids=2")
+            get("/api/v1/store/transfer-certificate/invoice/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -58,13 +55,10 @@ class GetStoreItemsByPriceIdsFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = storeClient.getStoreItemsByPriceItemsId(listOf(1L, 2L))
+        val responseActual = storeClient.getTransferCertificatesByInvoiceId(1)
 
         //  then
-        assertThat(responseActual).hasSize(2)
-        assertThat(responseActual[0].priceItemId).isEqualTo(1)
-        assertThat(responseActual[0].quantity).isEqualTo(10)
-        assertThat(responseActual[1].priceItemId).isEqualTo(2)
-        assertThat(responseActual[1].quantity).isEqualTo(5)
+        assertThat(responseActual[0].invoiceId).isEqualTo(1)
+        assertThat(responseActual[0].status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 }

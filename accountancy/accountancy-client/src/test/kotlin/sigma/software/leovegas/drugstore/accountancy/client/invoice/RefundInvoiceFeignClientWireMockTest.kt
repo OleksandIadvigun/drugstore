@@ -40,7 +40,7 @@ class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
             status = InvoiceStatusDTO.REFUND,
             productItems = setOf(
                 ProductItemDTO(
-                    priceItemId = 1,
+                    productId = 1,
                     name = "test",
                     price = BigDecimal("40.00"),
                     quantity = 3

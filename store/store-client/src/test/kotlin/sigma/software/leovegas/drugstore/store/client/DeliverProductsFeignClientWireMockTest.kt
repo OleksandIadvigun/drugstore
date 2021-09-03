@@ -14,49 +14,35 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.store.api.StoreResponse
-import sigma.software.leovegas.drugstore.store.api.UpdateStoreRequest
+import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
+import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
 @SpringBootApplication
-internal class IncreaseQuantityFeignClientWireMockTestApp
+internal class DeliverProductsFeignClientWireMockTestApp
 
-@DisplayName("Increase Store Item Quantity Feign Client WireMock test")
-@ContextConfiguration(classes = [IncreaseQuantityFeignClientWireMockTestApp::class])
-class IncreaseQuantityFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Deliver Products Feign Client WireMock test")
+@ContextConfiguration(classes = [DeliverProductsFeignClientWireMockTestApp::class])
+class DeliverProductsFeignClientWireMockTest @Autowired constructor(
     val storeClient: StoreClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should increase store items quantity`() {
+    fun `should deliver products`() {
 
         // given
-        val request = listOf(
-            UpdateStoreRequest(
-                priceItemId = 1,
-                quantity = 5
-            )
-        )
+        val request = 1L
 
         // and
-        val created = StoreResponse(
+        val responseExpected = TransferCertificateResponse(
             id = 1,
-            priceItemId = 1,
-            quantity = 10
-        )
-
-        // and
-        val responseExpected = listOf(
-            StoreResponse(
-                id = 1,
-                priceItemId = 1,
-                quantity = 15
-            )
+            invoiceId = 1,
+            status = TransferStatusDTO.DELIVERED
         )
 
         // and
         stubFor(
-            put("/api/v1/store/increase")
+            put("/api/v1/store/deliver")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
                     EqualToPattern(
@@ -72,18 +58,16 @@ class IncreaseQuantityFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.ACCEPTED.value())
+                        .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = storeClient.increaseQuantity(request)
+        val responseActual = storeClient.deliverProducts(1)
 
         //  then
-        assertThat(responseActual).hasSize(1)
-        assertThat(responseActual[0].id).isEqualTo(1)
-        assertThat(responseActual[0].priceItemId).isEqualTo(1)
-        assertThat(responseActual[0].quantity).isEqualTo(15) // 10+5=15
+        assertThat(responseActual.id).isEqualTo(1)
+        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 }

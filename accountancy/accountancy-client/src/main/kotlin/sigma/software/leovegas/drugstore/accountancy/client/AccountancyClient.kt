@@ -19,6 +19,12 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 @Headers("Content-Type: application/json")
 interface AccountancyClient {
 
+    @RequestLine("PUT api/v1/accountancy/invoice/deliver/{id}")
+    fun deliverByInvoice(@Param id: Long): InvoiceResponse
+
+    @RequestLine("PUT api/v1/accountancy/invoice/receive/{id}")
+    fun receiveByInvoice(@Param id: Long): InvoiceResponse
+
     @RequestLine("POST api/v1/accountancy/price-item")
     fun createPriceItem(request: PriceItemRequest): PriceItemResponse
 

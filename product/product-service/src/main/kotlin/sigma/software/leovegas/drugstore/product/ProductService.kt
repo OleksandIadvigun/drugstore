@@ -8,8 +8,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
-import sigma.software.leovegas.drugstore.product.api.ReduceProductQuantityRequest
+import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Service
@@ -85,7 +86,7 @@ class ProductService(
             .map { it.copy(status = ProductStatus.RECEIVED) }
             .toReceiveProductResponseList()
 
-    fun reduceQuantity(productRequest: List<ReduceProductQuantityRequest>) = productRequest.run {
+    fun deliverProducts(productRequest: List<DeliverProductsQuantityRequest>) = productRequest.run {
         val idsToQuantity = associate { it.id to it.quantity }
         val toUpdate = productRepository
             .findAllById(this.map { it.id })
@@ -95,6 +96,14 @@ class ProductService(
                 }
                 it.copy(quantity = it.quantity.minus(idsToQuantity[it.id] ?: -1))
             }
+        productRepository.saveAllAndFlush(toUpdate).toReduceProductQuantityResponseList()
+    }
+
+    fun returnProducts(products: List<ReturnProductQuantityRequest>) = products.run {
+        val idsToQuantity = associate { it.id to it.quantity }
+        val toUpdate = productRepository
+            .findAllById(this.map { it.id })
+            .map { it.copy(quantity = it.quantity.plus(idsToQuantity[it.id] ?: -1)) }
         productRepository.saveAllAndFlush(toUpdate).toReduceProductQuantityResponseList()
     }
 }
