@@ -61,8 +61,9 @@
 
 ### Mandatory
 
-- [ ] Confirm Income/Outcome
-- [ ] Get
+- [ ] Confirm income
+- [ ] Confirm outcome
+- [ ] Get invoice details
 - [ ] Process payment
 - [ ] Refund
 - [ ] Close 
