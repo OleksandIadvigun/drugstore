@@ -18,9 +18,6 @@ interface StoreClient {
     @RequestLine("PUT /api/v1/store/receive")
     fun receiveProducts(invoiceId: Long): TransferCertificateResponse
 
-    @RequestLine("PUT /api/v1/store/return")
-    fun returnProducts(invoiceId: Long): TransferCertificateResponse
-
     @RequestLine("PUT /api/v1/store/deliver")
     fun deliverProducts(orderId: Long): TransferCertificateResponse
 

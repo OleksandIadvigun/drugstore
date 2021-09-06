@@ -132,31 +132,6 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
                 )
         )
 
-        // and
-        val invoiceDelivered = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.INCOME,
-            status = InvoiceStatusDTO.DELIVERED,
-            productItems = setOf(
-                ProductItemDTO(productId = 1, quantity = 2)
-            )
-        )
-
-        // and
-        stubFor(
-            put("/api/v1/accountancy/invoice/deliver/1")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(invoiceDelivered)
-                        )
-                )
-        )
-
         of("deliver-products").`when`()
             .body(1)
             .contentType(MediaType.APPLICATION_JSON_VALUE)

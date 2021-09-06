@@ -5,10 +5,13 @@ import java.time.LocalDateTime
 
 // Request
 
-data class PriceItemRequest(
-    val productId: Long = -1,
-    val price: BigDecimal = BigDecimal.ZERO,
-    val markup: BigDecimal = BigDecimal.ZERO
+data class CreateIncomeInvoiceRequest(
+    val productItems: List<ProductItemDtoRequest>
+)
+
+data class CreateOutcomeInvoiceRequest(
+    val productItems: List<ItemDTO>,
+    val orderId: Long
 )
 
 data class MarkupUpdateRequest(
@@ -16,28 +19,7 @@ data class MarkupUpdateRequest(
     val markup: BigDecimal = BigDecimal.ZERO
 )
 
-data class InvoiceRequest(
-    val orderId: Long = -1,
-)
-
-data class PurchasedCostsCreateRequest(
-    val priceItemId: Long = -1,
-    val quantity: Int = -1,
-)
-
-data class PurchasedCostsUpdateRequest(
-    val quantity: Int = -1,
-)
-
 // Response
-
-data class PriceItemResponse(
-    val id: Long = -1,
-    val productId: Long = -1,
-    val price: BigDecimal = BigDecimal.ZERO,
-    val createdAt: LocalDateTime? = null,
-    val updatedAt: LocalDateTime? = null
-)
 
 data class MarkupUpdateResponse(
     val priceItemId: Long = -1,
@@ -48,19 +30,12 @@ data class MarkupUpdateResponse(
 data class InvoiceResponse(
     val id: Long = -1,
     val orderId: Long = -1,
+    val type: InvoiceTypeDTO = InvoiceTypeDTO.NONE,
     val status: InvoiceStatusDTO = InvoiceStatusDTO.CREATED,
     val productItems: Set<ProductItemDTO> = setOf(),
     val total: BigDecimal = BigDecimal.ZERO,
-    val type: InvoiceTypeDTO = InvoiceTypeDTO.NONE,
     val createdAt: LocalDateTime? = null,
     val expiredAt: LocalDateTime? = null,
-)
-
-data class PurchasedCostsResponse(
-    val id: Long = -1,
-    val priceItemId: Long = -1,
-    val quantity: Int = -1,
-    val dateOfPurchase: LocalDateTime? = null,
 )
 
 // DTOs
@@ -69,16 +44,20 @@ enum class InvoiceStatusDTO {
     CREATED,
     CANCELLED,
     PAID,
-    REFUND,
-    RECEIVED,
-    DELIVERED
+    REFUND
 }
 
 enum class InvoiceTypeDTO {
-    OUTCOME,
+    NONE,
     INCOME,
-    NONE
+    OUTCOME
 }
+
+data class ProductItemDtoRequest(
+    val name: String = "default",
+    val price: BigDecimal = BigDecimal.ZERO,
+    val quantity: Int = 0
+)
 
 data class ProductItemDTO(
     val productId: Long = -1,
@@ -87,13 +66,8 @@ data class ProductItemDTO(
     val quantity: Int = 0
 )
 
-data class CostDateFilterDTO(
-    val dateFrom: LocalDateTime? = null,
-    val dateTo: LocalDateTime? = null,
+data class ItemDTO(
+    val productId: Long = -1,
+    val quantity: Int = 0
 )
 
-data class PurchasedItemDTO(
-    val name: String = "undefined",
-    val price: BigDecimal = BigDecimal.ZERO,
-    val quantity: Int = -1
-)

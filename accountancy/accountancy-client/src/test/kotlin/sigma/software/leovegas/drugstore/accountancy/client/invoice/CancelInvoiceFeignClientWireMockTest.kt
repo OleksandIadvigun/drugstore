@@ -20,20 +20,19 @@ import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
-import sigma.software.leovegas.drugstore.accountancy.client.priceitem.CreateProductFeignClientWireMockTestApp
 
 @SpringBootApplication
-internal class CancelInvoiceByIdFeignClientWireMockTestApp
+internal class CancelInvoiceFeignClientWireMockTestApp
 
-@DisplayName("Cancel Invoice By Id Feign Client WireMock test")
-@ContextConfiguration(classes = [CreateProductFeignClientWireMockTestApp::class])
-class CancelInvoiceByIdFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Cancel Invoice Feign Client WireMock test")
+@ContextConfiguration(classes = [CancelInvoiceFeignClientWireMockTestApp::class])
+class CancelInvoiceFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should cancel invoice by id`() {
+    fun `should cancel invoice`() {
 
         // given
         val responseExpected = InvoiceResponse(

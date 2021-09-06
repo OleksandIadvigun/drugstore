@@ -79,7 +79,8 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         )
 
 
-        of("get-order-details").pathParam("id", order.id).`when`()
+        of("get-order-details")
+            .pathParam("id", order.id).`when`()
             .get("http://${orderProperties.host}:$port/api/v1/orders/{id}/details")
             .then()
             .assertThat().statusCode(200)

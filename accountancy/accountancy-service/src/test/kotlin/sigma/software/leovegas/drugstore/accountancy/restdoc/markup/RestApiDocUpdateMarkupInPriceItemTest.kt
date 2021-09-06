@@ -1,4 +1,4 @@
-//package sigma.software.leovegas.drugstore.accountancy.restdoc.priceitem
+//package sigma.software.leovegas.drugstore.accountancy.markup
 //
 //import com.fasterxml.jackson.databind.ObjectMapper
 //import java.math.BigDecimal

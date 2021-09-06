@@ -27,6 +27,12 @@ enum class InvoiceStatus {
     REFUND
 }
 
+enum class InvoiceType {
+    NONE,
+    INCOME,
+    OUTCOME
+}
+
 @Entity
 @Table(name = "invoice")
 data class Invoice(
@@ -45,6 +51,11 @@ data class Invoice(
     @DecimalMax("100000000")
     @Column(name = "total")
     val total: BigDecimal = BigDecimal.ZERO,
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    val type: InvoiceType = InvoiceType.NONE,
 
     @NotNull
     @Enumerated(EnumType.STRING)

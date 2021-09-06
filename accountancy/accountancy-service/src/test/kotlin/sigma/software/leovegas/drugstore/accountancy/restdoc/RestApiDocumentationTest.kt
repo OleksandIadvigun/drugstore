@@ -13,6 +13,7 @@ import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.restassured3.RestAssuredRestDocumentation
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import sigma.software.leovegas.drugstore.accountancy.WireMockTest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 
 @AutoConfigureRestDocs
@@ -20,7 +21,7 @@ import sigma.software.leovegas.drugstore.accountancy.client.AccountancyPropertie
 @ExtendWith(SpringExtension::class, RestDocumentationExtension::class)
 class RestApiDocumentationTest(
     private val accountancyProperties: AccountancyProperties
-) {
+) : WireMockTest() {
 
 
     lateinit var documentationSpec: RequestSpecification

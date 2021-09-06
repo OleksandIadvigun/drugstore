@@ -21,8 +21,10 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
@@ -424,11 +426,13 @@ class OrderServiceTest @Autowired constructor(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
                             .writeValueAsString(
-                                listOf(
-                                    OrderItemDTO(
-                                        productId = 1,
-                                        quantity = 1
-                                    )
+                                CreateOutcomeInvoiceRequest(
+                                    listOf(
+                                        ItemDTO(
+                                            productId = 1,
+                                            quantity = 1
+                                        )
+                                    ), order.id ?: -1
                                 )
                             )
                     )

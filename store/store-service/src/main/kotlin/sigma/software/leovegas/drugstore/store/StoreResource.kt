@@ -30,10 +30,6 @@ class StoreResource(private val storeService: StoreService) {
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun receiveProducts(@RequestBody invoiceId: Long) = storeService.receiveProduct(invoiceId)
 
-    @PutMapping("/return")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    fun returnProducts(@RequestBody invoiceId: Long) = storeService.returnProducts(invoiceId)
-
     @PutMapping("/deliver")
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun deliverProducts(@RequestBody orderId: Long) = storeService.deliverProducts(orderId)

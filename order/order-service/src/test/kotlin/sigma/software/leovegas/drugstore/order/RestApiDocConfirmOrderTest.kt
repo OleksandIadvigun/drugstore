@@ -16,9 +16,10 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 
 
 @DisplayName("Confirm order REST API Doc test")
@@ -58,8 +59,13 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
                             .writeValueAsString(
-                                listOf(
-                                    OrderItemDTO(productId = 1, quantity = 1)
+                                CreateOutcomeInvoiceRequest(
+                                    listOf(
+                                        ItemDTO(
+                                            productId = 1,
+                                            quantity = 1
+                                        )
+                                    ), order.id ?: -1
                                 )
                             )
                     )

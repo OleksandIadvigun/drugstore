@@ -22,8 +22,8 @@ data class ProductItem(
     val id: Long? = null,
 
     @NotNull
-    @Column(name = "price_item_id", nullable = false)
-    val priceItemId: Long? = null,
+    @Column(name = "product_id", nullable = false)
+    val productId: Long? = null,
 
     @NotNull
     @Column(name = "name", nullable = false)

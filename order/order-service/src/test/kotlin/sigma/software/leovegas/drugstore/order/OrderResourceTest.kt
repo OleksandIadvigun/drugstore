@@ -26,8 +26,10 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
@@ -265,11 +267,13 @@ class OrderResourceTest @Autowired constructor(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
                             .writeValueAsString(
-                                listOf(
-                                    OrderItemDTO(
-                                        productId = 1,
-                                        quantity = 1
-                                    )
+                                CreateOutcomeInvoiceRequest(
+                                    listOf(
+                                        ItemDTO(
+                                            productId = 1,
+                                            quantity = 1
+                                        )
+                                    ), order.id ?: -1
                                 )
                             )
                     )

@@ -16,52 +16,60 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceTypeDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
-import sigma.software.leovegas.drugstore.accountancy.client.priceitem.CreateProductFeignClientWireMockTestApp
 
 @SpringBootApplication
-internal class CreateInvoiceFeignClientWireMockTestApp
+internal class CreateOutcomeInvoiceFeignClientWireMockTestApp
 
-@DisplayName("Create Invoice Feign Client WireMock test")
-@ContextConfiguration(classes = [CreateProductFeignClientWireMockTestApp::class])
-class CreateInvoiceFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Create Outcome Invoice Feign Client WireMock test")
+@ContextConfiguration(classes = [CreateOutcomeInvoiceFeignClientWireMockTestApp::class])
+class CreateOutcomeInvoiceFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should create invoice`() {
+    fun `should create outcome invoice`() {
 
         // given
-        val request = InvoiceRequest(
-            orderId = 1L
+        val request = CreateOutcomeInvoiceRequest(
+            orderId = 1,
+            productItems = listOf(
+                ItemDTO(
+                    productId = 1,
+                    quantity = 5
+                )
+            )
         )
 
         // and
         val responseExpected = InvoiceResponse(
             id = 1L,
-            orderId = request.orderId,
+            orderId = 1,
+            type = InvoiceTypeDTO.OUTCOME,
             status = InvoiceStatusDTO.CREATED,
             productItems = setOf(
                 ProductItemDTO(
                     productId = 1L,
-                    name = "test",
-                    price = BigDecimal("40.00"),
-                    quantity = 3
+                    name = "test1",
+                    price = BigDecimal.ONE,
+                    quantity = 15
                 )
             ),
-            total = BigDecimal("120.00"), // price * quantity
+            total = BigDecimal("15.00"), // price * quantity
             expiredAt = LocalDateTime.now().plusDays(3)
         )
 
         // and
         stubFor(
-            post("/api/v1/accountancy/invoice")
+            post("/api/v1/accountancy/invoice/outcome")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
                     EqualToPattern(
@@ -83,13 +91,13 @@ class CreateInvoiceFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.createInvoice(request)
+        val responseActual = accountancyClient.createOutcomeInvoice(request)
 
         // then
         assertThat(responseActual.id).isEqualTo(1L)
-        assertThat(responseActual.orderId).isEqualTo(request.orderId)
+        assertThat(responseActual.orderId).isEqualTo(1)
         assertThat(responseActual.status).isEqualTo(InvoiceStatusDTO.CREATED)
         assertThat(responseActual.expiredAt).isBefore(LocalDateTime.now().plusDays(4))
-        assertThat(responseActual.total).isEqualTo(BigDecimal("120.00"))
+        assertThat(responseActual.total).isEqualTo(BigDecimal("15.00"))
     }
 }

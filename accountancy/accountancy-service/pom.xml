@@ -95,6 +95,10 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>kotlin-extensions</artifactId>
         </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.product.client</groupId>
+            <artifactId>product-client</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

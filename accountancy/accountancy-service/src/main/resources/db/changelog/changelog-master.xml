@@ -4,35 +4,25 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.2.xsd">
     <!-- V20210729202901 where V means version 2021 07 29 20 29 means YYYYmmDDHHMM 01 sequence number with scale of 2 digits -->
-    <changeSet id="V20210818162101" author="OI">
-        <createTable tableName="price_item">
-            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="product_id" type="BIGINT"/>
-            <column name="price" type="Decimal(11,2)"/>
-            <column name="markup" type="Decimal(11,2)"/>
-            <column name="created_at" type="TIMESTAMP"/>
-            <column name="updated_at" type="TIMESTAMP"/>
-        </createTable>
-    </changeSet>
-    <changeSet id="V20210823150402" author="OI">
+
+    <changeSet id="V20210823150401" author="OI">
         <createTable tableName="invoice">
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
             <column name="order_id" type="BIGINT"/>
             <column name="total" type="Decimal(11,2)"/>
+            <column name="type" type="VARCHAR(15)"/>
             <column name="status" type="VARCHAR(15)"/>
             <column name="created_at" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
-    <changeSet id="V20210823150503" author="OI">
+    <changeSet id="V20210823150501" author="OI">
         <createTable tableName="product_item">
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="price_item_id" type="BIGINT"/>
+            <column name="product_id" type="BIGINT"/>
             <column name="name" type="VARCHAR(255)"/>
             <column name="price" type="Decimal(11,2)"/>
             <column name="quantity" type="INT"/>
@@ -40,16 +30,6 @@
             <column name="invoice_id" type="BIGINT">
                 <constraints foreignKeyName="fk_invoice_id" references="invoice(id)"/>
             </column>
-        </createTable>
-    </changeSet>
-    <changeSet id="V20210825153504" author="VZ">
-        <createTable tableName="purchased_costs">
-            <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="price_item_id" type="BIGINT"/>
-            <column name="quantity" type="INT"/>
-            <column name="date_of_purchased" type="TIMESTAMP"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

@@ -2,8 +2,6 @@ package sigma.software.leovegas.drugstore.accountancy
 
 class ResourceNotFoundException(message: String?) : RuntimeException(message)
 
-class PriceItemNotFoundException(id: Long) : RuntimeException("Price Item with id = $id was not found")
-
 class OrderAlreadyHaveInvoice(message: String?) : RuntimeException(message)
 
 class InvalidStatusOfInvoice() : RuntimeException(
@@ -12,4 +10,10 @@ class InvalidStatusOfInvoice() : RuntimeException(
 
 class NotPaidInvoiceException(id: Long) : RuntimeException("The invoice with id = $id is not paid")
 
-class PurchasedCostsNotFoundException(id: Long) : RuntimeException("The purchased costs with id = $id was not found")
+class ProductServiceResponseException() : RuntimeException("Ups... Something went wrong! Please, try again later")
+
+class OrderServiceResponseException() : RuntimeException("Ups... Something went wrong! Please, try again later")
+
+class StoreServiceResponseException() : RuntimeException("Ups... Something went wrong! Please, try again later")
+
+class NotEnoughMoneyException() : RuntimeException("Not enough money for this transaction!")

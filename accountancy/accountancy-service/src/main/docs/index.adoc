@@ -6,91 +6,21 @@
 :numbered:
 :icons: font
 
-== Create price item
-
-.PriceItemRequest
-include::{snippets}/create-price-item/http-request.adoc[]
-
-.PriceItemResponse
-include::{snippets}/create-price-item/http-response.adoc[]
-
-== Update price item
-
-.PriceItemRequest
-include::{snippets}/update-price-item/http-request.adoc[]
-
-.PriceItemResponse
-include::{snippets}/update-price-item/http-response.adoc[]
-
-== Get price by products ids
-
-By default price return calculated according markup
-
-possible path variable: markup=(true/false)
-
-.Request
-include::{snippets}/get-products-price-by-products-ids/http-request.adoc[]
-
-.Response
-include::{snippets}/get-products-price-by-products-ids/http-response.adoc[]
-
-== Get price by ids
-
-.PriceItemRequest
-include::{snippets}/get-price-items-by-ids/http-request.adoc[]
-
-.PriceItemResponse
-include::{snippets}/get-price-items-by-ids/http-response.adoc[]
-
-== Create purchased costs
-
-.PriceItemRequest
-include::{snippets}/create-purchased-costs/http-request.adoc[]
-
-.PriceItemResponse
-include::{snippets}/create-purchased-costs/http-response.adoc[]
-
-== Update purchased costs
-
-.PriceItemRequest
-include::{snippets}/update-purchased-costs/http-request.adoc[]
-
-.PriceItemResponse
-include::{snippets}/update-purchased-costs/http-response.adoc[]
-
-== Get purchased costs
-
-request parameters "dateFrom" and "dateTo" are optional
-
-.PriceItemRequest
-include::{snippets}/get-purchased-costs/http-request.adoc[]
-
-.PriceItemResponse
-include::{snippets}/get-purchased-costs/http-response.adoc[]
-
-== Get markups
-
-.request
-include::{snippets}/get-markups/http-request.adoc[]
-
-.markupUpdateResponse
-include::{snippets}/get-markups/http-response.adoc[]
-
-== Update markups
-
-.MarkupUpdateRequest
-include::{snippets}/update-markup-in-price-item/http-request.adoc[]
-
-.MarkupUpdateResponse
-include::{snippets}/update-markup-in-price-item/http-response.adoc[]
-
-== Create invoice
+== Create income invoice
 
 .InvoiceRequest
-include::{snippets}/create-invoice/http-request.adoc[]
+include::{snippets}/create-income-invoice/http-request.adoc[]
 
 .InvoiceResponse
-include::{snippets}/create-invoice/http-response.adoc[]
+include::{snippets}/create-income-invoice/http-response.adoc[]
+
+== Create income invoice
+
+.InvoiceRequest
+include::{snippets}/create-outcome-invoice/http-request.adoc[]
+
+.InvoiceResponse
+include::{snippets}/create-outcome-invoice/http-response.adoc[]
 
 == Pay invoice
 
@@ -115,14 +45,6 @@ include::{snippets}/get-invoice-by-id/http-request.adoc[]
 
 .InvoiceResponse
 include::{snippets}/get-invoice-by-id/http-response.adoc[]
-
-== Get markups by price item ids
-
-.request
-include::{snippets}/get-markups-by-price-item-ids/http-request.adoc[]
-
-.MarkupUpdateResponse
-include::{snippets}/get-markups-by-price-item-ids/http-response.adoc[]
 
 == Get invoice by  order id
 

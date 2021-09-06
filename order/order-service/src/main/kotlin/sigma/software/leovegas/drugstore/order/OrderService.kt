@@ -4,7 +4,9 @@ import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
 import sigma.software.leovegas.drugstore.order.OrderStatus.PAID
@@ -97,7 +99,11 @@ class OrderService @Autowired constructor(
             throw OrderStatusException("Order is already confirmed or cancelled")
         }
         try {
-            val invoice = accountancyClient.createOutcomeInvoice(order.orderItems)
+            val invoice = accountancyClient.createOutcomeInvoice(
+                CreateOutcomeInvoiceRequest(
+                    order.orderItems.map { ItemDTO(productId = it.productId, quantity = it.quantity) }, orderId
+                )
+            )
             changeOrderStatus(orderId, OrderStatusDTO.CONFIRMED)
             return invoice
         } catch (e: Exception) {
