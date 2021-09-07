@@ -1,18 +1,22 @@
-package sigma.software.leovegas.drugstore.order
+package sigma.software.leovegas.drugstore.order.restdoc
 
-import org.assertj.core.api.Assertions.fail
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.order.Order
+import sigma.software.leovegas.drugstore.order.OrderItem
+import sigma.software.leovegas.drugstore.order.OrderProperties
+import sigma.software.leovegas.drugstore.order.OrderRepository
+import sigma.software.leovegas.drugstore.order.OrderStatus
 
 @DisplayName("Get items sorted by quantity REST API Doc test")
 class RestApiDocGetItemsByQuantityTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
-    val orderService: OrderService,
     val orderRepository: OrderRepository,
     val orderProperties: OrderProperties
 ) : RestApiDocumentationTest(orderProperties) {
@@ -49,7 +53,7 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         of("get-sorted-items").`when`()
             .get("http://${orderProperties.host}:$port/api/v1/orders/total-buys")

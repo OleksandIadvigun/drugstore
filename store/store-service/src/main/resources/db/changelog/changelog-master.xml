@@ -15,7 +15,7 @@
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="invoice_id" type="BIGINT"/>
+            <column name="order_id" type="BIGINT"/>
             <column name="store_status" type="VARCHAR(15)"/>
             <column name="comment" type="VARCHAR(200)"/>
         </createTable>

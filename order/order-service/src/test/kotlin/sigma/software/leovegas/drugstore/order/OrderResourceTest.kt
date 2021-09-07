@@ -1,10 +1,10 @@
 package sigma.software.leovegas.drugstore.order
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
@@ -15,8 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
@@ -26,10 +24,10 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
@@ -40,7 +38,6 @@ import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @DisplayName("Order Resource test")
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 class OrderResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val orderRepository: OrderRepository,
@@ -48,7 +45,7 @@ class OrderResourceTest @Autowired constructor(
     val orderProperties: OrderProperties,
     val restTemplate: TestRestTemplate,
     val transactionTemplate: TransactionTemplate,
-) {
+) : WireMockTest() {
 
     lateinit var baseUrl: String
 
@@ -104,7 +101,7 @@ class OrderResourceTest @Autowired constructor(
                     )
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // when
         val response = restTemplate
@@ -114,7 +111,7 @@ class OrderResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body.id).isEqualTo(orderCreated.id)
         assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
@@ -143,7 +140,7 @@ class OrderResourceTest @Autowired constructor(
                     orderStatus = OrderStatus.CREATED
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // when
         val response = restTemplate
@@ -156,7 +153,7 @@ class OrderResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body[0].id).isEqualTo(orderCreated.id)
         assertThat(body[0].orderItems.iterator().next().productId).isEqualTo(1)
         assertThat(body[0].orderItems.iterator().next().quantity).isEqualTo(3)
@@ -166,13 +163,9 @@ class OrderResourceTest @Autowired constructor(
     @Test
     fun `should get orderDetails`() {
 
-        // setup
-        val wireMockProductServer = WireMockServer(8081)
-        wireMockProductServer.start()
-
-        // and
-        wireMockProductServer.stubFor(
-            get("/api/v1/products/details?ids=1&ids=2")
+        // given
+        stubFor(
+            WireMock.get("/api/v1/products/details?ids=1&ids=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -216,18 +209,17 @@ class OrderResourceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate
             .exchange("$baseUrl/api/v1/orders/${order.id}/details", GET, null, respTypeRef<OrderDetailsDTO>())
-        wireMockProductServer.stop()
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body.orderItemDetails).hasSize(2)
         assertThat(body.orderItemDetails.iterator().next().name).isEqualTo("test1")
         assertThat(body.orderItemDetails.iterator().next().productId).isEqualTo(1)
@@ -238,10 +230,6 @@ class OrderResourceTest @Autowired constructor(
 
     @Test
     fun `should confirm order`() {
-
-        // setup
-        val accountancyServer = WireMockServer(8084)
-        accountancyServer.start()
 
         // given
         val order = transactionTemplate.execute {
@@ -256,11 +244,11 @@ class OrderResourceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
-        accountancyServer.stubFor(
-            WireMock.post("/api/v1/accountancy/invoice/outcome")
+        stubFor(
+            post("/api/v1/accountancy/invoice/outcome")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
                     EqualToPattern(
@@ -284,10 +272,9 @@ class OrderResourceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
-                                    InvoiceResponse(
-                                        id = 1,
-                                        orderId = order.id ?: -1,
-                                        status = InvoiceStatusDTO.CREATED,
+                                    ConfirmOrderResponse(
+                                        orderId = order.id.get(),
+                                        amount = BigDecimal("20.00")
                                     )
                                 )
                         )
@@ -299,14 +286,10 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val invoice = restTemplate
-            .exchange("$baseUrl/api/v1/orders/confirm", POST, http, respTypeRef<InvoiceResponse>())
-        accountancyServer.stop()
+            .exchange("$baseUrl/api/v1/orders/confirm", POST, http, respTypeRef<ConfirmOrderResponse>())
 
         // then
-        assertThat(invoice.body?.id).isNotNull
-        assertThat(invoice.body?.orderId).isEqualTo(order.id ?: -1)
-        assertThat(invoice.body?.status).isEqualTo(InvoiceStatusDTO.CREATED)
-        accountancyServer.stop()
+        assertThat(invoice.body?.orderId).isEqualTo(order.id.get())
     }
 
     @Test
@@ -318,7 +301,7 @@ class OrderResourceTest @Autowired constructor(
         }
 
         // and
-        val orderCreated = transactionTemplate.execute {
+        transactionTemplate.execute {
             orderRepository.saveAll(
                 listOf(
                     Order(
@@ -349,7 +332,7 @@ class OrderResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).hasSize(2)
     }
@@ -369,7 +352,7 @@ class OrderResourceTest @Autowired constructor(
                     )
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // and
         val httpEntity = HttpEntity(
@@ -391,7 +374,7 @@ class OrderResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(5)
         assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
@@ -416,7 +399,7 @@ class OrderResourceTest @Autowired constructor(
                     orderStatus = OrderStatus.CREATED
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // and
         val httpEntity = HttpEntity(
@@ -434,7 +417,7 @@ class OrderResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
@@ -472,7 +455,7 @@ class OrderResourceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate

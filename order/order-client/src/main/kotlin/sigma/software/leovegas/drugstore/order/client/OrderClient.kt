@@ -4,7 +4,7 @@ import feign.Headers
 import feign.Param
 import feign.RequestLine
 import org.springframework.web.bind.annotation.RequestBody
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
@@ -19,9 +19,6 @@ interface OrderClient {
 
     @RequestLine("PUT /api/v1/orders/{id}")
     fun updateOrder(@Param("id") id: Long, request: UpdateOrderRequest): OrderResponse
-
-    @RequestLine("PUT /api/v1/orders/change-status/{id}")
-    fun changeOrderStatus(@Param("id") id: Long, orderStatus: OrderStatusDTO): OrderResponse
 
     @RequestLine("GET /api/v1/orders/{id}")
     fun getOrderById(@Param("id") id: Long): OrderResponse
@@ -39,5 +36,14 @@ interface OrderClient {
     fun getProductsIdToQuantity(): Map<Long, Int>
 
     @RequestLine("POST /api/v1/orders/confirm")
-    fun confirmOrder(@RequestBody orderId: Long): InvoiceResponse
+    fun confirmOrder(@RequestBody orderId: Long): ConfirmOrderResponse
+
+    @RequestLine("PUT /api/v1/orders/pay/{orderNumber}")
+    fun payOrder(@Param orderNumber: Long): OrderResponse
+
+    @RequestLine("PUT /api/v1/orders/refund/{orderNumber}")
+    fun refundOrder(@Param orderNumber: Long): OrderResponse
+
+    @RequestLine("PUT /api/v1/orders/cancel/{orderNumber}")
+    fun cancelOrder(@Param orderNumber: Long): OrderResponse
 }

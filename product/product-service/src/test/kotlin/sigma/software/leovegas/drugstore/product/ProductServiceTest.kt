@@ -15,7 +15,6 @@ import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
@@ -25,7 +24,6 @@ import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 
 @AutoConfigureTestDatabase
-@AutoConfigureWireMock(port = 8082)
 @DisplayName("Product service test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductServiceTest @Autowired constructor(
@@ -33,7 +31,7 @@ class ProductServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val repository: ProductRepository,
     val objectMapper: ObjectMapper
-) {
+) : WireMockTest() {
 
     @Test
     fun `should create product`() {

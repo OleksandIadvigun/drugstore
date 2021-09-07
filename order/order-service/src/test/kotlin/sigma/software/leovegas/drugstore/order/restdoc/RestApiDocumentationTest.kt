@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.store
+package sigma.software.leovegas.drugstore.order.restdoc
 
 import io.restassured.RestAssured
 import io.restassured.builder.RequestSpecBuilder
@@ -6,18 +6,18 @@ import io.restassured.specification.RequestSpecification
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.restassured3.RestAssuredRestDocumentation
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import sigma.software.leovegas.drugstore.order.OrderProperties
+import sigma.software.leovegas.drugstore.order.WireMockTest
 
 @AutoConfigureRestDocs
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension::class, RestDocumentationExtension::class)
 class RestApiDocumentationTest(
-    private val storeProperties: StoreProperties
+    private val orderProperties: OrderProperties
 ) : WireMockTest() {
 
     lateinit var documentationSpec: RequestSpecification
@@ -31,7 +31,7 @@ class RestApiDocumentationTest(
 
     fun of(snippet: String): RequestSpecification {
         val processor = Preprocessors.modifyUris().scheme("http")
-            .host(storeProperties.host).port(storeProperties.port)
+            .host(orderProperties.host).port(orderProperties.port)
         val prettyPrint = Preprocessors.prettyPrint()
         val requestProcessor = Preprocessors.preprocessRequest(
             prettyPrint,

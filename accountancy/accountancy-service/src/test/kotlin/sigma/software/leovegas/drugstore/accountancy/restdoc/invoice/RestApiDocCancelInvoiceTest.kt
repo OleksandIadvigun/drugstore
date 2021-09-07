@@ -11,7 +11,6 @@ import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
@@ -22,6 +21,7 @@ import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
 import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
+import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
@@ -40,7 +40,7 @@ class RestApiDocCancelInvoiceTest @Autowired constructor(
         // given
         transactionalTemplate.execute {
             invoiceRepository.deleteAll()
-        } ?: fail("result is expected")
+        }
 
         // and
         val savedInvoice = transactionalTemplate.execute {
@@ -52,13 +52,27 @@ class RestApiDocCancelInvoiceTest @Autowired constructor(
                         ProductItem(
                             productId = 1L,
                             name = "test",
-                            quantity = 2,
-                            price = BigDecimal("10.00")
+                            price = BigDecimal("30"),
+                            quantity = 3
                         )
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
+
+        stubFor(
+            put("/api/v1/orders/cancel/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
 
         stubFor(
             put("/api/v1/orders/change-status/${savedInvoice.orderId}")
@@ -109,7 +123,7 @@ class RestApiDocCancelInvoiceTest @Autowired constructor(
             .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/cancel/{id}")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("status", equalTo("CANCELLED"))
-            .assertThat().body("total", equalTo(90.0F))
+            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("amount", equalTo(90.0F))
     }
 }

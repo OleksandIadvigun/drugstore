@@ -3,19 +3,16 @@ package sigma.software.leovegas.drugstore.accountancy
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -29,17 +26,15 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceTypeDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
+import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
-import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
@@ -75,10 +70,6 @@ class AccountancyResourceTest @Autowired constructor(
             ItemDTO(
                 productId = 1L,
                 quantity = 2,
-            ),
-            ItemDTO(
-                productId = 2L,
-                quantity = 2,
             )
         )
 
@@ -88,26 +79,35 @@ class AccountancyResourceTest @Autowired constructor(
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 3,
-            ),
-            ProductDetailsResponse(
-                id = 2L,
-                name = "test2",
-                price = BigDecimal("10.00"),
-                quantity = 3,
             )
         )
 
         stubFor(
-            get("/api/v1/products/details?ids=${invoiceRequest[0].productId}&ids=${invoiceRequest[1].productId}")
+            WireMock.get("/api/v1/products/details?ids=${invoiceRequest[0].productId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
-                    WireMock.aResponse()
+                    aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(productsDetails)
                         )
                         .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        stubFor(
+            WireMock.get("/api/v1/products/${productsDetails[0].id}/price")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(BigDecimal("20.00"))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -120,28 +120,22 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/invoice/outcome",
             POST,
             httpEntity,
-            respTypeRef<InvoiceResponse>()
+            respTypeRef<ConfirmOrderResponse>()
         )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isNotNull
-        assertThat(body.total).isEqualTo(BigDecimal("60.00"))
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
-        assertThat(body.type).isEqualTo(InvoiceTypeDTO.OUTCOME)
-        assertThat(body.status).isEqualTo(InvoiceStatusDTO.CREATED)
+        val body = response.body.get("body")
+        assertThat(body.amount).isEqualTo(BigDecimal("80.00"))
     }
 
     @Test
     fun `should create income invoice`() {
 
         // given
-        transactionalTemplate.execute {
-            invoiceRepository.deleteAll()
-        }
+        transactionalTemplate.execute { invoiceRepository.deleteAll() }
 
         // and
         val invoiceRequest = CreateIncomeInvoiceRequest(
@@ -158,6 +152,21 @@ class AccountancyResourceTest @Autowired constructor(
                 )
             )
         )
+
+        // and
+        val productsToCreate = listOf(
+            CreateProductRequest(
+                name = "test1",
+                quantity = 1,
+                price = BigDecimal("20.00")
+            ),
+            CreateProductRequest(
+                name = "test2",
+                quantity = 2,
+                price = BigDecimal("20.00")
+            )
+        )
+
 
         val productsDetails = listOf(
             ProductDetailsResponse(
@@ -181,20 +190,7 @@ class AccountancyResourceTest @Autowired constructor(
                     EqualToPattern(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(
-                                listOf(
-                                    CreateProductRequest(
-                                        name = "test1",
-                                        quantity = 1,
-                                        price = BigDecimal("20.00")
-                                    ),
-                                    CreateProductRequest(
-                                        name = "test2",
-                                        quantity = 2,
-                                        price = BigDecimal("20.00")
-                                    )
-                                )
-                            )
+                            .writeValueAsString(productsToCreate)
                     )
                 )
                 .willReturn(
@@ -208,25 +204,19 @@ class AccountancyResourceTest @Autowired constructor(
                 )
         )
 
-        val httpEntity = HttpEntity(
-            invoiceRequest
-        )
+        val httpEntity = HttpEntity(invoiceRequest)
 
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/invoice/income",
             POST,
             httpEntity,
-            respTypeRef<InvoiceResponse>()
+            respTypeRef<ConfirmOrderResponse>()
         )
 
         // then
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isNotNull
-        assertThat(body.total).isEqualTo(BigDecimal("60.00"))
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
-        assertThat(body.type).isEqualTo(InvoiceTypeDTO.INCOME)
-        assertThat(body.status).isEqualTo(InvoiceStatusDTO.CREATED)
+        val body = response.body.get("body")
+        assertThat(body.amount).isEqualTo(BigDecimal("60.00"))
     }
 
     @Test
@@ -237,63 +227,74 @@ class AccountancyResourceTest @Autowired constructor(
             invoiceRepository.save(
                 Invoice(
                     orderId = 1L,
-                    total = BigDecimal("90.00")
+                    total = BigDecimal("90.00"),
+                    productItems = setOf(
+                        ProductItem(
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/invoice/${savedInvoice.id}",
             GET,
             null,
-            respTypeRef<InvoiceResponse>()
+            respTypeRef<ConfirmOrderResponse>()
         )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isNotNull
-        assertThat(body.total).isEqualTo(BigDecimal("90.00"))
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
+        val body = response.body.get("body")
+        assertThat(body.amount).isEqualTo(savedInvoice.total)
+        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
     }
 
     @Test
-    fun `should get invoice by order id`() {
+    fun `should get invoice details by order id`() {
 
         // given
-        transactionalTemplate.execute {
-            invoiceRepository.deleteAll()
-        }
+        transactionalTemplate.execute { invoiceRepository.deleteAll() }
 
-        // given
+        // and
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1,
-                    total = BigDecimal("90.00")
+                    status = InvoiceStatus.PAID,
+                    type = InvoiceType.OUTCOME,
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    productItems = setOf(
+                        ProductItem(
+                            productId = 1,
+                            quantity = 3
+                        )
+                    )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/invoice/order-id/1",
+            "$baseUrl/api/v1/accountancy/invoice/details/order-id/${savedInvoice.orderId}",
             GET,
             null,
-            respTypeRef<InvoiceResponse>()
+            respTypeRef<List<ItemDTO>>()
         )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isEqualTo(savedInvoice.id)
-        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
-        assertThat(body.total).isEqualTo(BigDecimal("90.00"))
+        val body = response.body.get("body")
+        assertThat(body[0].productId).isEqualTo(savedInvoice.productItems.iterator().next().productId)
+        assertThat(body[0].quantity).isEqualTo(savedInvoice.productItems.iterator().next().quantity)
     }
 
     @Test
@@ -316,24 +317,31 @@ class AccountancyResourceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         stubFor(
-            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+            WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(OrderStatusDTO.REFUND)
-                    )
-                )
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.REFUND))
+                                .writeValueAsString(savedInvoice.orderId)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        stubFor(
+            put("/api/v1/orders/refund/${savedInvoice.orderId}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
@@ -344,16 +352,16 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/invoice/refund/${savedInvoice.id}",
             PUT,
             null,
-            respTypeRef<InvoiceResponse>()
+            respTypeRef<ConfirmOrderResponse>()
         )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isEqualTo(savedInvoice.id ?: -1)
-        assertThat(body.status).isEqualTo(InvoiceStatusDTO.REFUND)
+        val body = response.body.get("body")
+        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(body.amount).isEqualTo(savedInvoice.total)
     }
 
     @Test
@@ -376,25 +384,17 @@ class AccountancyResourceTest @Autowired constructor(
                     ),
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
-        // and
         stubFor(
-            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+            put("/api/v1/orders/pay/${savedInvoice.orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(OrderStatusDTO.PAID)
-                    )
-                )
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.PAID))
+                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
@@ -404,21 +404,22 @@ class AccountancyResourceTest @Autowired constructor(
         val httpEntity = HttpEntity(
             BigDecimal("100.00")
         )
+
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/invoice/pay/${savedInvoice.id}",
             PUT,
             httpEntity,
-            respTypeRef<InvoiceResponse>()
+            respTypeRef<ConfirmOrderResponse>()
         )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isNotNull
-        assertThat(body.status).isEqualTo(InvoiceStatusDTO.PAID)
+        val body = response.body.get("body")
+        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(body.amount).isEqualTo(savedInvoice.total)
     }
 
     @Test
@@ -427,7 +428,7 @@ class AccountancyResourceTest @Autowired constructor(
         // given
         transactionalTemplate.execute {
             invoiceRepository.deleteAll()
-        } ?: fail("result is expected")
+        }
 
         // and
         val savedInvoice = transactionalTemplate.execute {
@@ -439,52 +440,23 @@ class AccountancyResourceTest @Autowired constructor(
                         ProductItem(
                             productId = 1L,
                             name = "test",
-                            quantity = 2,
-                            price = BigDecimal("10.00")
+                            price = BigDecimal("30"),
+                            quantity = 3
                         )
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         stubFor(
-            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+            put("/api/v1/orders/cancel/${savedInvoice.orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(OrderStatusDTO.CANCELLED)
-                    )
-                )
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.CANCELLED))
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                )
-        )
-
-        // and
-        stubFor(
-            post("/api/v1/store/return")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(savedInvoice.id)
-                    )
-                )
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.REFUND)) //todo
+                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
@@ -495,16 +467,15 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/invoice/cancel/${savedInvoice.id}",
             PUT,
             null,
-            respTypeRef<InvoiceResponse>()
+            respTypeRef<ConfirmOrderResponse>()
         )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isNotNull
-        assertThat(body.total).isEqualTo(BigDecimal("90.00"))
-        assertThat(body.status).isEqualTo(InvoiceStatus.CANCELLED.toDTO())
+        val body = response.body.get("body")
+        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(body.amount).isEqualTo(savedInvoice.total)
     }
 }

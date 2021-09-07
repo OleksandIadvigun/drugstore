@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.order
+package sigma.software.leovegas.drugstore.order.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.Matchers.emptyString
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
+import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 

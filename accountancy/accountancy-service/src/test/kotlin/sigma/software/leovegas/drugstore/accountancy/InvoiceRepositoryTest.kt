@@ -5,10 +5,10 @@ import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.extensions.get
 
 @DisplayName("Invoice Repository test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -34,7 +34,7 @@ class InvoiceRepositoryTest @Autowired constructor(
                     status = InvoiceStatus.CREATED,
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val actual = invoiceRepository.getInvoiceByOrderId(created.orderId ?: -1).get()
@@ -70,7 +70,7 @@ class InvoiceRepositoryTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val actual = invoiceRepository.findAllByStatusAndCreatedAtLessThan(
@@ -110,7 +110,7 @@ class InvoiceRepositoryTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val actual = invoiceRepository.findAllByStatus(InvoiceStatus.CREATED)

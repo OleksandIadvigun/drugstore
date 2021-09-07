@@ -49,10 +49,10 @@ include::{snippets}/get-invoice-by-id/http-response.adoc[]
 == Get invoice by  order id
 
 .Request
-include::{snippets}/get-invoice-by-order-id/http-request.adoc[]
+include::{snippets}/get-invoice-details-by-order-id/http-request.adoc[]
 
 .InvoiceResponse
-include::{snippets}/get-invoice-by-order-id/http-response.adoc[]
+include::{snippets}/get-invoice-details-by-order-id/http-response.adoc[]
 
 == Refund invoice
 

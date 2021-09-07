@@ -1,19 +1,31 @@
 package sigma.software.leovegas.drugstore.accountancy
 
-class ResourceNotFoundException(message: String?) : RuntimeException(message)
+open class AccountancyServiceException(message: String) : RuntimeException(message)
 
-class OrderAlreadyHaveInvoice(message: String?) : RuntimeException(message)
+open class OrderAlreadyConfirmedException(orderNumber: Long) :
+    AccountancyServiceException("Order($orderNumber) already has invoice")
 
-class InvalidStatusOfInvoice() : RuntimeException(
-    "The invoice status should be CREATED to be paid, but status found is invalid"
-)
+class OrderAlreadyPaidException(orderNumber: Long?) :
+    AccountancyServiceException("Order($orderNumber) already paid. Please, first do refund")
 
-class NotPaidInvoiceException(id: Long) : RuntimeException("The invoice with id = $id is not paid")
+class OrderContainsInvalidProductsException(productNumbers: List<Number> = listOf()) :
+    AccountancyServiceException("Order contains invalid products: ${productNumbers.joinToString(separator = ", ")}")
 
-class ProductServiceResponseException() : RuntimeException("Ups... Something went wrong! Please, try again later")
+class InvalidStatusOfInvoice() :
+    AccountancyServiceException("The invoice status should be CREATED to be paid, but status found is invalid")
 
-class OrderServiceResponseException() : RuntimeException("Ups... Something went wrong! Please, try again later")
+class InvoiceNotFoundException(orderNumbers: Long) :
+    AccountancyServiceException("Invoice of Order($orderNumbers) not found.")
 
-class StoreServiceResponseException() : RuntimeException("Ups... Something went wrong! Please, try again later")
+class NotPaidInvoiceException(id: Long) : AccountancyServiceException("The invoice with id = $id is not paid")
 
-class NotEnoughMoneyException() : RuntimeException("Not enough money for this transaction!")
+class ProductServiceResponseException() :
+    AccountancyServiceException("Ups... Something went wrong! Please, try again later")
+
+class OrderServiceResponseException() :
+    AccountancyServiceException("Ups... Something went wrong! Please, try again later")
+
+class StoreServiceResponseException() :
+    AccountancyServiceException("Ups... Something went wrong! Please, try again later")
+
+class NotEnoughMoneyException() : AccountancyServiceException("Not enough money for this transaction")

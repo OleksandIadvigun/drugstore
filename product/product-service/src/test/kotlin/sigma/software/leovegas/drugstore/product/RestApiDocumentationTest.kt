@@ -18,7 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ExtendWith(SpringExtension::class, RestDocumentationExtension::class)
 abstract class RestApiDocumentationTest(
     private val productProperties: ProductProperties
-) {
+) : WireMockTest() {
 
     lateinit var documentationSpec: RequestSpecification
 

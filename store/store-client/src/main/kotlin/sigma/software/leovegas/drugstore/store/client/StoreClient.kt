@@ -12,15 +12,18 @@ interface StoreClient {
     @RequestLine("GET /api/v1/store/transfer-certificate")
     fun getTransferCertificates(): List<TransferCertificateResponse>
 
-    @RequestLine("GET /api/v1/store/transfer-certificate/invoice/{id}")
-    fun getTransferCertificatesByInvoiceId(@Param id: Long): List<TransferCertificateResponse>
+    @RequestLine("GET /api/v1/store/transfer-certificate/order/{id}")
+    fun getTransferCertificatesByOrderId(@Param id: Long): TransferCertificateResponse
 
     @RequestLine("PUT /api/v1/store/receive")
-    fun receiveProducts(invoiceId: Long): TransferCertificateResponse
+    fun receiveProducts(orderNumber: Long): TransferCertificateResponse
 
     @RequestLine("PUT /api/v1/store/deliver")
-    fun deliverProducts(orderId: Long): TransferCertificateResponse
+    fun deliverProducts(orderNumber: Long): TransferCertificateResponse
 
     @RequestLine("PUT /api/v1/store/availability")
     fun checkAvailability(products: List<DeliverProductsQuantityRequest>): List<DeliverProductsQuantityRequest>
+
+    @RequestLine("GET /api/v1/store/check-transfer/{orderNumber}")
+    fun checkTransfer(@Param orderNumber: Long): Long //todo
 }

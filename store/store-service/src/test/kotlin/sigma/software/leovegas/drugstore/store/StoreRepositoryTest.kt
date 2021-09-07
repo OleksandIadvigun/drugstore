@@ -27,7 +27,7 @@ class StoreRepositoryTest(
         val created = transactionalTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    invoiceId = 1,
+                    orderId = 1,
                     status = TransferStatus.DELIVERED,
                     comment = "Delivered"
                 )
@@ -36,7 +36,7 @@ class StoreRepositoryTest(
 
         // when
         val found = transactionalTemplate.execute {
-            storeRepository.findAllByInvoiceId(1)
+            storeRepository.findAllByOrderId(1)
         } ?: fail("result expected")
 
         // then

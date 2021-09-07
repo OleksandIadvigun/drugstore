@@ -4,8 +4,8 @@ import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
@@ -92,23 +92,26 @@ class OrderService @Autowired constructor(
         )
     }
 
-    fun confirmOrder(orderId: Long): InvoiceResponse {
-        val order = getOrderById(orderId)
+    fun confirmOrder(orderId: Long): ConfirmOrderResponse = orderId.run {
+        val order = getOrderById(this)
         if (order.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
         if ((order.orderStatus != OrderStatusDTO.CREATED).and(order.orderStatus != OrderStatusDTO.UPDATED)) {
             throw OrderStatusException("Order is already confirmed or cancelled")
         }
-        try {
-            val invoice = accountancyClient.createOutcomeInvoice(
+        runCatching {
+            val createOutcomeInvoice = accountancyClient.createOutcomeInvoice(
                 CreateOutcomeInvoiceRequest(
-                    order.orderItems.map { ItemDTO(productId = it.productId, quantity = it.quantity) }, orderId
+                    order.orderItems.map {
+                        ItemDTO(productId = it.productId, quantity = it.quantity)
+                    }, this
                 )
             )
-            changeOrderStatus(orderId, OrderStatusDTO.CONFIRMED)
-            return invoice
-        } catch (e: Exception) {
-            throw AccountancyServerNotAvailable()
+            changeOrderStatus(this, OrderStatusDTO.CONFIRMED)
+            createOutcomeInvoice
         }
+            .onFailure { throw AccountancyServerNotAvailable() }
+            .getOrThrow()
+
     }
 
     fun getProductsIdToQuantity(): Map<Long, Int> {

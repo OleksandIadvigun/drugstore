@@ -3,6 +3,7 @@ package sigma.software.leovegas.drugstore.product.client
 import feign.Headers
 import feign.Param
 import feign.RequestLine
+import java.math.BigDecimal
 import org.springframework.data.domain.Page
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
@@ -18,11 +19,11 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 @Headers("Content-Type: application/json")
 interface ProductClient {
 
-    @RequestLine("POST api/v1/products")
+    @RequestLine("POST /api/v1/products")
     fun createProduct(request: List<CreateProductRequest>): List<CreateProductResponse>
 
     @RequestLine(
-        "GET api/v1/products/search?page={page}&size={size}&search={search}&sortField={sortField}&sortDirection={sortDirection}"
+        "GET /api/v1/products/search?page={page}&size={size}&search={search}&sortField={sortField}&sortDirection={sortDirection}"
     )
     fun searchProducts(
         @Param("page") page: Int = 0,
@@ -32,18 +33,21 @@ interface ProductClient {
         @Param("sortDirection") sortDirection: String = "DESC"
     ): Page<SearchProductResponse>
 
-    @RequestLine("GET api/v1/products/popular?page={page}&size={size}")
+    @RequestLine("GET /api/v1/products/popular?page={page}&size={size}")
     fun getPopularProducts(@Param("page") page: Int = 0, @Param("size") size: Int = 5): Page<GetProductResponse>
 
-    @RequestLine("PUT api/v1/products/receive")
+    @RequestLine("PUT /api/v1/products/receive")
     fun receiveProducts(ids: List<Long>): List<ReceiveProductResponse>
 
-    @RequestLine("PUT api/v1/products/deliver")
+    @RequestLine("PUT /api/v1/products/deliver")
     fun deliverProducts(products: List<DeliverProductsQuantityRequest>): List<DeliverProductsResponse>
 
-    @RequestLine("GET api/v1/products/details?ids={ids}")
+    @RequestLine("GET /api/v1/products/details?ids={ids}")
     fun getProductsDetailsByIds(@Param ids: List<Long>): List<ProductDetailsResponse>
 
-    @RequestLine("PUT api/v1/products/return")
+    @RequestLine("PUT /api/v1/products/return")
     fun returnProducts(products: List<ReturnProductQuantityRequest>): List<ReturnProductsResponse>
+
+    @RequestLine("GET /api/v1/products/{productNumber}/price")
+    fun getProductPrice(@Param productNumber: Long): BigDecimal
 }

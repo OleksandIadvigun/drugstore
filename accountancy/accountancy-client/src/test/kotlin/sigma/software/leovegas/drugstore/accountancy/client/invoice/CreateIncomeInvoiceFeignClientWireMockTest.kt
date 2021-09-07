@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -16,11 +15,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceTypeDTO
-import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
@@ -50,20 +46,9 @@ class CreateIncomeInvoiceFeignClientWireMockTest @Autowired constructor(
         )
 
         // and
-        val responseExpected = InvoiceResponse(
-            id = 1L,
-            status = InvoiceStatusDTO.CREATED,
-            type = InvoiceTypeDTO.INCOME,
-            productItems = setOf(
-                ProductItemDTO(
-                    productId = 1L,
-                    name = "test1",
-                    price = BigDecimal.ONE,
-                    quantity = 10
-                )
-            ),
-            total = BigDecimal("10.00"), // price * quantity
-            expiredAt = LocalDateTime.now().plusDays(3)
+        val responseExpected = ConfirmOrderResponse(
+            orderId = 1L,
+            amount = BigDecimal("10.00"), // price * quantity
         )
 
         // and
@@ -93,9 +78,7 @@ class CreateIncomeInvoiceFeignClientWireMockTest @Autowired constructor(
         val responseActual = accountancyClient.createIncomeInvoice(request)
 
         // then
-        assertThat(responseActual.id).isEqualTo(1L)
-        assertThat(responseActual.status).isEqualTo(InvoiceStatusDTO.CREATED)
-        assertThat(responseActual.expiredAt).isBefore(LocalDateTime.now().plusDays(4))
-        assertThat(responseActual.total).isEqualTo(BigDecimal("10.00"))
+        assertThat(responseActual.orderId).isEqualTo(1L)
+        assertThat(responseActual.amount).isEqualTo(BigDecimal("10.00"))
     }
 }

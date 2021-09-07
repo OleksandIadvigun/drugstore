@@ -4,18 +4,21 @@ import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.Invoice
 import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
+import sigma.software.leovegas.drugstore.accountancy.InvoiceStatus
+import sigma.software.leovegas.drugstore.accountancy.InvoiceType
+import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
+import sigma.software.leovegas.drugstore.extensions.get
 
-@DisplayName("Get invoice by order id REST API Doc test")
-class RestApiDocGetInvoiceByOrderIdTest @Autowired constructor(
+@DisplayName("Get invoice details by order id REST API Doc test")
+class RestApiDocGetInvoiceDetailsByOrderIdTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
     val invoiceRepository: InvoiceRepository,
@@ -23,30 +26,36 @@ class RestApiDocGetInvoiceByOrderIdTest @Autowired constructor(
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
-    fun `should get invoice by id`() {
+    fun `should get invoice details by id`() {
 
         // given
-        transactionTemplate.execute {
-            invoiceRepository.deleteAll()
-        }
+        transactionTemplate.execute { invoiceRepository.deleteAll() }
 
-        // given
+        // and
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1,
-                    total = BigDecimal("90.00")
+                    status = InvoiceStatus.PAID,
+                    type = InvoiceType.OUTCOME,
+                    orderId = 1L,
+                    total = BigDecimal("90.00"),
+                    productItems = setOf(
+                        ProductItem(
+                            productId = 1,
+                            quantity = 3
+                        )
+                    )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
-        of("get-invoice-by-order-id").`when`()
+        of("get-invoice-details-by-order-id").`when`()
             .pathParam("id", savedInvoice.orderId)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/order-id/{id}")
+            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/details/order-id/{id}")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("orderId", equalTo(1))
-            .assertThat().body("total", equalTo(90.0F))
+            .assertThat().body("[0].productId", equalTo(1))
+            .assertThat().body("[0].quantity", equalTo(3))
     }
 }

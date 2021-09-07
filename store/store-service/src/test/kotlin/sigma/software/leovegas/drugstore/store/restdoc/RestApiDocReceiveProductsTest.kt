@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.store
+package sigma.software.leovegas.drugstore.store.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -15,12 +15,11 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceTypeDTO
-import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
+import sigma.software.leovegas.drugstore.store.StoreProperties
+import sigma.software.leovegas.drugstore.store.StoreRepository
 
 @DisplayName("Receive products REST API Doc test")
 class RestApiDocReceiveProductsTest @Autowired constructor(
@@ -40,19 +39,18 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.INCOME,
-            status = InvoiceStatusDTO.PAID,
-            productItems = setOf(
-                ProductItemDTO(productId = 1, quantity = 2)
+        val accountancyResponse = listOf(
+            ItemDTO(
+                productId = 1,
+                quantity = 2
             )
         )
 
+        val orderId: Long = 1
+
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/1")
+            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -105,6 +103,6 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
             .put("http://${storeProperties.host}:$port/api/v1/store/receive")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("invoiceId", equalTo(1))
+            .assertThat().body("orderId", equalTo(1))
     }
 }

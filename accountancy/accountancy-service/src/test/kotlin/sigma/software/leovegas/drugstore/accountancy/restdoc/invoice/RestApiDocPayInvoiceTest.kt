@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
@@ -21,8 +20,8 @@ import sigma.software.leovegas.drugstore.accountancy.InvoiceStatus
 import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
+import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
-import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
 @DisplayName("Pay invoice REST API Doc test")
 class RestApiDocPayInvoiceTest @Autowired constructor(
@@ -53,25 +52,17 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
                     ),
                 )
             )
-        } ?: org.junit.jupiter.api.fail("result is expected")
+        }.get()
 
-        // and
         stubFor(
-            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
+            put("/api/v1/orders/pay/${savedInvoice.orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(OrderStatusDTO.PAID)
-                    )
-                )
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.PAID))
+                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
@@ -88,6 +79,7 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
             .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/pay/{id}")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("status", equalTo("PAID"))
+            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("amount", equalTo(90.0F))
     }
 }

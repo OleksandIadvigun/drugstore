@@ -2,11 +2,11 @@ package sigma.software.leovegas.drugstore.order.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.time.LocalDateTime
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -15,43 +15,33 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
-import sigma.software.leovegas.drugstore.order.api.OrderResponse
-import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 
 @SpringBootApplication
-internal class ChangeOrderStatusFeignClientWireMockTestApp
+internal class ConfirmOrderFeignClientWireMockTestApp
 
-@DisplayName("Change Order Status Feign Client WireMock test")
-@ContextConfiguration(classes = [ChangeOrderStatusFeignClientWireMockTestApp::class])
-class ChangeOrderStatusFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Confirm Order Feign Client WireMock test")
+@ContextConfiguration(classes = [ConfirmOrderFeignClientWireMockTestApp::class])
+class ConfirmOrderFeignClientWireMockTest @Autowired constructor(
     val orderClient: OrderClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should change order status`() {
+    fun `should confirm order`() {
 
         // given
-        val request = OrderStatusDTO.BOOKED
+        val request: Long = 1
 
         // and
-        val responseExpected = OrderResponse(
-            id = 1L,
-            orderStatus = OrderStatusDTO.BOOKED,
-            orderItems = listOf(
-                OrderItemDTO(
-                    productId = 1,
-                    quantity = 2
-                )
-            ),
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now().plusMinutes(1),
+        val responseExpected = ConfirmOrderResponse(
+            orderId = 1,
+            amount = BigDecimal.TEN
         )
 
         // and
         stubFor(
-            put("/api/v1/orders/change-status/1")
+            post("/api/v1/orders/confirm")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
                     EqualToPattern(
@@ -67,21 +57,16 @@ class ChangeOrderStatusFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.ACCEPTED.value())
+                        .withStatus(HttpStatus.CREATED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = orderClient.changeOrderStatus(1L, request)
+        val responseActual = orderClient.confirmOrder(request)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1L)
-        assertThat(responseActual.orderStatus).isEqualTo(OrderStatusDTO.BOOKED)
-        assertThat(responseActual.orderItems).hasSize(1)
-
-        // and
-        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
-        assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(2)
+        assertThat(responseActual.orderId).isEqualTo(responseExpected.orderId)
+        assertThat(responseActual.amount).isEqualTo(responseExpected.amount)
     }
 }

@@ -1,11 +1,11 @@
-package sigma.software.leovegas.drugstore.store.client
+package sigma.software.leovegas.drugstore.order.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -14,47 +14,41 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
-import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
+import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
+import sigma.software.leovegas.drugstore.order.api.OrderResponse
+import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
 @SpringBootApplication
-internal class ReceiveProductsFeignClientWireMockTestApp
+internal class PayOrderFeignClientWireMockTestApp
 
-@DisplayName("Receive Products Feign Client WireMock test")
-@ContextConfiguration(classes = [ReceiveProductsFeignClientWireMockTestApp::class])
-class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
-    val storeClient: StoreClient,
+@DisplayName("Pay Order Feign Client WireMock test")
+@ContextConfiguration(classes = [PayOrderFeignClientWireMockTestApp::class])
+class PayOrderFeignClientWireMockTest @Autowired constructor(
+    val orderClient: OrderClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should receive products`() {
-
-        // given
-        val request = 1L
-
-        //and
-        val orderNumber: Long = 1
+    fun `should pay order`() {
 
         // and
-        val responseExpected = TransferCertificateResponse(
-            id = 1,
-            orderId = orderNumber,
-            status = TransferStatusDTO.RECEIVED
+        val responseExpected = OrderResponse(
+            id = 1L,
+            orderStatus = OrderStatusDTO.PAID,
+            orderItems = listOf(
+                OrderItemDTO(
+                    productId = 1,
+                    quantity = 2
+                )
+            ),
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now().plusMinutes(1),
         )
-
 
         // and
         stubFor(
-            put("/api/v1/store/receive")
+            put("/api/v1/orders/pay/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(request)
-                    )
-                )
                 .willReturn(
                     aResponse()
                         .withBody(
@@ -68,11 +62,15 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = storeClient.receiveProducts(orderNumber)
+        val responseActual = orderClient.payOrder(1)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1)
-        assertThat(responseActual.orderId).isEqualTo(orderNumber)
-        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.RECEIVED)
+        assertThat(responseActual.id).isEqualTo(1L)
+        assertThat(responseActual.orderStatus).isEqualTo(OrderStatusDTO.PAID)
+        assertThat(responseActual.orderItems).hasSize(1)
+
+        // and
+        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(2)
     }
 }

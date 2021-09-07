@@ -1,18 +1,17 @@
 package sigma.software.leovegas.drugstore.accountancy
 
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDateTime
 import javax.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
-import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.client.ProductClient
 import sigma.software.leovegas.drugstore.store.client.StoreClient
 
@@ -25,159 +24,136 @@ class AccountancyService @Autowired constructor(
     val productClient: ProductClient
 ) {
 
-    companion object {
-        private const val exceptionMessage = "This price item with id: %d doesn't exist!"
-        private const val messageForNotFoundInvoice = "The invoice with id: %d doesn't exist!"
-    }
+    fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): ConfirmOrderResponse =
+        request.validate(invoiceRepository::getInvoiceByOrderId).run {
 
-    fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): InvoiceResponse = request.run {
-        val isAlreadyExist = invoiceRepository.getInvoiceByOrderId(orderId)
-        if (isAlreadyExist.isPresent) {
-            throw OrderAlreadyHaveInvoice("This order already has some invoice")
-        }
-        val productIdToQuantity = productItems.associate { it.productId to it.quantity }
-        val products: List<ProductDetailsResponse>
-        try {
-            products = productClient.getProductsDetailsByIds(productIdToQuantity.keys.toList())
-        } catch (e: Exception) {
-            throw ProductServiceResponseException()
-        }
-        val productItems = products.map {
-            ProductItem(
-                productId = it.id,
-                name = it.name,
-                price = it.price,
-                quantity = it.quantity,
+            val profitTimes = BigDecimal(2.00)
+            val productQuantities = productItems.associate { it.productId to it.quantity }
+            val total = productItems
+                .map { it.productId to it.quantity }
+                .map { productClient.getProductPrice(it.first) to it.second }
+                .map { it.first.multiply(BigDecimal(it.second)).multiply(profitTimes) }
+                .reduce(BigDecimal::add)
+
+            val productNumbers = productItems.map { it.productId }.distinct()
+            val list = runCatching { productClient.getProductsDetailsByIds(productNumbers) }
+                .onFailure { throw ProductServiceResponseException() }
+                .getOrNull()
+                .orEmpty()
+            if (list.isEmpty()) throw OrderContainsInvalidProductsException(productNumbers)
+
+            val invoice = invoiceRepository.save(
+                Invoice(
+                    type = InvoiceType.OUTCOME,
+                    orderId = orderId,
+                    total = total,
+                    status = InvoiceStatus.CREATED,
+                    productItems = list
+                        .map {
+                            ProductItem(
+                                productId = it.id,
+                                name = it.name,
+                                price = it.price.multiply(profitTimes).setScale(2, RoundingMode.HALF_EVEN),
+                                quantity = productQuantities.getValue(it.id),
+                            )
+                        }
+                        .toSet(),
+                )
             )
-        }.toSet()
-        val invoice = Invoice(
-            type = InvoiceType.OUTCOME,
-            orderId = orderId,
-            total = products.map { it.price * ((productIdToQuantity[it.id]?.toBigDecimal() ?: BigDecimal.ONE)) }
-                .reduce { acc, bigDecimal -> acc + bigDecimal },
-            productItems = productItems,
-        )
-        invoiceRepository.save(invoice).toInvoiceResponse().copy(expiredAt = LocalDateTime.now().plusDays(3)) //todo
-    }
 
-    fun createIncomeInvoice(invoiceRequest: CreateIncomeInvoiceRequest): InvoiceResponse = invoiceRequest.run {
-        val productsToCreate = productItems.map {
-            CreateProductRequest(
-                name = it.name,
-                price = it.price,
-                quantity = it.quantity
+            ConfirmOrderResponse(
+                orderId = invoice.orderId,
+                amount = invoice.total
             )
         }
-        val createdProducts: List<CreateProductResponse>
-        try {
-            createdProducts = productClient.createProduct(productsToCreate)
-        } catch (e: Exception) {
-            throw ProductServiceResponseException()
-        }
-        val productItems = createdProducts.map {
-            ProductItem(
-                productId = it.id,
-                name = it.name,
-                price = it.price,
-                quantity = it.quantity,
+
+    fun createIncomeInvoice(invoiceRequest: CreateIncomeInvoiceRequest): ConfirmOrderResponse =
+        invoiceRequest.run {
+            val productsToCreate = productItems.map {
+                CreateProductRequest(
+                    name = it.name,
+                    price = it.price.setScale(2, RoundingMode.HALF_EVEN),
+                    quantity = it.quantity
+                )
+            }
+            val createdProducts = runCatching {
+                productClient.createProduct(productsToCreate)
+            }
+                .onFailure { throw ProductServiceResponseException() }
+                .getOrNull()
+                .orEmpty()
+
+            val invoice = invoiceRepository.save(Invoice(
+                status = InvoiceStatus.CREATED,
+                type = InvoiceType.INCOME,
+                orderId = kotlin.random.Random(10000L).nextLong(),   // todo
+                total = createdProducts.map { it.price.multiply(BigDecimal(it.quantity)) }
+                    .reduce(BigDecimal::plus)
+                    .setScale(2, RoundingMode.HALF_EVEN),
+                productItems = createdProducts.map {
+                    ProductItem(
+                        productId = it.id,
+                        name = it.name,
+                        price = it.price,
+                        quantity = it.quantity,
+                    )
+                }.toSet(),
             )
-        }.toSet()
-        val invoice = Invoice(
-            type = InvoiceType.INCOME,
-            total = createdProducts.map { it.price * it.quantity.toBigDecimal() }
-                .reduce { acc, bigDecimal -> acc + bigDecimal },
-            productItems = productItems,
-        )
-        invoiceRepository.save(invoice).toInvoiceResponse().copy(expiredAt = LocalDateTime.now().plusDays(3)) //todo
-    }
+            )
+            return@run ConfirmOrderResponse(
+                orderId = invoice.orderId,
+                amount = invoice.total,
+            )
+        }
 
-    fun getInvoiceById(id: Long): InvoiceResponse = invoiceRepository
-        .findById(id)
-        .orElseThrow { throw ResourceNotFoundException(String.format(messageForNotFoundInvoice, id)) }
-        .toInvoiceResponse()
+    fun getInvoiceById(id: Long): ConfirmOrderResponse =
+        id.validate { invoiceRepository.findById(id) }.toInvoiceResponse()
 
-    fun getInvoiceByOrderId(id: Long): InvoiceResponse =
-        invoiceRepository
-            .getInvoiceByOrderId(id)
-            .orElseThrow { throw ResourceNotFoundException(String.format(messageForNotFoundInvoice, id)) }
-            .toInvoiceResponse()
+    fun getInvoiceDetailsByOrderId(id: Long): List<ItemDTO> =
+        id.validate { invoiceRepository.getInvoiceByOrderId(id) }.run {
+            if (status != InvoiceStatus.PAID) throw NotPaidInvoiceException(id)
+            productItems
+                .map {
+                    ItemDTO(
+                        productId = it.productId,
+                        quantity = it.quantity
+                    )
+                }
+        }
 
-    fun payInvoice(id: Long, money: BigDecimal): InvoiceResponse {
-        val invoice = invoiceRepository.findById(id).orElseThrow {
-            ResourceNotFoundException("Not found invoice with this id")
+    fun payInvoice(id: Long, money: BigDecimal): ConfirmOrderResponse =
+        id.validate { invoiceRepository.findById(id) }.run {
+            if (this.status != InvoiceStatus.CREATED) throw InvalidStatusOfInvoice()
+            if (money < this.total) throw NotEnoughMoneyException()
+            runCatching { orderClient.payOrder(this.orderId) }
+                .onFailure { throw OrderServiceResponseException() }
+            val paidInvoice = this.copy(status = InvoiceStatus.PAID)
+            return invoiceRepository.saveAndFlush(paidInvoice).toInvoiceResponse()
         }
-        if (invoice.status != InvoiceStatus.CREATED) {
-            throw InvalidStatusOfInvoice()
-        }
-        if (money < invoice.total) {
-            throw NotEnoughMoneyException()
-        }
-        orderClient.changeOrderStatus(invoice.orderId ?: -1, OrderStatusDTO.PAID)
-        val paidInvoice = invoice.copy(status = InvoiceStatus.PAID)
-        return invoiceRepository.saveAndFlush(paidInvoice).toInvoiceResponse()
-    }
 
-    fun refundInvoice(id: Long): InvoiceResponse = id.run {
-        val invoiceToRefund = invoiceRepository.findById(this).orElseThrow {
-            ResourceNotFoundException("Not found invoice with this id")
+    fun refundInvoice(id: Long): ConfirmOrderResponse =
+        id.validate { invoiceRepository.findById(id) }.run {
+            if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.id ?: -1)
+            runCatching { storeClient.checkTransfer(this.orderId) }
+                .onFailure { throw StoreServiceResponseException() }
+            runCatching { orderClient.refundOrder(this.orderId) }
+                .onFailure { throw OrderServiceResponseException() }
+            val refundInvoice = this.copy(status = InvoiceStatus.REFUND)
+            invoiceRepository.saveAndFlush(refundInvoice).toInvoiceResponse()
         }
-        if (invoiceToRefund.status != InvoiceStatus.PAID) {
-            throw NotPaidInvoiceException(invoiceToRefund.id ?: -1)
-        }
-        try {
-            orderClient.changeOrderStatus(invoiceToRefund.orderId ?: -1, OrderStatusDTO.REFUND)
-        } catch (e: Exception) {
-            throw OrderServiceResponseException()
-        }
-        val refundInvoice = invoiceToRefund.copy(status = InvoiceStatus.REFUND)
-        invoiceRepository.saveAndFlush(refundInvoice).toInvoiceResponse()
-    }
 
-    fun cancelInvoice(id: Long): InvoiceResponse {
-        val invoice = invoiceRepository.findById(id).orElseThrow {
-            ResourceNotFoundException("Not found invoice with this id")
+    fun cancelInvoice(id: Long): ConfirmOrderResponse =
+        id.validate { invoiceRepository.findById(id) }.run {
+            if (this.status.name == "PAID") throw OrderAlreadyPaidException(this.orderId)
+            val toUpdate = this.copy(status = InvoiceStatus.CANCELLED)
+            runCatching { orderClient.cancelOrder(this.orderId) }
+                .onFailure { throw OrderServiceResponseException() }
+            return invoiceRepository.saveAndFlush(toUpdate).toInvoiceResponse()
         }
-        if (invoice.status.name == "PAID") {
-            throw OrderAlreadyHaveInvoice("This order is already paid. Please, first do refund!")
-        }
-        val toUpdate = invoice.copy(status = InvoiceStatus.CANCELLED)
-        try {
-            orderClient.changeOrderStatus(invoice.orderId ?: -1, OrderStatusDTO.CANCELLED)
-        } catch (e: Exception) {
-            throw OrderServiceResponseException()
-        }
-        return invoiceRepository.saveAndFlush(toUpdate).toInvoiceResponse()
-    }
 
-    fun cancelExpiredInvoice(date: LocalDateTime): List<InvoiceResponse> {
-        val invoiceToCancelList =
-            invoiceRepository.findAllByStatusAndCreatedAtLessThan(InvoiceStatus.CREATED, date)
-        invoiceToCancelList.forEach {
-            cancelInvoice(it.id ?: -1)
-        }
+    fun cancelExpiredInvoice(date: LocalDateTime): List<ConfirmOrderResponse> {
+        val invoiceToCancelList = invoiceRepository.findAllByStatusAndCreatedAtLessThan(InvoiceStatus.CREATED, date)
+        invoiceToCancelList.forEach { cancelInvoice(it.id ?: -1) }
         return invoiceToCancelList.toInvoiceResponseList()
     }
-
-//    private fun markupChecker(priceItems: List<PriceItem>, markup: Boolean): List<PriceItemResponse> {
-//        return if (markup) {
-//            priceItems.map { el ->
-//                val newPrice = (el.price * (BigDecimal(1.00) + el.markup)).setScale(2)
-//                el.copy(price = newPrice)
-//            }
-//                .toPriceItemResponseList()
-//        } else priceItems.toPriceItemResponseList()
-//    }
-//
-//    fun getMarkUps(ids: List<Long>): List<MarkupUpdateResponse> =
-//        if (ids.isNotEmpty()) {
-//            priceItemRepository.findAllById(ids).toMarkupUpdateResponse()
-//        } else priceItemRepository.findAll().toMarkupUpdateResponse()
-//
-//    fun updateMarkups(markupsToUpdate: List<MarkupUpdateRequest>): List<MarkupUpdateResponse> = markupsToUpdate.run {
-//        val priceItemToMarkup = associate { it.priceItemId to it.markup.setScale(2, RoundingMode.DOWN) }
-//        val toUpdate = priceItemRepository
-//            .findAllById(priceItemToMarkup.keys)
-//            .map { it.copy(markup = priceItemToMarkup[it.id] ?: BigDecimal.ZERO) }
-//        priceItemRepository.saveAllAndFlush(toUpdate).toMarkupUpdateResponse()
-//    }
 }

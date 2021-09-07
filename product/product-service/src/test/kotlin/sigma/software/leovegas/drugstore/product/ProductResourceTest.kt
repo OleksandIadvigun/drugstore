@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
@@ -38,7 +37,7 @@ import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityReques
 import sigma.software.leovegas.drugstore.product.api.ReturnProductsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
-@AutoConfigureWireMock(port = 8082)
+
 @DisplayName("ProductResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class ProductResourceTest @Autowired constructor(
@@ -48,13 +47,48 @@ class ProductResourceTest @Autowired constructor(
     val repository: ProductRepository,
     val objectMapper: ObjectMapper,
     val productProperties: ProductProperties
-) {
+) : WireMockTest() {
 
     lateinit var baseUrl: String
 
     @BeforeEach
     fun setup() {
         baseUrl = "http://${productProperties.host}:$port"
+    }
+
+    @Test
+    fun `should get product price`() {
+        // setup
+        transactionalTemplate.execute {
+            repository.deleteAllInBatch()
+        }
+
+        // given
+        val created = transactionalTemplate.execute {
+            repository.save(
+                Product(
+                    name = "A test product",
+                    price = BigDecimal("1.23"),
+                    quantity = 3,
+                )
+            )
+        } ?: fail("created may not be null")
+
+        // and
+        val productNumber = created.id ?: fail("id may not be null")
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/products/{productNumber}/price",
+            GET, null, respTypeRef<BigDecimal>(), productNumber
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val price = response.body ?: fail("price may not be null")
+        assertThat(price).isEqualTo(BigDecimal("1.23"))
     }
 
     @Test

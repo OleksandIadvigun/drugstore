@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.order
+package sigma.software.leovegas.drugstore.order.restdoc
 
 import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.order.OrderProperties
+import sigma.software.leovegas.drugstore.order.OrderService
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 

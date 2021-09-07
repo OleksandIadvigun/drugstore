@@ -22,9 +22,9 @@ class StoreResource(private val storeService: StoreService) {
     fun getTransferCertificates() = storeService.getTransferCertificates()
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/transfer-certificate/invoice/{id}")
-    fun getTransferCertificateByInvoiceId(@PathVariable("id") id: Long) =
-        storeService.getTransferCertificatesByInvoiceId(id)
+    @GetMapping("/transfer-certificate/order/{id}")
+    fun getTransferCertificateByOrderId(@PathVariable("id") id: Long) =
+        storeService.getTransferCertificatesByOrderId(id)
 
     @PutMapping("/receive")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -42,10 +42,6 @@ class StoreResource(private val storeService: StoreService) {
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {
-            is InsufficientAmountOfProductException -> HttpStatus.BAD_REQUEST
-            is IncorrectTypeOfInvoice -> HttpStatus.BAD_REQUEST
-            is IncorrectStatusOfInvoice -> HttpStatus.BAD_REQUEST
-            is InvoiceNotPaidException -> HttpStatus.BAD_REQUEST
             else -> HttpStatus.BAD_REQUEST
         }
         ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))

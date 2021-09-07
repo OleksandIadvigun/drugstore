@@ -31,12 +31,15 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
     fun `should deliver products`() {
 
         // given
+        val orderNumber: Long = 1
+
+        // given
         val request = 1L
 
         // and
         val responseExpected = TransferCertificateResponse(
             id = 1,
-            invoiceId = 1,
+            orderId = 1,
             status = TransferStatusDTO.DELIVERED
         )
 
@@ -64,10 +67,10 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = storeClient.deliverProducts(1)
+        val responseActual = storeClient.deliverProducts(orderNumber)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1)
+        assertThat(responseActual.id).isEqualTo(orderNumber)
         assertThat(responseActual.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 }

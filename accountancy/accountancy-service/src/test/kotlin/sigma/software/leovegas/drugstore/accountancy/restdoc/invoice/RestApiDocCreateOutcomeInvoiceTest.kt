@@ -6,9 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
-import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,10 +43,6 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
             ItemDTO(
                 productId = 1L,
                 quantity = 2,
-            ),
-            ItemDTO(
-                productId = 2L,
-                quantity = 2,
             )
         )
 
@@ -58,17 +52,11 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 3,
-            ),
-            ProductDetailsResponse(
-                id = 2L,
-                name = "test2",
-                price = BigDecimal("10.00"),
-                quantity = 3,
             )
         )
 
         stubFor(
-            get("/api/v1/products/details?ids=${invoiceRequest[0].productId}&ids=${invoiceRequest[1].productId}")
+            get("/api/v1/products/details?ids=${invoiceRequest[0].productId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -78,6 +66,21 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
                                 .writeValueAsString(productsDetails)
                         )
                         .withStatus(HttpStatus.OK.value())
+                )
+        )
+
+        stubFor(
+            get("/api/v1/products/${productsDetails[0].id}/price")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(BigDecimal("20.00"))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -91,9 +94,7 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
             .post("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/outcome")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("createdAt", not(emptyString()))
-            .assertThat().body("status", equalTo("CREATED"))
-            .assertThat().body("type", equalTo("OUTCOME"))
-            .assertThat().body("total", equalTo(60.0F))
+            .assertThat().body("amount", equalTo(80.0F))
+            .assertThat().body("orderId", equalTo(1))
     }
 }

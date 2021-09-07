@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.store
+package sigma.software.leovegas.drugstore.store.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
@@ -17,13 +16,12 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceTypeDTO
-import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
+import sigma.software.leovegas.drugstore.store.StoreProperties
+import sigma.software.leovegas.drugstore.store.StoreRepository
 
 @DisplayName("Deliver products REST API Doc test")
 class RestApiDocDeliverProductsTest @Autowired constructor(
@@ -43,20 +41,17 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.OUTCOME,
-            total = BigDecimal("90.00"),
-            status = InvoiceStatusDTO.PAID,
-            productItems = setOf(
-                ProductItemDTO(productId = 1, quantity = 2)
+        val accountancyResponse = listOf(
+            ItemDTO(
+                productId = 1,
+                quantity = 2
             )
         )
 
+        val orderId: Long = 1
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/order-id/1")
+            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -118,7 +113,7 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=1")
+            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -138,6 +133,6 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
             .put("http://${storeProperties.host}:$port/api/v1/store/deliver")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("invoiceId", equalTo(1))
+            .assertThat().body("orderId", equalTo(1))
     }
 }

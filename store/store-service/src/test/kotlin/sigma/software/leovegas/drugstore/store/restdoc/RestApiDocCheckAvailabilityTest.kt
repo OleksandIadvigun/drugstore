@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.store
+package sigma.software.leovegas.drugstore.store.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
+import sigma.software.leovegas.drugstore.store.StoreProperties
 
 @DisplayName("Check availability REST API Doc test")
 class RestApiDocCheckAvailabilityTest @Autowired constructor(
@@ -57,7 +58,7 @@ class RestApiDocCheckAvailabilityTest @Autowired constructor(
 
         //and
         stubFor(
-            get("/api/v1/products/details?ids=1&ids=2")
+            get("/api/v1/products/details?ids=${productResponse[0].id}&ids=${productResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

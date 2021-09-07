@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.store
+package sigma.software.leovegas.drugstore.store.restdoc
 
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.store.StoreProperties
+import sigma.software.leovegas.drugstore.store.StoreRepository
+import sigma.software.leovegas.drugstore.store.TransferCertificate
+import sigma.software.leovegas.drugstore.store.TransferStatus
 
 @DisplayName("Get transfer certificates REST API Doc test")
 class RestApiDocGetTransferCertificatesItemsTest @Autowired constructor(
@@ -28,12 +32,12 @@ class RestApiDocGetTransferCertificatesItemsTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        invoiceId = 1,
+                        orderId = 1,
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        invoiceId = 2,
+                        orderId = 2,
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -45,7 +49,7 @@ class RestApiDocGetTransferCertificatesItemsTest @Autowired constructor(
             .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("[0].invoiceId", `is`(1))
+            .assertThat().body("[0].orderId", `is`(1))
             .assertThat().body("size", `is`(2))
     }
 }

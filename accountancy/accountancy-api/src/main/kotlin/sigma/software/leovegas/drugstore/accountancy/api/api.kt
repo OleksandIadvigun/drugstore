@@ -1,7 +1,6 @@
 package sigma.software.leovegas.drugstore.accountancy.api
 
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
 // Request
 
@@ -27,15 +26,9 @@ data class MarkupUpdateResponse(
     val markup: BigDecimal = BigDecimal.ZERO
 )
 
-data class InvoiceResponse(
-    val id: Long = -1,
+data class ConfirmOrderResponse(
     val orderId: Long = -1,
-    val type: InvoiceTypeDTO = InvoiceTypeDTO.NONE,
-    val status: InvoiceStatusDTO = InvoiceStatusDTO.CREATED,
-    val productItems: Set<ProductItemDTO> = setOf(),
-    val total: BigDecimal = BigDecimal.ZERO,
-    val createdAt: LocalDateTime? = null,
-    val expiredAt: LocalDateTime? = null,
+    val amount: BigDecimal = BigDecimal.ZERO,
 )
 
 // DTOs

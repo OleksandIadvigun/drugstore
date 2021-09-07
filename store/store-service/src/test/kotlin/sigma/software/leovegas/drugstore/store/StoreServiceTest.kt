@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -20,15 +19,10 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceTypeDTO
-import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
-import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
-import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateRequest
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
@@ -52,7 +46,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         val transferCertificateRequest = TransferCertificateRequest(
-            invoiceId = 1,
+            orderId = 1,
             status = TransferStatusDTO.RECEIVED,
             comment = "RECEIVED"
         )
@@ -64,14 +58,14 @@ class StoreServiceTest @Autowired constructor(
 
         // then
         assertThat(created.id).isNotNull
-        assertThat(created.invoiceId).isEqualTo(1)
+        assertThat(created.orderId).isEqualTo(1)
         assertThat(created.status).isEqualTo(TransferStatusDTO.RECEIVED)
         assertThat(created.comment).isEqualTo("RECEIVED")
 
     }
 
     @Test
-    fun `should get store transfer certificates by invoice id`() {
+    fun `should get store transfer certificates by order id`() {
 
         // given
         transactionTemplate.execute {
@@ -82,7 +76,7 @@ class StoreServiceTest @Autowired constructor(
         val created = transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    invoiceId = 1,
+                    orderId = 1,
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
                 )
@@ -91,11 +85,11 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val actual = transactionTemplate.execute {
-            storeService.getTransferCertificatesByInvoiceId(created.invoiceId)
+            storeService.getTransferCertificatesByOrderId(created.orderId)
         } ?: fail("result is expected")
 
         // then
-        assertThat(actual[0].invoiceId).isEqualTo(created.invoiceId)
+        assertThat(actual[0].orderId).isEqualTo(created.orderId)
     }
 
     @Test
@@ -111,12 +105,12 @@ class StoreServiceTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        invoiceId = 1,
+                        orderId = 1,
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        invoiceId = 2,
+                        orderId = 2,
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -132,9 +126,9 @@ class StoreServiceTest @Autowired constructor(
         // then
         assertThat(actual).hasSize(2)
         assertThat(actual[0].status).isEqualTo(TransferStatusDTO.RECEIVED)
-        assertThat(actual[0].invoiceId).isEqualTo(1)
+        assertThat(actual[0].orderId).isEqualTo(1)
         assertThat(actual[1].status).isEqualTo(TransferStatusDTO.DELIVERED)
-        assertThat(actual[1].invoiceId).isEqualTo(2)
+        assertThat(actual[1].orderId).isEqualTo(2)
     }
 
     @Test
@@ -146,20 +140,17 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.OUTCOME,
-            total = BigDecimal("90.00"),
-            status = InvoiceStatusDTO.PAID,
-            productItems = setOf(
-                ProductItemDTO(productId = 1, quantity = 2)
-            )
+        val accountancyResponse = listOf(
+            ItemDTO(productId = 1, quantity = 2),
+            ItemDTO(productId = 2, quantity = 3),
         )
 
         // and
+        val orderId: Long = 1
+
+        // and
         stubFor(
-            get("/api/v1/accountancy/invoice/order-id/1")
+            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -176,6 +167,10 @@ class StoreServiceTest @Autowired constructor(
             DeliverProductsQuantityRequest(
                 id = 1,
                 quantity = 2
+            ),
+            DeliverProductsQuantityRequest(
+                id = 2,
+                quantity = 3
             )
         )
 
@@ -185,7 +180,13 @@ class StoreServiceTest @Autowired constructor(
                 id = 1L,
                 quantity = 5,
                 updatedAt = LocalDateTime.now()
+            ),
+            DeliverProductsResponse(
+                id = 2,
+                quantity = 10,
+                updatedAt = LocalDateTime.now()
             )
+
         )
 
         //and
@@ -217,11 +218,15 @@ class StoreServiceTest @Autowired constructor(
                 id = 1,
                 quantity = 10
             ),
+            ProductDetailsResponse(
+                id = 2,
+                quantity = 20
+            ),
         )
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=1")
+            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -237,72 +242,50 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val transferCertificate = transactionTemplate.execute {
-            storeService.deliverProducts(1)
+            storeService.deliverProducts(orderId)
         } ?: fail("result is expected")
 
         // then
         assertThat(transferCertificate.id).isNotNull
-        assertThat(transferCertificate.invoiceId).isEqualTo(accountancyResponse.id)
+        assertThat(transferCertificate.orderId).isEqualTo(orderId)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 
     @Test
-    fun `should not deliver product by not outcome invoice`() {
+    fun `should not deliver product if accountancy server not available`() {
 
-        //given
-        transactionTemplate.execute {
-            storeRepository.deleteAllInBatch()
-        }
-
-        // and
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.INCOME,
-            total = BigDecimal("90.00"),
-            status = InvoiceStatusDTO.PAID,
-        )
-
-        // and
-        stubFor(
-            get("/api/v1/accountancy/invoice/order-id/1")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
-                )
-        )
+        // given
+        val orderId: Long = 1
 
         // when
-        val exception = assertThrows<IncorrectTypeOfInvoice> {
-            storeService.deliverProducts(1)
+        val exception = assertThrows<AccountancyServerResponseException> {
+            storeService.deliverProducts(orderId)
         }
 
         // then
-        assertThat(exception.message).contains("Invoice type should be outcome")
+        assertThat(exception.message).contains("Can't receive invoice details by order($orderId")
     }
 
     @Test
-    fun `should not deliver products if status not paid`() {
+    fun `should not deliver products if product server not available`() {
 
-        //given
+        // given
         transactionTemplate.execute {
             storeRepository.deleteAllInBatch()
         }
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.OUTCOME,
-            status = InvoiceStatusDTO.CREATED,
+
+        // and
+        val accountancyResponse = listOf(
+            ItemDTO(productId = 3, quantity = 2),
+            ItemDTO(productId = 4, quantity = 3),
         )
 
         // and
+        val orderId: Long = 1
+
+        // and
         stubFor(
-            get("/api/v1/accountancy/invoice/order-id/1")
+            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -314,38 +297,63 @@ class StoreServiceTest @Autowired constructor(
                 )
         )
 
+        // and
+        val productDetailsResponse = listOf(
+            ProductDetailsResponse(
+                id = 3,
+                quantity = 10
+            ),
+            ProductDetailsResponse(
+                id = 4,
+                quantity = 20
+            ),
+        )
+
+        // and
+        stubFor(
+            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(productDetailsResponse)
+                        )
+                        .withStatus(HttpStatus.ACCEPTED.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
         // when
-        val exception = assertThrows<IncorrectStatusOfInvoice> {
-            storeService.deliverProducts(1)
+        val exception = assertThrows<ProductServerResponseException> {
+            storeService.deliverProducts(orderId)
         }
 
         // then
-        assertThat(exception.message).contains("Invoice is not paid")
-
+        assertThat(exception.message).contains("Can't reduce product amount by order($orderId)")
     }
 
     @Test
     fun `should receive products`() {
 
-        //given
+        // given
         transactionTemplate.execute {
             storeRepository.deleteAllInBatch()
         }
 
         // and
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.INCOME,
-            status = InvoiceStatusDTO.PAID,
-            productItems = setOf(
-                ProductItemDTO(productId = 1, quantity = 2)
-            )
+        val accountancyResponse = listOf(
+            ItemDTO(productId = 1, quantity = 2),
+            ItemDTO(productId = 2, quantity = 3),
         )
 
         // and
+        val orderId: Long = 1
+
+        // and
         stubFor(
-            get("/api/v1/accountancy/invoice/1")
+            get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -357,18 +365,22 @@ class StoreServiceTest @Autowired constructor(
                 )
         )
 
-        // and
-        val productRequest = listOf(1)
-
-        // and
+        //and
         val productResponse = listOf(
-            ReceiveProductResponse(
-                id = 1,
-                status = ProductStatusDTO.RECEIVED,
+            DeliverProductsResponse(
+                id = 1L,
+                quantity = 5,
+                updatedAt = LocalDateTime.now()
+            ),
+            DeliverProductsResponse(
+                id = 2,
+                quantity = 10,
+                updatedAt = LocalDateTime.now()
             )
+
         )
 
-        // and
+        //and
         stubFor(
             put("/api/v1/products/receive")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -376,7 +388,7 @@ class StoreServiceTest @Autowired constructor(
                     EqualToPattern(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(productRequest)
+                            .writeValueAsString(listOf(1, 2))
                     )
                 )
                 .willReturn(
@@ -393,33 +405,55 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val transferCertificate = transactionTemplate.execute {
-            storeService.receiveProduct(1)
+            storeService.receiveProduct(orderId)
         } ?: fail("result is expected")
 
         // then
         assertThat(transferCertificate.id).isNotNull
+        assertThat(transferCertificate.orderId).isEqualTo(orderId)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.RECEIVED)
-        assertThat(transferCertificate.invoiceId).isEqualTo(1)
     }
 
     @Test
-    fun `should not receive product by not income invoice`() {
+    fun `should not receive product if accountancy server not available`() {
 
-        //given
+        // given
+        transactionTemplate.execute {
+            storeRepository.deleteAll()
+        }
+
+        // and
+        val orderId: Long = 3
+
+        // when
+        val exception = assertThrows<AccountancyServerResponseException> {
+            storeService.receiveProduct(orderId)
+        }
+
+        // then
+        assertThat(exception.message).contains("Can't receive invoice details by order($orderId")
+    }
+
+    @Test
+    fun `should not receive products if product server not available`() {
+
+        // given
         transactionTemplate.execute {
             storeRepository.deleteAllInBatch()
         }
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.OUTCOME,
-            total = BigDecimal("90.00"),
-            status = InvoiceStatusDTO.PAID,
+
+        // and
+        val accountancyResponse = listOf(
+            ItemDTO(productId = 5, quantity = 2),
+            ItemDTO(productId = 6, quantity = 3),
         )
 
         // and
+        val orderId: Long = 3
+
+        // and
         stubFor(
-            get("/api/v1/accountancy/invoice/1")
+            get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -430,51 +464,14 @@ class StoreServiceTest @Autowired constructor(
                         )
                 )
         )
-
         // when
-        val exception = assertThrows<IncorrectTypeOfInvoice> {
-            storeService.receiveProduct(1)
+        val exception = assertThrows<ProductServerResponseException> {
+            storeService.receiveProduct(orderId)
         }
 
         // then
-        assertThat(exception.message).contains("Invoice type must be income")
-    }
+        assertThat(exception.message).contains("Can't reduce product amount by order($orderId)")
 
-    @Test
-    fun `should not receive products if status not paid`() {
-
-        //given
-        transactionTemplate.execute {
-            storeRepository.deleteAllInBatch()
-        }
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.INCOME,
-            status = InvoiceStatusDTO.CREATED,
-        )
-
-        // and
-        stubFor(
-            get("/api/v1/accountancy/invoice/1")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
-                )
-        )
-
-        // when
-        val exception = assertThrows<IncorrectStatusOfInvoice> {
-            storeService.receiveProduct(1)
-        }
-
-        // then
-        assertThat(exception.message).contains("Invoice is not paid")
     }
 
     @Test
@@ -529,7 +526,7 @@ class StoreServiceTest @Autowired constructor(
     }
 
     @Test
-    fun `should not return  products to reduce if products unavailable`() {
+    fun `should not return products to reduce if products unavailable`() {
 
         // given
         val products = listOf(
@@ -574,7 +571,6 @@ class StoreServiceTest @Autowired constructor(
         val exception = assertThrows<InsufficientAmountOfProductException> {
             storeService.checkAvailability(products)
         }
-
-        assertThat(exception.message).contains("Insufficient amount of store with price item id =")
+        assertThat(exception.message).contains("Insufficient amount product with id =")
     }
 }

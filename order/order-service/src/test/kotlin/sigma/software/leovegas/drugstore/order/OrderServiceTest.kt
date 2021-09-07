@@ -1,9 +1,8 @@
 package sigma.software.leovegas.drugstore.order
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
@@ -11,20 +10,17 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
@@ -33,14 +29,12 @@ import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
 @AutoConfigureTestDatabase
 @DisplayName("OrderService test")
-@AutoConfigureWireMock(port = 8081)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
     val orderRepository: OrderRepository,
     val objectMapper: ObjectMapper,
-) {
+) : WireMockTest() {
 
     @Test
     fun `should create order`() {
@@ -58,7 +52,7 @@ class OrderServiceTest @Autowired constructor(
         // when
         val created = transactionTemplate.execute {
             orderService.createOrder(order)
-        } ?: fail("result is expected")
+        }.get()
 
         // then
         assertThat(created.id).isNotNull
@@ -96,7 +90,7 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // when
         val actual = orderService.getOrderById(created.id)
@@ -141,7 +135,7 @@ class OrderServiceTest @Autowired constructor(
                     orderStatus = OrderStatus.CREATED
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // when
         val actual = orderService.getOrdersByStatus(OrderStatusDTO.CREATED)
@@ -207,7 +201,7 @@ class OrderServiceTest @Autowired constructor(
                     ),
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // and
         val updateOrderRequest = UpdateOrderRequest(
@@ -222,7 +216,7 @@ class OrderServiceTest @Autowired constructor(
         // when
         val changedOrder = transactionTemplate.execute {
             orderService.updateOrder(orderToChange.id, updateOrderRequest)
-        } ?: fail("result is expected")
+        }.get()
 
         // then
         assertThat(changedOrder.orderItems.iterator().next().quantity).isEqualTo(4)
@@ -248,12 +242,12 @@ class OrderServiceTest @Autowired constructor(
                     orderStatus = OrderStatus.CREATED
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // when
         val changedOrder = transactionTemplate.execute {
             orderService.changeOrderStatus(orderToChange.id, OrderStatusDTO.BOOKED)
-        } ?: fail("result is expected")
+        }.get()
 
         // then
         assertThat(changedOrder.id).isEqualTo(orderToChange.id)
@@ -275,7 +269,7 @@ class OrderServiceTest @Autowired constructor(
                     ),
                 )
             )
-        }?.toOrderResponseDTO() ?: fail("result is expected")
+        }?.toOrderResponseDTO().get()
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
@@ -323,11 +317,11 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // given
         stubFor(
-            get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?ids=1&ids=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -383,7 +377,7 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val exception = assertThrows<OrderNotCreatedException> {
@@ -398,10 +392,6 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should confirm order`() {
 
-        // setup
-        val accountancyServer = WireMockServer(8084)
-        accountancyServer.start()
-
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
@@ -415,10 +405,10 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
-        accountancyServer.stubFor(
+        stubFor(
             post("/api/v1/accountancy/invoice/outcome")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .withRequestBody(
@@ -443,10 +433,9 @@ class OrderServiceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
-                                    InvoiceResponse(
-                                        id = 1,
+                                    ConfirmOrderResponse(
                                         orderId = order.id ?: -1,
-                                        status = InvoiceStatusDTO.CREATED,
+                                        amount = BigDecimal("20.00"),
                                     )
                                 )
                         )
@@ -457,10 +446,8 @@ class OrderServiceTest @Autowired constructor(
         val invoice = orderService.confirmOrder(order.id ?: -1)
 
         // then
-        assertThat(invoice.id).isNotNull
         assertThat(invoice.orderId).isEqualTo(order.id ?: -1)
-        assertThat(invoice.status).isEqualTo(InvoiceStatusDTO.CREATED)
-        accountancyServer.stop()
+        assertThat(invoice.amount).isEqualTo(BigDecimal("20.00"))
     }
 
     @Test
@@ -479,7 +466,7 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val exception = assertThrows<AccountancyServerNotAvailable> {
@@ -506,7 +493,7 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val exception = assertThrows<OrderStatusException> {
@@ -527,7 +514,7 @@ class OrderServiceTest @Autowired constructor(
                     orderStatus = OrderStatus.CONFIRMED,
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
@@ -544,7 +531,7 @@ class OrderServiceTest @Autowired constructor(
         // given
         transactionTemplate.execute {
             orderRepository.deleteAll()
-        } ?: fail("result is expected")
+        }.get()
 
         // and
         transactionTemplate.execute {
@@ -592,7 +579,7 @@ class OrderServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val sortedItems = orderService.getProductsIdToQuantity()

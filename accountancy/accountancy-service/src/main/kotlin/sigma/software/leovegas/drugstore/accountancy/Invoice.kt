@@ -14,13 +14,13 @@ import javax.persistence.Id
 import javax.persistence.JoinColumn
 import javax.persistence.OneToMany
 import javax.persistence.Table
-import javax.validation.constraints.DecimalMax
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import org.hibernate.annotations.CreationTimestamp
 
 enum class InvoiceStatus {
+    NONE,
     CREATED,
     CANCELLED,
     PAID,
@@ -44,11 +44,10 @@ data class Invoice(
 
     @NotNull
     @Column(name = "order_id", nullable = false)
-    val orderId: Long? = null,
+    val orderId: Long = -1,
 
     @NotNull
-    @DecimalMin("0")
-    @DecimalMax("100000000")
+    @DecimalMin("0.01")
     @Column(name = "total")
     val total: BigDecimal = BigDecimal.ZERO,
 
@@ -60,11 +59,11 @@ data class Invoice(
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    val status: InvoiceStatus = InvoiceStatus.CREATED,
+    val status: InvoiceStatus = InvoiceStatus.NONE,
 
     @NotEmpty
     @JoinColumn(name = "invoice_id")
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
     val productItems: Set<ProductItem> = setOf(),
 
     @NotNull

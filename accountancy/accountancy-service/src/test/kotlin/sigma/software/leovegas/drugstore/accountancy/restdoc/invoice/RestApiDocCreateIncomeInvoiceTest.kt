@@ -7,9 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
-import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,12 +33,10 @@ class RestApiDocCreateIncomeInvoiceTest @Autowired constructor(
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
-    fun `should create invoice`() {
+    fun `should create income invoice`() {
 
         // given
-        transactionalTemplate.execute {
-            invoiceRepository.deleteAll()
-        }
+        transactionalTemplate.execute { invoiceRepository.deleteAll() }
 
         // and
         val invoiceRequest = CreateIncomeInvoiceRequest(
@@ -57,6 +53,21 @@ class RestApiDocCreateIncomeInvoiceTest @Autowired constructor(
                 )
             )
         )
+
+        // and
+        val productsToCreate = listOf(
+            CreateProductRequest(
+                name = "test1",
+                quantity = 1,
+                price = BigDecimal("20.00")
+            ),
+            CreateProductRequest(
+                name = "test2",
+                quantity = 2,
+                price = BigDecimal("20.00")
+            )
+        )
+
 
         val productsDetails = listOf(
             ProductDetailsResponse(
@@ -80,20 +91,7 @@ class RestApiDocCreateIncomeInvoiceTest @Autowired constructor(
                     EqualToPattern(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(
-                                listOf(
-                                    CreateProductRequest(
-                                        name = "test1",
-                                        quantity = 1,
-                                        price = BigDecimal("20.00")
-                                    ),
-                                    CreateProductRequest(
-                                        name = "test2",
-                                        quantity = 2,
-                                        price = BigDecimal("20.00")
-                                    )
-                                )
-                            )
+                            .writeValueAsString(productsToCreate)
                     )
                 )
                 .willReturn(
@@ -117,9 +115,6 @@ class RestApiDocCreateIncomeInvoiceTest @Autowired constructor(
             .post("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/income")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("createdAt", not(emptyString()))
-            .assertThat().body("status", equalTo("CREATED"))
-            .assertThat().body("type", equalTo("INCOME"))
-            .assertThat().body("total", equalTo(60.0F))
+            .assertThat().body("amount", equalTo(60.0F))
     }
 }

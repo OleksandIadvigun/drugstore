@@ -13,12 +13,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 
-@AutoConfigureWireMock(port = 8082)
 @DisplayName("Get popular products REST API Doc test")
 class RestApiDocGetPopularProductsTest @Autowired constructor(
     @LocalServerPort val port: Int,

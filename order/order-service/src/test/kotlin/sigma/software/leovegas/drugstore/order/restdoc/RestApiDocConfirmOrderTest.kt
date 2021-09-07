@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.order
+package sigma.software.leovegas.drugstore.order.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -6,24 +6,26 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import org.assertj.core.api.Assertions.fail
+import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.order.Order
+import sigma.software.leovegas.drugstore.order.OrderItem
+import sigma.software.leovegas.drugstore.order.OrderProperties
+import sigma.software.leovegas.drugstore.order.OrderRepository
+import sigma.software.leovegas.drugstore.order.OrderStatus
 
 
 @DisplayName("Confirm order REST API Doc test")
-@AutoConfigureWireMock(port = 8084)
 class RestApiDocConfirmOrderTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
@@ -48,7 +50,23 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
+
+        // and
+        val request = CreateOutcomeInvoiceRequest(
+            listOf(
+                ItemDTO(
+                    productId = 1,
+                    quantity = 1
+                )
+            ), order.id ?: -1
+        )
+
+        // and
+        val response = ConfirmOrderResponse(
+            orderId = order.id ?: -1,
+            amount = BigDecimal("20.00")
+        )
 
         // and
         stubFor(
@@ -58,16 +76,7 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
                     EqualToPattern(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(
-                                CreateOutcomeInvoiceRequest(
-                                    listOf(
-                                        ItemDTO(
-                                            productId = 1,
-                                            quantity = 1
-                                        )
-                                    ), order.id ?: -1
-                                )
-                            )
+                            .writeValueAsString(request)
                     )
                 )
                 .willReturn(
@@ -75,21 +84,10 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    InvoiceResponse(
-                                        id = 1,
-                                        orderId = order.id ?: -1,
-                                        status = InvoiceStatusDTO.CREATED,
-                                    )
-                                )
+                                .writeValueAsString(response)
                         )
                 )
         )
-
-        // and
-        val orderJson = objectMapper
-            .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(order.id ?: -1)
 
         of("confirm-order").`when`()
             .body(order.id)
@@ -97,8 +95,7 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
             .post("http://${orderProperties.host}:$port/api/v1/orders/confirm")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("id", notNullValue())
-            .assertThat().body("orderId", equalTo(order.id?.toInt() ?: -1))
-            .assertThat().body("status", equalTo(InvoiceStatusDTO.CREATED.name))
+            .assertThat().body("orderId", equalTo(order.id.get().toInt()))
+            .assertThat().body("amount", equalTo(20.0F))
     }
 }

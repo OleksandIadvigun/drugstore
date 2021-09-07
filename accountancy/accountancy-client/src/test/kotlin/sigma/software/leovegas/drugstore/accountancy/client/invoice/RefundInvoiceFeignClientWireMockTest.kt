@@ -14,9 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
 
@@ -34,19 +32,9 @@ class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
     fun `should refund invoice`() {
 
         // given
-        val responseExpected = InvoiceResponse(
-            id = 1,
+        val responseExpected = ConfirmOrderResponse(
             orderId = 1,
-            status = InvoiceStatusDTO.REFUND,
-            productItems = setOf(
-                ProductItemDTO(
-                    productId = 1,
-                    name = "test",
-                    price = BigDecimal("40.00"),
-                    quantity = 3
-                )
-            ),
-            total = BigDecimal("120.00"), // price * quantity
+            amount = BigDecimal("120.00"), // price * quantity
         )
 
         // and
@@ -69,7 +57,7 @@ class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
         val responseActual = accountancyClient.refundInvoice(1)
 
         // then
-        assertThat(responseActual.id).isEqualTo(1)
-        assertThat(responseActual.status).isEqualTo(InvoiceStatusDTO.REFUND)
+        assertThat(responseActual.orderId).isEqualTo(responseExpected.orderId)
+        assertThat(responseActual.amount).isEqualTo(responseExpected.amount)
     }
 }

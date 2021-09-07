@@ -1,13 +1,15 @@
 package sigma.software.leovegas.drugstore.store
 
-class InsufficientAmountOfProductException(id: Long) : RuntimeException(
-    "Insufficient amount of store with price item id = $id "
+open class StoreServiceException(message: String) : RuntimeException(message)
+
+class InsufficientAmountOfProductException(productId: Long) : StoreServiceException(
+    "Insufficient amount product with id = $productId"
 )
 
-class InvoiceNotPaidException(id: Long) : RuntimeException(
-    "Invoice with id = $id not paid !"
-)
+class ProductsAlreadyDelivered(orderId: Long) : StoreServiceException("Products from order($orderId) already delivered")
 
-class IncorrectTypeOfInvoice(message: String) : RuntimeException(message)
+class AccountancyServerResponseException(orderId: Long) :
+    StoreServiceException("Can't receive invoice details by order($orderId")
 
-class IncorrectStatusOfInvoice(message: String) : RuntimeException(message)
+class ProductServerResponseException(orderId: Long) :
+    StoreServiceException("Can't reduce product amount by order($orderId)")

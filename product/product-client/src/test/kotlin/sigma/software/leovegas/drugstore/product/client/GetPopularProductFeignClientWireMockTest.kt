@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -16,17 +17,42 @@ import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 
 @SpringBootApplication
-internal class GetPopularProductsFeignClientWireMockTestApp
+internal class GetProductsFeignClientWireMockTestApp
 
-@DisplayName("Get Popular Product Feign Client WireMock test")
-@ContextConfiguration(classes = [GetPopularProductsFeignClientWireMockTestApp::class])
-class GetPopularProductsFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Get Product Feign Client WireMock tests")
+@ContextConfiguration(classes = [GetProductsFeignClientWireMockTestApp::class])
+class GetProductsFeignClientWireMockTests @Autowired constructor(
     val productClient: ProductClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should get popular product `() {
+    fun `should get product price`() {
+        // given
+        stubFor(
+            get("/api/v1/products/123/price")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(BigDecimal("1.23"))
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // when
+        val price = productClient.getProductPrice(123)
+
+        // then
+        assertThat(price).isEqualTo(BigDecimal("1.23"))
+    }
+
+    @Test
+    fun `should get popular product`() {
 
         // given
         val responseExpected = ResponsePage(

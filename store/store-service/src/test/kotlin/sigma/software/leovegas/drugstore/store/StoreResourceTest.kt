@@ -7,7 +7,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -22,16 +21,11 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceStatusDTO
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceTypeDTO
-import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
-import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
-import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
@@ -60,11 +54,13 @@ class StoreResourceTest @Autowired constructor(
             storeRepository.deleteAllInBatch()
         }
 
+        val orderId: Long = 1
+
         // and
         transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    invoiceId = 1,
+                    orderId = orderId,
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
                 )
@@ -73,7 +69,7 @@ class StoreResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/store/transfer-certificate/invoice/1",
+            "$baseUrl/api/v1/store/transfer-certificate/order/$orderId",
             HttpMethod.GET, null, respTypeRef<List<TransferCertificateResponse>>()
         )
 
@@ -84,7 +80,7 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
         assertThat(body).hasSize(1)
-        assertThat(body[0].invoiceId).isEqualTo(1)
+        assertThat(body[0].orderId).isEqualTo(1)
     }
 
     @Test
@@ -100,12 +96,12 @@ class StoreResourceTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        invoiceId = 1,
+                        orderId = 1,
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        invoiceId = 2,
+                        orderId = 2,
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -126,8 +122,8 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
         assertThat(body).hasSize(2)
-        assertThat(body[0].invoiceId).isEqualTo(1)
-        assertThat(body[1].invoiceId).isEqualTo(2)
+        assertThat(body[0].orderId).isEqualTo(1)
+        assertThat(body[1].orderId).isEqualTo(2)
     }
 
     @Test
@@ -139,22 +135,17 @@ class StoreResourceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.INCOME,
-            status = InvoiceStatusDTO.PAID,
-            productItems = setOf(
-                ProductItemDTO(productId = 1, quantity = 2)
-            )
+        val accountancyResponse = listOf(
+            ItemDTO(productId = 1, quantity = 2),
+            ItemDTO(productId = 2, quantity = 3),
         )
 
         // and
-        val httpEntity = HttpEntity(1)
+        val orderId: Long = 1
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/1")
+            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -166,18 +157,22 @@ class StoreResourceTest @Autowired constructor(
                 )
         )
 
-        // and
-        val productRequest = listOf(1)
-
-        // and
+        //and
         val productResponse = listOf(
-            ReceiveProductResponse(
-                id = 1,
-                status = ProductStatusDTO.RECEIVED,
+            DeliverProductsResponse(
+                id = 1L,
+                quantity = 5,
+                updatedAt = LocalDateTime.now()
+            ),
+            DeliverProductsResponse(
+                id = 2,
+                quantity = 10,
+                updatedAt = LocalDateTime.now()
             )
+
         )
 
-        // and
+        //and
         stubFor(
             put("/api/v1/products/receive")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -185,7 +180,7 @@ class StoreResourceTest @Autowired constructor(
                     EqualToPattern(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(productRequest)
+                            .writeValueAsString(listOf(1, 2))
                     )
                 )
                 .willReturn(
@@ -200,6 +195,7 @@ class StoreResourceTest @Autowired constructor(
                 )
         )
 
+        val httpEntity = HttpEntity(1)
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/store/receive",
@@ -212,7 +208,7 @@ class StoreResourceTest @Autowired constructor(
         // and
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
-        assertThat(body.invoiceId).isEqualTo(1)
+        assertThat(body.orderId).isEqualTo(1)
         assertThat(body.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }
 
@@ -225,20 +221,17 @@ class StoreResourceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = InvoiceResponse(
-            id = 1,
-            orderId = 1,
-            type = InvoiceTypeDTO.OUTCOME,
-            total = BigDecimal("90.00"),
-            status = InvoiceStatusDTO.PAID,
-            productItems = setOf(
-                ProductItemDTO(productId = 1, quantity = 2)
-            )
+        val accountancyResponse = listOf(
+            ItemDTO(productId = 1, quantity = 2),
+            ItemDTO(productId = 2, quantity = 3),
         )
 
         // and
+        val orderId: Long = 1
+
+        // and
         stubFor(
-            get("/api/v1/accountancy/invoice/order-id/1")
+            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -255,6 +248,10 @@ class StoreResourceTest @Autowired constructor(
             DeliverProductsQuantityRequest(
                 id = 1,
                 quantity = 2
+            ),
+            DeliverProductsQuantityRequest(
+                id = 2,
+                quantity = 3
             )
         )
 
@@ -264,7 +261,13 @@ class StoreResourceTest @Autowired constructor(
                 id = 1L,
                 quantity = 5,
                 updatedAt = LocalDateTime.now()
+            ),
+            DeliverProductsResponse(
+                id = 2,
+                quantity = 10,
+                updatedAt = LocalDateTime.now()
             )
+
         )
 
         //and
@@ -296,11 +299,15 @@ class StoreResourceTest @Autowired constructor(
                 id = 1,
                 quantity = 10
             ),
+            ProductDetailsResponse(
+                id = 2,
+                quantity = 20
+            ),
         )
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=1")
+            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -332,7 +339,7 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body ?: fail("body may not be null")
         assertThat(body).isNotNull
         assertThat(body).isNotNull
-        assertThat(body.invoiceId).isEqualTo(1)
+        assertThat(body.orderId).isEqualTo(1)
         assertThat(body.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 
@@ -368,7 +375,7 @@ class StoreResourceTest @Autowired constructor(
 
         //and
         stubFor(
-            get("/api/v1/products/details?ids=1&ids=2")
+            get("/api/v1/products/details?ids=${productResponse[0].id}&ids=${productResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
+import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.api.ApiError
 
 @RestController
@@ -26,54 +27,45 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(CREATED)
     @PostMapping("/invoice/income")
-    fun createIncomeInvoice(@RequestBody productItems: CreateIncomeInvoiceRequest): InvoiceResponse =
-        service.createIncomeInvoice(productItems)
+    fun createIncomeInvoice(@RequestBody createIncomeInvoiceRequest: CreateIncomeInvoiceRequest): ConfirmOrderResponse =
+        service.createIncomeInvoice(createIncomeInvoiceRequest)
 
     @ResponseStatus(CREATED)
     @PostMapping("/invoice/outcome")
-    fun createOutcomeInvoice(@RequestBody createOutcomeInvoiceRequest: CreateOutcomeInvoiceRequest): InvoiceResponse =
+    fun createOutcomeInvoice(@RequestBody createOutcomeInvoiceRequest: CreateOutcomeInvoiceRequest): ConfirmOrderResponse =
         service.createOutcomeInvoice(createOutcomeInvoiceRequest)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/pay/{id}")
-    fun payInvoice(@PathVariable id: Long, @RequestBody money: BigDecimal): InvoiceResponse =
+    fun payInvoice(@PathVariable id: Long, @RequestBody money: BigDecimal): ConfirmOrderResponse =
         service.payInvoice(id, money)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/cancel/{id}")
-    fun cancelInvoice(@PathVariable id: Long): InvoiceResponse =
+    fun cancelInvoice(@PathVariable id: Long): ConfirmOrderResponse =
         service.cancelInvoice(id)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/refund/{id}")
-    fun refundInvoice(@PathVariable id: Long): InvoiceResponse =
+    fun refundInvoice(@PathVariable id: Long): ConfirmOrderResponse =
         service.refundInvoice(id)
 
     @ResponseStatus(OK)
     @GetMapping("/invoice/{id}")
-    fun getInvoiceById(@PathVariable id: Long): InvoiceResponse = service.getInvoiceById(id)
+    fun getInvoiceById(@PathVariable id: Long): ConfirmOrderResponse =
+        service.getInvoiceById(id)
 
     @ResponseStatus(OK)
-    @GetMapping("/invoice/order-id/{id}")
-    fun getInvoiceByOrderId(@PathVariable id: Long): InvoiceResponse = service.getInvoiceByOrderId(id)
-
-//    @ResponseStatus(OK)
-//    @GetMapping("/price-item/markup")
-//    fun getMarkups(
-//        @RequestParam(defaultValue = "") ids: List<Long>,
-//    ): List<MarkupUpdateResponse> = service.getMarkUps(ids)
-//
-//    @ResponseStatus(ACCEPTED)
-//    @PutMapping("/price-item/markup")
-//    fun updateMarkup(@RequestBody markupUpdateRequests: List<MarkupUpdateRequest>): List<MarkupUpdateResponse> =
-//        service.updateMarkups(markupUpdateRequests)
+    @GetMapping("/invoice/details/order-id/{id}")
+    fun getInvoiceDetailsByOrderId(@PathVariable id: Long): List<ItemDTO> =
+        service.getInvoiceDetailsByOrderId(id)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {
-            is ResourceNotFoundException -> HttpStatus.BAD_REQUEST
-            is InvalidStatusOfInvoice -> HttpStatus.BAD_REQUEST
             is ProductServiceResponseException -> HttpStatus.SERVICE_UNAVAILABLE
+            is OrderServiceResponseException -> HttpStatus.SERVICE_UNAVAILABLE
+            is StoreServiceResponseException -> HttpStatus.SERVICE_UNAVAILABLE
             else -> HttpStatus.BAD_REQUEST
         }
         ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))

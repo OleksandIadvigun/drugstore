@@ -23,7 +23,7 @@ data class ProductItem(
 
     @NotNull
     @Column(name = "product_id", nullable = false)
-    val productId: Long? = null,
+    val productId: Long = -1,
 
     @NotNull
     @Column(name = "name", nullable = false)

@@ -17,30 +17,32 @@ import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
 @SpringBootApplication
-internal class GetTransferCertificateByInvoiceIdIdsFeignClientWireMockTestApp
+internal class GetTransferCertificateByOrderIdIdsFeignClientWireMockTestApp
 
-@DisplayName("Get Transfer Certificated by invoice id Feign Client WireMock test")
-@ContextConfiguration(classes = [GetTransferCertificateByInvoiceIdIdsFeignClientWireMockTestApp::class])
-class GetTransferCertificateByInvoiceIdIdsFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Get Transfer Certificated by order id Feign Client WireMock test")
+@ContextConfiguration(classes = [GetTransferCertificateByOrderIdIdsFeignClientWireMockTestApp::class])
+class GetTransferCertificateByOrderIdIdsFeignClientWireMockTest @Autowired constructor(
     val storeClient: StoreClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should get transfer certificate by invoice id`() {
+    fun `should get transfer certificate by order id`() {
 
-        // given
-        val responseExpected = listOf(
+        //given
+        val orderNumber: Long = 1
+
+        // and
+        val responseExpected =
             TransferCertificateResponse(
                 id = 1,
-                invoiceId = 1,
+                orderId = orderNumber,
                 status = TransferStatusDTO.DELIVERED
             )
-        )
 
         // and
         stubFor(
-            get("/api/v1/store/transfer-certificate/invoice/1")
+            get("/api/v1/store/transfer-certificate/order/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -55,10 +57,10 @@ class GetTransferCertificateByInvoiceIdIdsFeignClientWireMockTest @Autowired con
         )
 
         // when
-        val responseActual = storeClient.getTransferCertificatesByInvoiceId(1)
+        val responseActual = storeClient.getTransferCertificatesByOrderId(orderNumber)
 
         //  then
-        assertThat(responseActual[0].invoiceId).isEqualTo(1)
-        assertThat(responseActual[0].status).isEqualTo(TransferStatusDTO.DELIVERED)
+        assertThat(responseActual.orderId).isEqualTo(orderNumber)
+        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 }

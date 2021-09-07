@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.product.client
+package sigma.software.leovegas.drugstore.order
 
 import org.junit.jupiter.api.DisplayName
 import org.springframework.boot.test.context.SpringBootTest

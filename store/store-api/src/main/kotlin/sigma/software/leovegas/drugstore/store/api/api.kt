@@ -3,7 +3,7 @@ package sigma.software.leovegas.drugstore.store.api
 // Requests
 
 data class TransferCertificateRequest(
-    val invoiceId: Long = -1,
+    val orderId: Long = -1,
     val status: TransferStatusDTO,
     val comment: String = "undefined",
 )
@@ -12,7 +12,7 @@ data class TransferCertificateRequest(
 
 data class TransferCertificateResponse(
     val id: Long = -1,
-    val invoiceId: Long = -1,
+    val orderId: Long = -1,
     val status: TransferStatusDTO = TransferStatusDTO.NONE,
     val comment: String = "undefined"
 )

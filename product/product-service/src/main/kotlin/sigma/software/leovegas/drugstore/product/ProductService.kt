@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.product
 
+import java.math.BigDecimal
 import javax.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -106,4 +107,9 @@ class ProductService(
             .map { it.copy(quantity = it.quantity.plus(idsToQuantity[it.id] ?: -1)) }
         productRepository.saveAllAndFlush(toUpdate).toReduceProductQuantityResponseList()
     }
+
+    fun getProductPrice(productNumber: Long): BigDecimal =
+        productRepository.findFirstByIdOrderByCreatedAtDesc(productNumber)
+            .map { it.price }
+            .orElseThrow { ResourceNotFoundException("Product($productNumber) not found") }
 }

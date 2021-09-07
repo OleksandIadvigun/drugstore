@@ -1,16 +1,19 @@
-package sigma.software.leovegas.drugstore.store
+package sigma.software.leovegas.drugstore.store.restdoc
 
-import org.assertj.core.api.Assertions
-import org.hamcrest.Matchers.`is`
+import org.assertj.core.api.Assertions.fail
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.store.StoreProperties
+import sigma.software.leovegas.drugstore.store.StoreRepository
+import sigma.software.leovegas.drugstore.store.TransferCertificate
+import sigma.software.leovegas.drugstore.store.TransferStatus
 
-@DisplayName("Get transfer certificates by invoice id REST API Doc test")
-class RestApiDocGetTransferCertificatesByInvoiceId @Autowired constructor(
+@DisplayName("Get transfer certificates by order id REST API Doc test")
+class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
     @LocalServerPort val port: Int,
     val storeProperties: StoreProperties,
     val storeRepository: StoreRepository,
@@ -18,29 +21,30 @@ class RestApiDocGetTransferCertificatesByInvoiceId @Autowired constructor(
 ) : RestApiDocumentationTest(storeProperties) {
 
     @Test
-    fun `should get transfer certificate by invoice id`() {
+    fun `should get transfer certificate by order id`() {
 
         // given
         transactionTemplate.execute {
             storeRepository.deleteAllInBatch()
         }
 
+        val orderId: Long = 1
+
         // and
         transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    invoiceId = 1,
+                    orderId = orderId,
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
                 )
             )
-        } ?: Assertions.fail("result is expected")
+        } ?: fail("result is expected")
 
-        of("get-transfer-certificates-by-invoice-id").`when`()
-            .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate/invoice/1")
+        of("get-transfer-certificates-by-order-id").`when`()
+            .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate/order/$orderId")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("size()", `is`(1))
-            .assertThat().body("[0].invoiceId", equalTo(1))
+            .assertThat().body("[0].orderId", equalTo(1))
     }
 }

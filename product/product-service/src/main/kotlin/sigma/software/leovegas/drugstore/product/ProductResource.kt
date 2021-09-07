@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.product
 
+import java.math.BigDecimal
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.ACCEPTED
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -24,19 +26,20 @@ import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityReques
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1/products")
 class ProductResource(private val service: ProductService) {
 
+    @ResponseStatus(OK)
+    @GetMapping("/{productNumber}/price")
+    fun getProductPrice(@PathVariable("productNumber") productNumber: Long): BigDecimal =
+        service.getProductPrice(productNumber)
+
     @ResponseStatus(CREATED)
-    @PostMapping("products")
+    @PostMapping("")
     fun create(@RequestBody productRequest: List<CreateProductRequest>) = service.createProduct(productRequest)
 
-//    @ResponseStatus(OK)
-//    @GetMapping("products/{id}")
-//    fun getOne(@PathVariable id: Long): ProductResponse = service.getOne(id)
-
     @ResponseStatus(OK)
-    @GetMapping("products/search")
+    @GetMapping("/search")
     fun searchProducts(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int,
@@ -46,29 +49,27 @@ class ProductResource(private val service: ProductService) {
     ): Page<SearchProductResponse> = service.searchProducts(page, size, search, sortField, sortDirection)
 
     @ResponseStatus(OK)
-    @GetMapping("products/popular")
+    @GetMapping("/popular")
     fun getPopularProducts(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "5") size: Int,
-    ): Page<GetProductResponse> {
-        return service.getPopularProducts(page, size)
-    }
+    ): Page<GetProductResponse> = service.getPopularProducts(page, size)
 
     @ResponseStatus(ACCEPTED)
-    @PutMapping("products/deliver")
+    @PutMapping("/deliver")
     fun deliverProducts(@RequestBody products: List<DeliverProductsQuantityRequest>) =
         service.deliverProducts(products)
 
     @ResponseStatus(ACCEPTED)
-    @PutMapping("products/receive")
+    @PutMapping("/receive")
     fun receiveProducts(@RequestBody ids: List<Long>) = service.receiveProducts(ids)
 
     @ResponseStatus(ACCEPTED)
-    @PutMapping("products/return")
+    @PutMapping("/return")
     fun returnProducts(@RequestBody products: List<ReturnProductQuantityRequest>) = service.returnProducts(products)
 
     @ResponseStatus(OK)
-    @GetMapping("products/details")
+    @GetMapping("/details")
     fun getProductsDetailsByIds(@RequestParam("ids") ids: List<Long>): List<ProductDetailsResponse> {
         return service.getProductsDetailsByIds(ids)
     }
