@@ -1,10 +1,11 @@
-package sigma.software.leovegas.drugstore.accountancy.client.invoice
+package sigma.software.leovegas.drugstore.accountancy.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -13,34 +14,30 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
-import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
+import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 
 @SpringBootApplication
-internal class GetInvoiceByOrderIdFeignClientWireMockTestApp
+internal class CancelInvoiceFeignClientWireMockTestApp
 
-@DisplayName("Get Invoice Details By Order Id Feign Client WireMock test")
-@ContextConfiguration(classes = [GetInvoiceByOrderIdFeignClientWireMockTestApp::class])
-class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Cancel Invoice Feign Client WireMock test")
+@ContextConfiguration(classes = [CancelInvoiceFeignClientWireMockTestApp::class])
+class CancelInvoiceFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should get invoice details by order id`() {
+    fun `should cancel invoice`() {
 
         // given
-        val responseExpected = listOf(
-            ItemDTO(
-                productId = 1L,
-                quantity = 2
-            )
+        val responseExpected = ConfirmOrderResponse(
+            orderId = 1L,
+            amount = BigDecimal("120.00"), // price * quantity
         )
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/1")
+            put("/api/v1/accountancy/invoice/cancel/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -49,16 +46,16 @@ class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.OK.value())
+                        .withStatus(HttpStatus.ACCEPTED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = accountancyClient.getInvoiceDetailsByOrderId(1L)
+        val responseActual = accountancyClient.cancelInvoice(1L)
 
         // then
-        assertThat(responseActual[0].productId).isEqualTo(1L)
-        assertThat(responseActual[0].quantity).isEqualTo(2)
+        assertThat(responseActual.orderId).isEqualTo(1L)
+        assertThat(responseActual.amount).isEqualTo(BigDecimal("120.00"))
     }
 }

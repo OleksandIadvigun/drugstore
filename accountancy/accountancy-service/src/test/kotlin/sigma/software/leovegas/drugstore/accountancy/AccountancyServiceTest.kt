@@ -77,15 +77,18 @@ class AccountancyServiceTest @Autowired constructor(
                 )
         )
 
+        // and
         stubFor(
-            WireMock.get("/api/v1/products/${productsDetails[0].id}/price")
+            WireMock.get("/api/v1/products/1/price")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(BigDecimal("20.00"))
+                                .writeValueAsString(
+                                    mapOf(Pair(1, BigDecimal("40.00")))
+                                )
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -623,5 +626,37 @@ class AccountancyServiceTest @Autowired constructor(
 
         // then
         assertThat(exception.message).contains("Order(${savedInvoice.orderId}) already paid. Please, first do refund")
+    }
+
+    @Test
+    fun `should get sale price`() {
+
+        // given
+        val ids = listOf(1L, 2L)
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/products/1,2/price")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(Pair(1, BigDecimal("1.23")), Pair(2, BigDecimal("1.24")))
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // when
+        val priceMap = service.getSalePrice(ids)
+
+        // then
+        assertThat(priceMap[1]).isEqualTo(BigDecimal("1.23"))
+        assertThat(priceMap[2]).isEqualTo(BigDecimal("1.24"))
     }
 }

@@ -33,9 +33,9 @@ class ProductResource(private val service: ProductService) {
     val logger: Logger = LoggerFactory.getLogger(ProductResource::class.java)
 
     @ResponseStatus(OK)
-    @GetMapping("/{productNumber}/price")
-    fun getProductPrice(@PathVariable("productNumber") productNumber: Long): BigDecimal =
-        service.getProductPrice(productNumber)
+    @GetMapping("/{productNumbers}/price")
+    fun getProductPrice(@PathVariable("productNumbers") productNumbers: List<Long>): Map<Long, BigDecimal> =
+        service.getProductPrice(productNumbers)
 
     @ResponseStatus(CREATED)
     @PostMapping("")

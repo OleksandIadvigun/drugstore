@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.accountancy.client.invoice
+package sigma.software.leovegas.drugstore.accountancy.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -15,31 +15,29 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
-import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
 
 @SpringBootApplication
-internal class CancelInvoiceFeignClientWireMockTestApp
+internal class RefundInvoiceFeignClientWireMockTestApp
 
-@DisplayName("Cancel Invoice Feign Client WireMock test")
-@ContextConfiguration(classes = [CancelInvoiceFeignClientWireMockTestApp::class])
-class CancelInvoiceFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Refund Invoice By Id Feign Client WireMock test")
+@ContextConfiguration(classes = [RefundInvoiceFeignClientWireMockTestApp::class])
+class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should cancel invoice`() {
+    fun `should refund invoice`() {
 
         // given
         val responseExpected = ConfirmOrderResponse(
-            orderId = 1L,
+            orderId = 1,
             amount = BigDecimal("120.00"), // price * quantity
         )
 
         // and
         stubFor(
-            put("/api/v1/accountancy/invoice/cancel/1")
+            put("/api/v1/accountancy/invoice/refund/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -54,10 +52,10 @@ class CancelInvoiceFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.cancelInvoice(1L)
+        val responseActual = accountancyClient.refundInvoice(1)
 
         // then
-        assertThat(responseActual.orderId).isEqualTo(1L)
-        assertThat(responseActual.amount).isEqualTo(BigDecimal("120.00"))
+        assertThat(responseActual.orderId).isEqualTo(responseExpected.orderId)
+        assertThat(responseActual.amount).isEqualTo(responseExpected.amount)
     }
 }

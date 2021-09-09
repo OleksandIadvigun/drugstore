@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
@@ -63,6 +64,11 @@ class AccountancyResource(private val service: AccountancyService) {
     @GetMapping("/invoice/details/order-id/{id}")
     fun getInvoiceDetailsByOrderId(@PathVariable id: Long): List<ItemDTO> =
         service.getInvoiceDetailsByOrderId(id)
+
+    @ResponseStatus(OK)
+    @GetMapping("/sale-price")
+    fun getSalePrice(@RequestParam("ids") ids: List<Long>): Map<Long, BigDecimal> =
+        service.getSalePrice(ids)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

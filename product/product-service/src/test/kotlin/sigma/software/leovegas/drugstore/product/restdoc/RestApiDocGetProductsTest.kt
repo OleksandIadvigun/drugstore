@@ -81,13 +81,34 @@ class RestApiDocGetProductsTest @Autowired constructor(
                 )
         )
 
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=${savedProducts[0].id}&ids=${savedProducts[1].id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(savedProducts[1].id, BigDecimal("100.00")),
+                                        Pair(savedProducts[0].id, BigDecimal("20.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
         of("get-products").`when`()
             .get("http://${productProperties.host}:$port/api/v1/products/search?search=test")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size", `is`(2))
             .assertThat().body("[0].name", Matchers.equalTo("test2"))
-            .assertThat().body("[0].price", Matchers.equalTo(30.0F))
+            .assertThat().body("[0].price", Matchers.equalTo(100.0F))
             .assertThat().body("[0].quantity", Matchers.equalTo(3))
             .assertThat().body("[1].name", Matchers.equalTo("test"))
     }

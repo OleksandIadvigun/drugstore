@@ -23,13 +23,24 @@ class StoreService @Autowired constructor(
     val logger: Logger = LoggerFactory.getLogger(StoreService::class.java)
 
     fun createTransferCertificate(transferCertificateRequest: TransferCertificateRequest) =
-        storeRepository.save(transferCertificateRequest.validate().toTransferCertificate())
-            .toTransferCertificateResponse()
+        transferCertificateRequest.validate().run {
+            val transferCertificate = storeRepository.save(this.toTransferCertificate())
+            logger.info("Transfer Certificate $transferCertificate")
+            transferCertificate.toTransferCertificateResponse()
+        }
 
-    fun getTransferCertificatesByOrderId(id: Long) =
-        storeRepository.findAllByOrderId(id).toTransferCertificateResponseList()
+    fun getTransferCertificatesByOrderId(id: Long) = id.run {
+        val transferCertificate = storeRepository.findAllByOrderId(id)
+        logger.info("Transfer Certificate $transferCertificate")
+        transferCertificate.toTransferCertificateResponseList()
+    }
 
-    fun getTransferCertificates() = storeRepository.findAll().toTransferCertificateResponseList()
+
+    fun getTransferCertificates(): List<TransferCertificateResponse> {
+        val transferCertificateList = storeRepository.findAll()
+        logger.info("Transfer Certificate list $transferCertificateList")
+        return transferCertificateList.toTransferCertificateResponseList()
+    }
 
     fun deliverProducts(orderId: Long): TransferCertificateResponse =
         orderId.validate(storeRepository::getTransferCertificateByOrderId).run {
@@ -48,15 +59,13 @@ class StoreService @Autowired constructor(
                 .onFailure { throw ProductServerResponseException() }
                 .getOrNull()
                 .orEmpty()
-            logger.info("Products is delivered")
+            logger.info("Products are delivered")
 
-            return@run createTransferCertificate(
-                TransferCertificateRequest(
-                    this,
-                    TransferStatusDTO.DELIVERED,
-                    "products delivered"
-                )
+            val transferCertificate = createTransferCertificate(
+                TransferCertificateRequest(this, TransferStatusDTO.DELIVERED, "products delivered")
             )
+            logger.info("Transfer Certificate $transferCertificate")
+            return@run transferCertificate
         }
 
     fun receiveProduct(orderId: Long) =
@@ -74,9 +83,11 @@ class StoreService @Autowired constructor(
                 .orEmpty()
             logger.info("Products is received")
 
-            createTransferCertificate(
+            val transferCertificate = createTransferCertificate(
                 TransferCertificateRequest(this, TransferStatusDTO.RECEIVED, "products received")
             )
+            logger.info("Transfer Certificate $transferCertificate")
+            transferCertificate
         }
 
     fun checkAvailability(products: List<DeliverProductsQuantityRequest>) = products.validate().run {
@@ -92,7 +103,8 @@ class StoreService @Autowired constructor(
                 throw InsufficientAmountOfProductException(it.id)
             }
         }
-        products
+        logger.info("Products quantity is sufficient $products")
+        return@run products
     }
 
     fun checkTransfer(orderNumber: Long): Long = orderNumber.validate(storeRepository::getTransferCertificateByOrderId)

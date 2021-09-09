@@ -1,6 +1,7 @@
 package sigma.software.leovegas.drugstore.accountancy.restdoc.invoice
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
@@ -69,15 +70,18 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
                 )
         )
 
+        // and
         stubFor(
-            get("/api/v1/products/${productsDetails[0].id}/price")
+            WireMock.get("/api/v1/products/1/price")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(BigDecimal("20.00"))
+                                .writeValueAsString(
+                                    mapOf(Pair(1, BigDecimal("40.00")))
+                                )
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)

@@ -94,15 +94,18 @@ class AccountancyResourceTest @Autowired constructor(
                 )
         )
 
+        // and
         stubFor(
-            WireMock.get("/api/v1/products/${productsDetails[0].id}/price")
+            WireMock.get("/api/v1/products/1/price")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(BigDecimal("20.00"))
+                                .writeValueAsString(
+                                    mapOf(Pair(1, BigDecimal("40.00")))
+                                )
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -433,5 +436,43 @@ class AccountancyResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
         assertThat(body.amount).isEqualTo(savedInvoice.total)
+    }
+
+    @Test
+    fun `should get sale price`() {
+
+        // given
+        stubFor(
+            WireMock.get("/api/v1/products/1,2/price")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(Pair(1, BigDecimal("1.23")), Pair(2, BigDecimal("1.24")))
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/accountancy/sale-price?ids=1&ids=2",
+            GET,
+            null,
+            respTypeRef<Map<Long, BigDecimal>>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body.get("body")
+        assertThat(body[1]).isEqualTo(BigDecimal("1.23"))
+        assertThat(body[2]).isEqualTo(BigDecimal("1.24"))
     }
 }

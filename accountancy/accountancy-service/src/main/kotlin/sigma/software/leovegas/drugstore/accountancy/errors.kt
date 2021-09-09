@@ -8,6 +8,9 @@ open class OrderAlreadyConfirmedException(orderNumber: Long) :
 class InvoiceAlreadyPaidException(orderNumber: Long?) :
     AccountancyServiceException("Order($orderNumber) already paid. Please, first do refund")
 
+class ProductIdCannotBeNullException
+    : AccountancyServiceException("Product id cannot be null or negative")
+
 class OrderContainsInvalidProductsException(productNumbers: List<Number> = listOf()) :
     AccountancyServiceException("Order contains invalid products: ${productNumbers.joinToString(separator = ", ")}")
 

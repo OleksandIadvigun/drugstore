@@ -1,8 +1,8 @@
 package sigma.software.leovegas.drugstore.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
@@ -11,13 +11,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
@@ -32,6 +32,35 @@ class ProductServiceTest @Autowired constructor(
     val repository: ProductRepository,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
+
+    @Test
+    fun `should get product price`() {
+
+        // setup
+        transactionTemplate.execute {
+            repository.deleteAll()
+        }
+
+        // given
+        val product = transactionTemplate.execute {
+            repository.save(
+                Product(
+                    price = BigDecimal.TEN
+                )
+            )
+        }.get()
+
+        // and
+        val ids = listOf(product.id)
+
+        // when
+        val actual = service.getProductPrice(ids as List<Long>)
+
+        // when
+        assertThat(actual).hasSize(1)
+        assertThat(actual.getValue(product.id ?: -1)).isEqualTo(BigDecimal.TEN.setScale(2))
+    }
+
 
     @Test
     fun `should create product`() {
@@ -80,35 +109,37 @@ class ProductServiceTest @Autowired constructor(
                     Product(
                         name = "aspirin",
                         quantity = 10,
-                        status = ProductStatus.RECEIVED
+                        status = ProductStatus.RECEIVED,
+                        price = BigDecimal("10.00")
                     ),
                     Product(
                         name = "aspirin2",
                         quantity = 10,
-                        status = ProductStatus.RECEIVED
-
+                        status = ProductStatus.RECEIVED,
+                        price = BigDecimal("20.00")
                     ),
                     Product(
                         name = "aspirin",
                         quantity = 10,
-                        status = ProductStatus.CREATED
+                        status = ProductStatus.CREATED,
+                        price = BigDecimal("30.00")
                     ),
                     Product(
                         name = "some2",
                         quantity = 10,
-                        status = ProductStatus.RECEIVED
-
+                        status = ProductStatus.RECEIVED,
+                        price = BigDecimal("40.00")
                     )
                 )
             )
-        }?.map { it.id } ?: fail("result is expected")
+        }?.map { it.id }.get()
 
         //and
         val responseExpected = mapOf(ids[2] to 9, ids[1] to 5, ids[0] to 1)
 
         // and
         stubFor(
-            get("/api/v1/orders/total-buys")
+            WireMock.get("/api/v1/orders/total-buys")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -116,6 +147,26 @@ class ProductServiceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=${ids[0]}&ids=${ids[1]}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(ids[1], BigDecimal("40.00")), Pair(ids[0], BigDecimal("20.00"))
+                                    )
+                                )
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -130,6 +181,8 @@ class ProductServiceTest @Autowired constructor(
         assertThat(all).hasSize(2)
         assertThat(all[0].id).isEqualTo(ids[1])
         assertThat(all[1].id).isEqualTo(ids[0])
+        assertThat(all[0].price).isEqualTo(BigDecimal("40.00"))
+        assertThat(all[1].price).isEqualTo(BigDecimal("20.00"))
     }
 
     @Test
@@ -171,7 +224,27 @@ class ProductServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=${saved[1].id}&ids=${saved[0].id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(saved[0].id, BigDecimal("100.00")), Pair(saved[1].id, BigDecimal("20.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
 
         // when
         val all = service.searchProducts(0, 5, "aspirin", "price", "DESC")
@@ -180,9 +253,9 @@ class ProductServiceTest @Autowired constructor(
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
         assertThat(all[0].id).isEqualTo(saved[1].id)
-        assertThat(all[0].price).isEqualTo(saved[1].price)
+        assertThat(all[0].price).isEqualTo(BigDecimal("20.00"))
         assertThat(all[1].id).isEqualTo(saved[0].id)
-        assertThat(all[1].price).isEqualTo(saved[0].price)
+        assertThat(all[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
     @Test
@@ -224,7 +297,27 @@ class ProductServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=${saved[0].id}&ids=${saved[1].id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(saved[1].id, BigDecimal("100.00")), Pair(saved[0].id, BigDecimal("20.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
 
         // when
         val all = service.searchProducts(0, 5, "aspirin", "price", "ASC")
@@ -233,9 +326,9 @@ class ProductServiceTest @Autowired constructor(
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
         assertThat(all[0].id).isEqualTo(saved[0].id)
-        assertThat(all[0].price).isEqualTo(saved[0].price)
+        assertThat(all[0].price).isEqualTo(BigDecimal("20.00"))
         assertThat(all[1].id).isEqualTo(saved[1].id)
-        assertThat(all[1].price).isEqualTo(saved[1].price)
+        assertThat(all[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
     @Test
@@ -309,14 +402,14 @@ class ProductServiceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         //and
         val responseExpected = mapOf(saved[2].id to 9, saved[1].id to 5, saved[0].id to 1)
 
         // and
         stubFor(
-            get("/api/v1/orders/total-buys")
+            WireMock.get("/api/v1/orders/total-buys")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -394,7 +487,7 @@ class ProductServiceTest @Autowired constructor(
                     quantity = 10
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
         val updatedProductRequest = DeliverProductsQuantityRequest(
@@ -422,7 +515,7 @@ class ProductServiceTest @Autowired constructor(
                     quantity = 5
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val exception = assertThrows<NotEnoughQuantityProductException> {
@@ -452,7 +545,7 @@ class ProductServiceTest @Autowired constructor(
                     status = ProductStatus.CREATED
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val actual = service.receiveProducts(listOf(saved.id ?: -1))
@@ -473,7 +566,7 @@ class ProductServiceTest @Autowired constructor(
                     quantity = 10
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
         val updatedProductRequest = ReturnProductQuantityRequest(

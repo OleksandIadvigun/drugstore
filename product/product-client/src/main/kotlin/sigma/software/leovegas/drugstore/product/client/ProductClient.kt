@@ -48,5 +48,5 @@ interface ProductClient {
     fun returnProducts(products: List<ReturnProductQuantityRequest>): List<ReturnProductsResponse>
 
     @RequestLine("GET /api/v1/products/{productNumber}/price")
-    fun getProductPrice(@Param productNumber: Long): BigDecimal
+    fun getProductPrice(@Param productNumber: List<Long>): Map<Long, BigDecimal>
 }

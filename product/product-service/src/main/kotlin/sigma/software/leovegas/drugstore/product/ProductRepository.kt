@@ -11,6 +11,8 @@ interface ProductRepository : JpaRepository<Product, Long> {
         @Param("id") id: Long
     ): Optional<Product>
 
+    fun findAllByIdInOrderByCreatedAtDesc(ids: List<Long>): List<Product>
+
     fun findAllByNameContainingAndStatusAndQuantityGreaterThan(
         name: String?, status: ProductStatus, quantity: Int, pageable: Pageable?
     ): List<Product>

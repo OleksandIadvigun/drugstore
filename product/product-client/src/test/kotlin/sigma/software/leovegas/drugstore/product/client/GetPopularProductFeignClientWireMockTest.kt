@@ -28,16 +28,19 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
 
     @Test
     fun `should get product price`() {
+
         // given
         stubFor(
-            get("/api/v1/products/123/price")
+            get("/api/v1/products/1,2/price")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(BigDecimal("1.23"))
+                                .writeValueAsString(
+                                    mapOf(Pair(1, BigDecimal("1.23")), Pair(2, BigDecimal("1.24")))
+                                )
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -45,10 +48,11 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
         )
 
         // when
-        val price = productClient.getProductPrice(123)
+        val priceMap = productClient.getProductPrice(listOf(1, 2))
 
         // then
-        assertThat(price).isEqualTo(BigDecimal("1.23"))
+        assertThat(priceMap.getValue(1)).isEqualTo(BigDecimal("1.23"))
+        assertThat(priceMap.getValue(2)).isEqualTo(BigDecimal("1.24"))
     }
 
     @Test

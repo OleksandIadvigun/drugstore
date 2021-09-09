@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
@@ -341,17 +342,37 @@ class OrderServiceTest @Autowired constructor(
                                             id = 1,
                                             name = "test1",
                                             quantity = 3,
-                                            price = BigDecimal.ONE
+                                            price = BigDecimal("20.00")
                                         ),
                                         ProductDetailsResponse(
                                             id = 2,
                                             name = "test2",
                                             quantity = 4,
-                                            price = BigDecimal.TEN
+                                            price = BigDecimal("30.00")
                                         )
                                     )
                                 )
                         )
+                )
+        )
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=1&ids=2")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(1, BigDecimal("40.00")), Pair(2, BigDecimal("60.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -363,8 +384,8 @@ class OrderServiceTest @Autowired constructor(
         assertThat(orderDetails.orderItemDetails.iterator().next().productId).isEqualTo(1)
         assertThat(orderDetails.orderItemDetails.iterator().next().name).isEqualTo("test1")
         assertThat(orderDetails.orderItemDetails.iterator().next().quantity).isEqualTo(1)
-        assertThat(orderDetails.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal.ONE)
-        assertThat(orderDetails.total).isEqualTo(BigDecimal("21").setScale(2)) // price multiply quantity
+        assertThat(orderDetails.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal("40.00").setScale(2))
+        assertThat(orderDetails.total).isEqualTo(BigDecimal("160").setScale(2)) // price multiply quantity
     }
 
     @Test
@@ -476,7 +497,7 @@ class OrderServiceTest @Autowired constructor(
         }.get()
 
         // when
-        val exception = assertThrows<AccountancyServerNotAvailable> {
+        val exception = assertThrows<AccountancyServerNotAvailableException> {
             orderService.confirmOrder(order.id ?: -1)
         }
 

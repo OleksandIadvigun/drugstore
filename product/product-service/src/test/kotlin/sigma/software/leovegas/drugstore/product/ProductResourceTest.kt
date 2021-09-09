@@ -58,13 +58,14 @@ class ProductResourceTest @Autowired constructor(
 
     @Test
     fun `should get product price`() {
+
         // setup
         transactionalTemplate.execute {
-            repository.deleteAllInBatch()
+            repository.deleteAll()
         }
 
         // given
-        val created = transactionalTemplate.execute {
+        val productId = transactionalTemplate.execute {
             repository.save(
                 Product(
                     name = "A test product",
@@ -72,23 +73,20 @@ class ProductResourceTest @Autowired constructor(
                     quantity = 3,
                 )
             )
-        }.get()
-
-        // and
-        val productNumber = created.id
+        }?.id.get()
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/products/{productNumber}/price",
-            GET, null, respTypeRef<BigDecimal>(), productNumber
+            "$baseUrl/api/v1/products/{productId}/price",
+            GET, null, respTypeRef<Map<Long, BigDecimal>>(), productId
         )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val price = response.body
-        assertThat(price).isEqualTo(BigDecimal("1.23"))
+        val priceMap = response.body.get("body")
+        assertThat(priceMap.getValue(productId)).isEqualTo(BigDecimal("1.23"))
     }
 
     @Test
@@ -325,6 +323,26 @@ class ProductResourceTest @Autowired constructor(
             )
         }.get()
 
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=${saved[0].id}&ids=${saved[1].id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(saved[1].id, BigDecimal("100.00")), Pair(saved[0].id, BigDecimal("20.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
         // when
         val response = restTemplate
             .exchange(
@@ -340,9 +358,9 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body[0].id).isEqualTo(saved[0].id)
-        assertThat(body[0].price).isEqualTo(BigDecimal("10.00"))
+        assertThat(body[0].price).isEqualTo(BigDecimal("20.00"))
         assertThat(body[1].id).isEqualTo(saved[1].id)
-        assertThat(body[1].price).isEqualTo(BigDecimal("50.00"))
+        assertThat(body[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
     @Test
@@ -386,6 +404,27 @@ class ProductResourceTest @Autowired constructor(
             )
         }.get()
 
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=${saved[1].id}&ids=${saved[0].id}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(saved[0].id, BigDecimal("20.00")),
+                                        Pair(saved[1].id, BigDecimal("100.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
         // when
         val response = restTemplate
             .exchange(
@@ -401,9 +440,9 @@ class ProductResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body[0].id).isEqualTo(saved[1].id)
-        assertThat(body[0].price).isEqualTo(BigDecimal("50.00"))
+        assertThat(body[0].price).isEqualTo(BigDecimal("100.00"))
         assertThat(body[1].id).isEqualTo(saved[0].id)
-        assertThat(body[1].price).isEqualTo(BigDecimal("10.00"))
+        assertThat(body[1].price).isEqualTo(BigDecimal("20.00"))
     }
 
     @Test
@@ -463,10 +502,30 @@ class ProductResourceTest @Autowired constructor(
                 )
         )
 
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=${ids[0]}&ids=${ids[1]}")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(ids[0], BigDecimal("40.00")), Pair(ids[1], BigDecimal("20.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
         // when
         val response = restTemplate
             .exchange(
-                "$baseUrl/api/v1/products/search?search=aspirin&sortField=popularity&sortDirection=DESC",
+                "$baseUrl/api/v1/products/search?search=aspirin&sortField=popularity&sortDirection=ASC",
                 GET,
                 null,
                 respTypeRef<List<SearchProductResponse>>()
@@ -479,6 +538,8 @@ class ProductResourceTest @Autowired constructor(
         assertThat(body).hasSize(2)
         assertThat(body[0].id).isEqualTo(ids[1])
         assertThat(body[1].id).isEqualTo(ids[0])
+        assertThat(body[0].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(body[1].price).isEqualTo(BigDecimal("40.00"))
     }
 
     @Test

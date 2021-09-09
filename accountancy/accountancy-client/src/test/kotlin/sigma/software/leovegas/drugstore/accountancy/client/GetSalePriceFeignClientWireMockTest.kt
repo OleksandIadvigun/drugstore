@@ -1,8 +1,8 @@
-package sigma.software.leovegas.drugstore.accountancy.client.invoice
+package sigma.software.leovegas.drugstore.accountancy.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.put
+import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
@@ -14,32 +14,32 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
-import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
 
 @SpringBootApplication
-internal class RefundInvoiceFeignClientWireMockTestApp
+internal class GetSalePriceFeignClientWireMockTestApp
 
-@DisplayName("Refund Invoice By Id Feign Client WireMock test")
-@ContextConfiguration(classes = [RefundInvoiceFeignClientWireMockTestApp::class])
-class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Get Sale Price Feign Client WireMock test")
+@ContextConfiguration(classes = [GetSalePriceFeignClientWireMockTestApp::class])
+class GetSalePriceFeignClientWireMockTest @Autowired constructor(
     val accountancyClient: AccountancyClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should refund invoice`() {
+    fun `should sale price`() {
 
         // given
-        val responseExpected = ConfirmOrderResponse(
-            orderId = 1,
-            amount = BigDecimal("120.00"), // price * quantity
+        val productsId = listOf(1L, 2L)
+
+        // and
+        val responseExpected = mapOf(
+            Pair(productsId[0], BigDecimal("10.00")),
+            Pair(productsId[1], BigDecimal("20.00"))
         )
 
         // and
         stubFor(
-            put("/api/v1/accountancy/invoice/refund/1")
+            get("/api/v1/accountancy/sale-price?ids=1&ids=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -48,16 +48,17 @@ class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.ACCEPTED.value())
+                        .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = accountancyClient.refundInvoice(1)
+        val responseActual = accountancyClient.getSalePrice(productsId)
 
         // then
-        assertThat(responseActual.orderId).isEqualTo(responseExpected.orderId)
-        assertThat(responseActual.amount).isEqualTo(responseExpected.amount)
+        assertThat(responseActual).hasSize(2)
+        assertThat(responseActual.getValue(productsId[0])).isEqualTo(BigDecimal("10.00"))
+        assertThat(responseActual.getValue(productsId[1])).isEqualTo(BigDecimal("20.00"))
     }
 }

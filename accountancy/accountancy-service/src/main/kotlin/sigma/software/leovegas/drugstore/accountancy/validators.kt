@@ -15,6 +15,9 @@ fun Long.validate(functor: (Long) -> Optional<Invoice>): Invoice =
         functor(this).orElseThrow { InvoiceNotFoundException(this) }
     }
 
+fun List<Long>.validate(): List<Long> =
+    onEach { if (it < 1) throw ProductIdCannotBeNullException() }
+
 fun CreateIncomeInvoiceRequest.validate(): CreateIncomeInvoiceRequest = apply {
     if (productItems.isEmpty()) throw ProductsItemsAreEmptyException()
 }

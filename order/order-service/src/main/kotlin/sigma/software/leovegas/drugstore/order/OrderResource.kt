@@ -34,8 +34,8 @@ class OrderResource(private val orderService: OrderService) {
     fun getOrderById(@PathVariable("id") id: Long) =
         orderService.getOrderById(id)
 
-    @GetMapping("/status/{status}")
     @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/status/{status}")
     fun getOrdersByStatus(@PathVariable("status") orderStatus: OrderStatusDTO) =
         orderService.getOrdersByStatus(orderStatus)
 
@@ -64,12 +64,8 @@ class OrderResource(private val orderService: OrderService) {
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {
-            is InsufficientAmountOfOrderItemException -> HttpStatus.BAD_REQUEST
-            is OrderNotFoundException -> HttpStatus.BAD_REQUEST
-            is OrderNotCreatedException -> HttpStatus.BAD_REQUEST
-            is AccountancyServerNotAvailable -> HttpStatus.GATEWAY_TIMEOUT
-            is OrderStatusException -> HttpStatus.BAD_REQUEST
-            is ProductServerNotAvailable -> HttpStatus.GATEWAY_TIMEOUT
+            is AccountancyServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
+            is ProductServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
             else -> HttpStatus.BAD_REQUEST
         }
         val error = ApiError(status.value(), status.reasonPhrase, e.message)

@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.accountancy.client.invoice
+package sigma.software.leovegas.drugstore.accountancy.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -18,8 +18,6 @@ import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
-import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
 
 @SpringBootApplication
 internal class CreateIncomeInvoiceFeignClientWireMockTestApp

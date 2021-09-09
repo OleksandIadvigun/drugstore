@@ -7,9 +7,9 @@ class OrderNotFoundException(id: Long?) : OrderServiceException("Order with $id 
 class InsufficientAmountOfOrderItemException :
     OrderServiceException("You have to add minimum one order item")
 
-class ProductServerNotAvailable : OrderServiceException("We can't get products. Try again later")
+class ProductServerNotAvailableException : OrderServiceException("We can't get products. Try again later")
 
-class AccountancyServerNotAvailable : OrderServiceException("We can't create invoice. Try again later")
+class AccountancyServerNotAvailableException : OrderServiceException("We can't create invoice. Try again later")
 
 class OrderNotCreatedException(id: Long) : OrderServiceException("Order must be created")
 

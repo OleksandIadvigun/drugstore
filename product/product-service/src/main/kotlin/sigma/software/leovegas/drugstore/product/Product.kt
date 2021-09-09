@@ -38,7 +38,7 @@ data class Product(
 
     @NotEmpty
     @Column(name = "name", nullable = false, updatable = false)
-    val name: String,
+    val name: String = "undefined",
 
     @NotNull
     @DecimalMin("0")
