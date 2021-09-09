@@ -254,7 +254,7 @@ class ProductServiceTest @Autowired constructor(
     fun `should not get products if internal server is unavailable`() {
 
         // when
-        val exception = assertThrows<InternalServerNotAvailableException> {
+        val exception = assertThrows<OrderServerNotAvailableException> {
             service.searchProducts(0, 5, "aspirin", "popularity", "DESC")
         }
 
@@ -266,7 +266,7 @@ class ProductServiceTest @Autowired constructor(
     fun `should not get popular products if internal server is unavailable`() {
 
         // when
-        val exception = assertThrows<InternalServerNotAvailableException> {
+        val exception = assertThrows<OrderServerNotAvailableException> {
             service.getPopularProducts(0, 5)
         }
 

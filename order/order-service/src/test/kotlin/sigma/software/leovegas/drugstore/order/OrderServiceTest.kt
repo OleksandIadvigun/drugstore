@@ -286,7 +286,10 @@ class OrderServiceTest @Autowired constructor(
         val nonExitingId = -15L
 
         // and
-        val request = UpdateOrderRequest(listOf(OrderItemDTO()))
+        val request = UpdateOrderRequest(listOf(OrderItemDTO(
+            productId = 5L,
+            quantity = 2
+        )))
 
         // when
         val exception = assertThrows<OrderNotFoundException> {

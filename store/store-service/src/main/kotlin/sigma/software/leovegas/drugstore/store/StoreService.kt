@@ -19,7 +19,8 @@ class StoreService @Autowired constructor(
 ) {
 
     fun createTransferCertificate(transferCertificateRequest: TransferCertificateRequest) =
-        storeRepository.save(transferCertificateRequest.toTransferCertificate()).toTransferCertificateResponse()
+        storeRepository.save(transferCertificateRequest.validate().toTransferCertificate())
+            .toTransferCertificateResponse()
 
     fun getTransferCertificatesByOrderId(id: Long) =
         storeRepository.findAllByOrderId(id).toTransferCertificateResponseList()
@@ -40,7 +41,7 @@ class StoreService @Autowired constructor(
             checkAvailability(products)
 
             runCatching { productClient.deliverProducts(products) }
-                .onFailure { throw ProductServerResponseException(this) }
+                .onFailure { throw ProductServerResponseException() }
                 .getOrNull()
                 .orEmpty()
 
@@ -62,7 +63,7 @@ class StoreService @Autowired constructor(
                 .orEmpty()
 
             runCatching { productClient.receiveProducts(invoiceItems.map { it.productId }) }
-                .onFailure { throw ProductServerResponseException(this) }
+                .onFailure { throw ProductServerResponseException() }
                 .getOrNull()
                 .orEmpty()
 
@@ -71,9 +72,13 @@ class StoreService @Autowired constructor(
             )
         }
 
-    fun checkAvailability(products: List<DeliverProductsQuantityRequest>) = products.run {
-        val productsMap =
+    fun checkAvailability(products: List<DeliverProductsQuantityRequest>) = products.validate().run {
+        val productsMap = runCatching {
             productClient.getProductsDetailsByIds(products.map { it.id }).associate { it.id to it.quantity }
+        }
+            .onFailure { throw ProductServerResponseException() }
+            .getOrThrow()
+
         forEach {
             if (it.quantity > (productsMap[it.id] ?: -1)) {
                 throw InsufficientAmountOfProductException(it.id)

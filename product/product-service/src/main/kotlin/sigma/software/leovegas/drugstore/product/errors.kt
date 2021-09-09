@@ -1,9 +1,11 @@
 package sigma.software.leovegas.drugstore.product
 
-class ResourceNotFoundException(message: String?) : RuntimeException(message)
+open class ProductServiceException(message: String) : RuntimeException(message)
 
-class NotCorrectRequestException(message: String?) : RuntimeException(message)
+class ResourceNotFoundException(productNumber: Long) : ProductServiceException("Product($productNumber) not found")
 
-class NotEnoughQuantityProductException(message: String?) : RuntimeException(message)
+class NotCorrectRequestException(message: String) : ProductServiceException(message)
 
-class InternalServerNotAvailableException(message: String?) : RuntimeException(message)
+class NotEnoughQuantityProductException(message: String) : ProductServiceException(message)
+
+class OrderServerNotAvailableException(message: String) : ProductServiceException(message)

@@ -30,24 +30,23 @@ class ProductService(
         if (search == "") throw NotCorrectRequestException("Search field can not be empty!")
         if (sortField == "popularity") {
             val pageableForPopularity: Pageable = PageRequest.of(page, size)
-            val productsIdToQuantity: Map<Long, Int>
-            try {
-                productsIdToQuantity = orderClient.getProductsIdToQuantity()
-            } catch (e: Exception) {
-                throw InternalServerNotAvailableException("Something's wrong, please try again later")
-            }
+            val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
+                .onFailure { throw OrderServerNotAvailableException("Something's wrong, please try again later") }
+                .getOrThrow()
+
             val products = productRepository
                 .findAllByNameContainingAndIdInAndStatusAndQuantityGreaterThan(
                     search,
-                    productsIdToQuantity.keys,
+                    productsQuantity.keys,
                     ProductStatus.RECEIVED,
                     0,
                     pageableForPopularity
                 )
                 .map(Product::toSearchProductResponse)
-            val index = productsIdToQuantity.keys.withIndex().associate { it.value to it.index }
+            val index = productsQuantity.keys.withIndex().associate { it.value to it.index }
             val sortedContent = products.sortedBy { index[it.id] }
             return PageImpl(sortedContent, pageableForPopularity, products.totalElements)
+
         }
         val pageable: Pageable = PageRequest.of(page, size, SortUtil.getSort(sortField, sortDirection))
         val products = productRepository.findAllByNameContainingAndStatusAndQuantityGreaterThan(
@@ -63,7 +62,7 @@ class ProductService(
         try {
             productsIdToQuantity = orderClient.getProductsIdToQuantity()
         } catch (e: Exception) {
-            throw InternalServerNotAvailableException("Something's wrong, please try again later")
+            throw OrderServerNotAvailableException("Something's wrong, please try again later")
         }
         val products = productRepository
             .findAllByIdInAndStatusAndQuantityGreaterThan(
@@ -77,7 +76,7 @@ class ProductService(
 
     fun getProductsDetailsByIds(ids: List<Long>) = productRepository.findAllById(ids).toProductDetailsResponseList()
 
-    fun createProduct(productRequest: List<CreateProductRequest>) = productRequest.run {
+    fun createProduct(productRequest: List<CreateProductRequest>) = productRequest.validate().run {
         productRepository.saveAll(toEntityList()).toCreateProductResponseList()
     }
 
@@ -87,7 +86,7 @@ class ProductService(
             .map { it.copy(status = ProductStatus.RECEIVED) }
             .toReceiveProductResponseList()
 
-    fun deliverProducts(productRequest: List<DeliverProductsQuantityRequest>) = productRequest.run {
+    fun deliverProducts(productRequest: List<DeliverProductsQuantityRequest>) = productRequest.validate().run {
         val idsToQuantity = associate { it.id to it.quantity }
         val toUpdate = productRepository
             .findAllById(this.map { it.id })
@@ -100,7 +99,7 @@ class ProductService(
         productRepository.saveAllAndFlush(toUpdate).toReduceProductQuantityResponseList()
     }
 
-    fun returnProducts(products: List<ReturnProductQuantityRequest>) = products.run {
+    fun returnProducts(products: List<ReturnProductQuantityRequest>) = products.validate().run {
         val idsToQuantity = associate { it.id to it.quantity }
         val toUpdate = productRepository
             .findAllById(this.map { it.id })
@@ -109,7 +108,5 @@ class ProductService(
     }
 
     fun getProductPrice(productNumber: Long): BigDecimal =
-        productRepository.findFirstByIdOrderByCreatedAtDesc(productNumber)
-            .map { it.price }
-            .orElseThrow { ResourceNotFoundException("Product($productNumber) not found") }
+        productNumber.validate(productRepository::findFirstByIdOrderByCreatedAtDesc).price
 }

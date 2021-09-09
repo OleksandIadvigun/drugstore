@@ -336,7 +336,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Can't reduce product amount by order($orderId)")
+        assertThat(exception.message).contains("Ups... some problems with product service")
     }
 
     @Test
@@ -475,7 +475,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Can't reduce product amount by order($orderId)")
+        assertThat(exception.message).contains("Ups... some problems with product service")
 
     }
 

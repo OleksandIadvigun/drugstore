@@ -68,7 +68,8 @@ class AccountancyService @Autowired constructor(
         }
 
     fun createIncomeInvoice(invoiceRequest: CreateIncomeInvoiceRequest): ConfirmOrderResponse =
-        invoiceRequest.run {
+        invoiceRequest.validate().run {
+
             val productsToCreate = productItems.map {
                 CreateProductRequest(
                     name = it.name,
@@ -107,7 +108,7 @@ class AccountancyService @Autowired constructor(
         }
 
     fun getInvoiceById(id: Long): ConfirmOrderResponse =
-        id.validate { invoiceRepository.findById(id) }.toInvoiceResponse()
+        id.validate(invoiceRepository::findById).toInvoiceResponse()
 
     fun getInvoiceDetailsByOrderId(id: Long): List<ItemDTO> =
         id.validate { invoiceRepository.getInvoiceByOrderId(id) }.run {
@@ -122,7 +123,7 @@ class AccountancyService @Autowired constructor(
         }
 
     fun payInvoice(id: Long, money: BigDecimal): ConfirmOrderResponse =
-        id.validate { invoiceRepository.findById(id) }.run {
+        id.validate(invoiceRepository::findById).run {
             if (this.status != InvoiceStatus.CREATED) throw InvalidStatusOfInvoice()
             if (money < this.total) throw NotEnoughMoneyException()
             val paidInvoice = this.copy(status = InvoiceStatus.PAID)
@@ -130,7 +131,7 @@ class AccountancyService @Autowired constructor(
         }
 
     fun refundInvoice(id: Long): ConfirmOrderResponse =
-        id.validate { invoiceRepository.findById(id) }.run {
+        id.validate(invoiceRepository::findById).run {
             if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.id ?: -1)
             runCatching { storeClient.checkTransfer(this.orderId) }
                 .onFailure { throw StoreServiceResponseException() }
@@ -139,7 +140,7 @@ class AccountancyService @Autowired constructor(
         }
 
     fun cancelInvoice(id: Long): ConfirmOrderResponse =
-        id.validate { invoiceRepository.findById(id) }.run {
+        id.validate(invoiceRepository::findById).run {
             if (this.status.name == "PAID") throw InvoiceAlreadyPaidException(this.orderId)
             val toUpdate = this.copy(status = InvoiceStatus.CANCELLED)
             return invoiceRepository.saveAndFlush(toUpdate).toInvoiceResponse()

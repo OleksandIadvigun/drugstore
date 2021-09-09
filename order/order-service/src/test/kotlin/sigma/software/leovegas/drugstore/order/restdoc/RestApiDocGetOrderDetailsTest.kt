@@ -42,10 +42,6 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
                         OrderItem(
                             productId = 1,
                             quantity = 1
-                        ),
-                        OrderItem(
-                            productId = 2,
-                            quantity = 2
                         )
                     )
                 )
@@ -59,18 +55,12 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
                 name = "test1",
                 quantity = 3,
                 price = BigDecimal.ONE
-            ),
-            ProductDetailsResponse(
-                id = 2,
-                name = "test2",
-                quantity = 4,
-                price = BigDecimal.TEN
             )
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?ids=1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -91,6 +81,6 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
             .assertThat().body("orderItemDetails[0].name", equalTo("test1"))
             .assertThat().body("orderItemDetails[0].quantity", equalTo(1))
             .assertThat().body("orderItemDetails[0].price", equalTo(1))
-            .assertThat().body("total", equalTo(21.0F)) // price multiply quantity
+            .assertThat().body("total", equalTo(1.0F)) // price multiply quantity
     }
 }

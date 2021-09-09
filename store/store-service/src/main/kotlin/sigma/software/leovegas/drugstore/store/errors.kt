@@ -11,5 +11,11 @@ class ProductsAlreadyDelivered(orderId: Long) : StoreServiceException("Products 
 class AccountancyServerResponseException(orderId: Long) :
     StoreServiceException("Can't receive invoice details by order($orderId")
 
-class ProductServerResponseException(orderId: Long) :
-    StoreServiceException("Can't reduce product amount by order($orderId)")
+class ProductServerResponseException() :
+    StoreServiceException("Ups... some problems with product service")
+
+class NotCorrectQuantityException() :
+    StoreServiceException("Quantity in request should be grater than 0")
+
+class NotCorrectRequestException() :
+    StoreServiceException("Request body is not valid. Please, fulfill all necessary fields")

@@ -27,15 +27,14 @@ class OrderService @Autowired constructor(
     val accountancyClient: AccountancyClient,
 ) {
 
-    fun createOrder(createOrderRequest: CreateOrderRequest): OrderResponse = createOrderRequest.run {
-        if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+    fun createOrder(createOrderRequest: CreateOrderRequest): OrderResponse = createOrderRequest.validate().run {
         val entity = toEntity().copy(orderStatus = CREATED) // NOTE: business logic must be placed in services!
         val created = orderRepository.save(entity)
         created.toOrderResponseDTO()
     }
 
     fun getOrderById(id: Long): OrderResponse =
-        orderRepository.findById(id).orElseThrow { throw OrderNotFoundException(id) }.toOrderResponseDTO()
+        id.validate(orderRepository::findById).toOrderResponseDTO()
 
     fun getOrdersByStatus(orderStatus: OrderStatusDTO): List<OrderResponse> =
         orderRepository.getAllByOrderStatus(OrderStatus.valueOf(orderStatus.name)).toOrderResponseList()
@@ -46,8 +45,7 @@ class OrderService @Autowired constructor(
     }
 
     fun updateOrder(id: Long, updateOrderRequest: UpdateOrderRequest): OrderResponse =
-        updateOrderRequest.run {
-            if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+        updateOrderRequest.validate().run {
             val toUpdate = orderRepository
                 .findById(id)
                 .orElseThrow { OrderNotFoundException(id) }
@@ -61,58 +59,57 @@ class OrderService @Autowired constructor(
 
     fun changeOrderStatus(id: Long, orderStatus: OrderStatusDTO) =
         id.run {
-            val toUpdate = orderRepository
-                .findById(this)
-                .orElseThrow { OrderNotFoundException(id) }
-                .copy(orderStatus = OrderStatus.valueOf(orderStatus.name))
+            val toUpdate =
+                validate(orderRepository::findById)
+                    .copy(orderStatus = OrderStatus.valueOf(orderStatus.name))
             val updated = orderRepository.saveAndFlush(toUpdate)
             updated.toOrderResponseDTO()
         }
 
-    fun getOrderDetails(id: Long) = id.run {
-        val orderById = getOrderById(this)
-        if (orderById.orderStatus == OrderStatusDTO.NONE) {
-            throw OrderNotCreatedException(orderById.id)
-        }
-        val orderItemsQuantity = orderById.orderItems.associate { it.productId to it.quantity }
-        val orderItemsIds = orderById.orderItems.map { it.productId }
-        val products = productClient.getProductsDetailsByIds(orderItemsIds)
-        val orderItemDetails = products.map {
-            OrderItemDetailsDTO(
-                productId = it.id,
-                name = it.name,
-                quantity = orderItemsQuantity[it.id] ?: -1,
-                price = it.price
-            )
-        }
-        OrderDetailsDTO(
-            orderItemDetails = orderItemDetails,
-            total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
-                .setScale(2)
-        )
-    }
-
-    fun confirmOrder(orderId: Long): ConfirmOrderResponse = orderId.run {
-        val order = getOrderById(this)
-        if (order.orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
-        if ((order.orderStatus != OrderStatusDTO.CREATED).and(order.orderStatus != OrderStatusDTO.UPDATED)) {
-            throw OrderStatusException("Order is already confirmed or cancelled")
-        }
-        runCatching {
-            val createOutcomeInvoice = accountancyClient.createOutcomeInvoice(
-                CreateOutcomeInvoiceRequest(
-                    order.orderItems.map {
-                        ItemDTO(productId = it.productId, quantity = it.quantity)
-                    }, this
+    fun getOrderDetails(id: Long) =
+        id.validate(orderRepository::findById).run {
+            if (this.orderStatus == OrderStatus.NONE) {
+                throw OrderNotCreatedException(id)
+            }
+            val orderItemsQuantity = orderItems.associate { it.productId to it.quantity }
+            val orderItemsIds = orderItems.map { it.productId }
+            val products = productClient.getProductsDetailsByIds(orderItemsIds)
+            val orderItemDetails = products.map {
+                OrderItemDetailsDTO(
+                    productId = it.id,
+                    name = it.name,
+                    quantity = orderItemsQuantity[it.id] ?: -1,
+                    price = it.price
                 )
+            }
+            OrderDetailsDTO(
+                orderItemDetails = orderItemDetails,
+                total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
+                    .setScale(2)
             )
-            changeOrderStatus(this, OrderStatusDTO.CONFIRMED)
-            createOutcomeInvoice
         }
-            .onFailure { throw AccountancyServerNotAvailable() }
-            .getOrThrow()
 
-    }
+    fun confirmOrder(orderId: Long): ConfirmOrderResponse =
+        orderId.validate(orderRepository::findById)
+            .run {
+                if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
+                if ((orderStatus != CREATED).and(orderStatus != UPDATED)) {
+                    throw OrderStatusException("Order is already confirmed or cancelled")
+                }
+                runCatching {
+                    val createOutcomeInvoice = accountancyClient.createOutcomeInvoice(
+                        CreateOutcomeInvoiceRequest(
+                            orderItems.map {
+                                ItemDTO(productId = it.productId, quantity = it.quantity)
+                            }, orderId
+                        )
+                    )
+                    changeOrderStatus(orderId, OrderStatusDTO.CONFIRMED)
+                    createOutcomeInvoice
+                }
+                    .onFailure { throw AccountancyServerNotAvailable() }
+                    .getOrThrow()
+            }
 
     fun getProductsIdToQuantity(): Map<Long, Int> {
         val ids = orderRepository

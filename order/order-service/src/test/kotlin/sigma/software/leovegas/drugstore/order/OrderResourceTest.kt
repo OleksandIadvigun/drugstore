@@ -161,11 +161,11 @@ class OrderResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get orderDetails`() {
+    fun `should get order Details`() {
 
         // given
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?ids=1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -179,12 +179,6 @@ class OrderResourceTest @Autowired constructor(
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00"),
-                                        ),
-                                        SearchProductResponse(
-                                            id = 2L,
-                                            name = "test2",
-                                            quantity = 4,
-                                            price = BigDecimal("30.00")
                                         )
                                     )
                                 )
@@ -201,10 +195,6 @@ class OrderResourceTest @Autowired constructor(
                         OrderItem(
                             productId = 1L,
                             quantity = 1
-                        ),
-                        OrderItem(
-                            productId = 2L,
-                            quantity = 2
                         )
                     )
                 )
@@ -220,12 +210,12 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body.orderItemDetails).hasSize(2)
+        assertThat(body.orderItemDetails).hasSize(1)
         assertThat(body.orderItemDetails.iterator().next().name).isEqualTo("test1")
         assertThat(body.orderItemDetails.iterator().next().productId).isEqualTo(1)
         assertThat(body.orderItemDetails.iterator().next().quantity).isEqualTo(1)
         assertThat(body.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal("20.00"))
-        assertThat(body.total).isEqualTo((BigDecimal("80").setScale(2)))
+        assertThat(body.total).isEqualTo((BigDecimal("20").setScale(2)))
     }
 
     @Test

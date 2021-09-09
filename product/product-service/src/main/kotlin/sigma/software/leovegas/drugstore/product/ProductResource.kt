@@ -80,7 +80,7 @@ class ProductResource(private val service: ProductService) {
             is ResourceNotFoundException -> HttpStatus.BAD_REQUEST
             is NotCorrectRequestException -> HttpStatus.BAD_REQUEST
             is NotEnoughQuantityProductException -> HttpStatus.BAD_REQUEST
-            is InternalServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
+            is OrderServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
             else -> HttpStatus.BAD_REQUEST
         }
         ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))

@@ -29,3 +29,5 @@ class StoreServiceResponseException() :
     AccountancyServiceException("Ups... Something went wrong! Please, try again later")
 
 class NotEnoughMoneyException() : AccountancyServiceException("Not enough money for this transaction")
+
+class ProductsItemsAreEmptyException() : AccountancyServiceException("Products items should be not empty")
