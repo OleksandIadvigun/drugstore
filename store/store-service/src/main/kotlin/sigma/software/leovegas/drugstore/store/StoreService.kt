@@ -1,5 +1,7 @@
 package sigma.software.leovegas.drugstore.store
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,6 +20,8 @@ class StoreService @Autowired constructor(
     val productClient: ProductClient,
 ) {
 
+    val logger: Logger = LoggerFactory.getLogger(StoreService::class.java)
+
     fun createTransferCertificate(transferCertificateRequest: TransferCertificateRequest) =
         storeRepository.save(transferCertificateRequest.validate().toTransferCertificate())
             .toTransferCertificateResponse()
@@ -34,7 +38,7 @@ class StoreService @Autowired constructor(
                 .onFailure { throw AccountancyServerResponseException(this) }
                 .getOrNull()
                 .orEmpty()
-
+            logger.info("Received invoice details $invoiceDetails")
             val products = invoiceDetails
                 .map { DeliverProductsQuantityRequest(id = it.productId, quantity = it.quantity) }
 
@@ -44,6 +48,7 @@ class StoreService @Autowired constructor(
                 .onFailure { throw ProductServerResponseException() }
                 .getOrNull()
                 .orEmpty()
+            logger.info("Products is delivered")
 
             return@run createTransferCertificate(
                 TransferCertificateRequest(
@@ -61,11 +66,13 @@ class StoreService @Autowired constructor(
                 .onFailure { throw AccountancyServerResponseException(this) }
                 .getOrNull()
                 .orEmpty()
+            logger.info("Received invoice details ${invoiceItems.toString()}")
 
             runCatching { productClient.receiveProducts(invoiceItems.map { it.productId }) }
                 .onFailure { throw ProductServerResponseException() }
                 .getOrNull()
                 .orEmpty()
+            logger.info("Products is received")
 
             createTransferCertificate(
                 TransferCertificateRequest(this, TransferStatusDTO.RECEIVED, "products received")
@@ -78,6 +85,7 @@ class StoreService @Autowired constructor(
         }
             .onFailure { throw ProductServerResponseException() }
             .getOrThrow()
+        logger.info("Received product details ${productsMap.entries}")
 
         forEach {
             if (it.quantity > (productsMap[it.id] ?: -1)) {

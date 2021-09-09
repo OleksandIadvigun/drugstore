@@ -1,6 +1,8 @@
 package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.ACCEPTED
@@ -28,6 +30,8 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 @RestController
 @RequestMapping("/api/v1/products")
 class ProductResource(private val service: ProductService) {
+
+    val logger: Logger = LoggerFactory.getLogger(ProductResource::class.java)
 
     @ResponseStatus(OK)
     @GetMapping("/{productNumber}/price")
@@ -83,6 +87,8 @@ class ProductResource(private val service: ProductService) {
             is OrderServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
             else -> HttpStatus.BAD_REQUEST
         }
-        ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))
+        val error = ApiError(status.value(), status.reasonPhrase, e.message)
+        logger.warn("$error , ${e.javaClass}")
+        ResponseEntity.status(status).body(error)
     }
 }

@@ -1,6 +1,8 @@
 package sigma.software.leovegas.drugstore.order
 
 import java.math.BigDecimal
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,6 +28,8 @@ class OrderService @Autowired constructor(
     val productClient: ProductClient,
     val accountancyClient: AccountancyClient,
 ) {
+
+    val logger: Logger = LoggerFactory.getLogger(OrderService::class.java)
 
     fun createOrder(createOrderRequest: CreateOrderRequest): OrderResponse = createOrderRequest.validate().run {
         val entity = toEntity().copy(orderStatus = CREATED) // NOTE: business logic must be placed in services!
@@ -74,6 +78,7 @@ class OrderService @Autowired constructor(
             val orderItemsQuantity = orderItems.associate { it.productId to it.quantity }
             val orderItemsIds = orderItems.map { it.productId }
             val products = productClient.getProductsDetailsByIds(orderItemsIds)
+            logger.info("Received products details $products")
             val orderItemDetails = products.map {
                 OrderItemDetailsDTO(
                     productId = it.id,
@@ -105,6 +110,7 @@ class OrderService @Autowired constructor(
                         )
                     )
                     changeOrderStatus(orderId, OrderStatusDTO.CONFIRMED)
+                    logger.info("Invoice was created $createOutcomeInvoice")
                     createOutcomeInvoice
                 }
                     .onFailure { throw AccountancyServerNotAvailable() }

@@ -1,6 +1,8 @@
 package sigma.software.leovegas.drugstore.accountancy
 
 import java.math.BigDecimal
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.ACCEPTED
 import org.springframework.http.HttpStatus.CREATED
@@ -24,6 +26,8 @@ import sigma.software.leovegas.drugstore.api.ApiError
 @RestController
 @RequestMapping("/api/v1/accountancy")
 class AccountancyResource(private val service: AccountancyService) {
+
+    val logger: Logger = LoggerFactory.getLogger(AccountancyResource::class.java)
 
     @ResponseStatus(CREATED)
     @PostMapping("/invoice/income")
@@ -68,6 +72,8 @@ class AccountancyResource(private val service: AccountancyService) {
             is StoreServiceResponseException -> HttpStatus.SERVICE_UNAVAILABLE
             else -> HttpStatus.BAD_REQUEST
         }
-        ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))
+        val error = ApiError(status.value(), status.reasonPhrase, e.message)
+        logger.warn("$error , ${e.javaClass}")
+        ResponseEntity.status(status).body(error)
     }
 }

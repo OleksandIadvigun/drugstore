@@ -2,6 +2,8 @@ package sigma.software.leovegas.drugstore.product
 
 import java.math.BigDecimal
 import javax.transaction.Transactional
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -21,9 +23,7 @@ class ProductService(
     val orderClient: OrderClient,
 ) {
 
-    companion object {
-        private const val exceptionMessage = "This product with id: %d doesn't exist!"
-    }
+    val logger: Logger = LoggerFactory.getLogger(ProductService::class.java)
 
     fun searchProducts(page: Int, size: Int, search: String, sortField: String, sortDirection: String)
             : Page<SearchProductResponse> {
@@ -33,6 +33,7 @@ class ProductService(
             val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
                 .onFailure { throw OrderServerNotAvailableException("Something's wrong, please try again later") }
                 .getOrThrow()
+            logger.info("Received popular products")
 
             val products = productRepository
                 .findAllByNameContainingAndIdInAndStatusAndQuantityGreaterThan(
@@ -46,7 +47,6 @@ class ProductService(
             val index = productsQuantity.keys.withIndex().associate { it.value to it.index }
             val sortedContent = products.sortedBy { index[it.id] }
             return PageImpl(sortedContent, pageableForPopularity, products.totalElements)
-
         }
         val pageable: Pageable = PageRequest.of(page, size, SortUtil.getSort(sortField, sortDirection))
         val products = productRepository.findAllByNameContainingAndStatusAndQuantityGreaterThan(
@@ -58,12 +58,11 @@ class ProductService(
     fun getPopularProducts(page: Int, size: Int):
             Page<GetProductResponse> {
         val pageableForPopularity: Pageable = PageRequest.of(page, size)
-        val productsIdToQuantity: Map<Long, Int>
-        try {
-            productsIdToQuantity = orderClient.getProductsIdToQuantity()
-        } catch (e: Exception) {
-            throw OrderServerNotAvailableException("Something's wrong, please try again later")
-        }
+        val productsIdToQuantity = runCatching { orderClient.getProductsIdToQuantity() }
+            .onFailure { throw OrderServerNotAvailableException("Something's wrong, please try again later") }
+            .getOrThrow()
+        logger.info("Received popular products")
+
         val products = productRepository
             .findAllByIdInAndStatusAndQuantityGreaterThan(
                 productsIdToQuantity.keys, ProductStatus.RECEIVED, 0, pageableForPopularity

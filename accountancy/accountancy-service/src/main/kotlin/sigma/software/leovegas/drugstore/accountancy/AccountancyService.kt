@@ -4,6 +4,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
 import javax.transaction.Transactional
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
@@ -24,6 +26,8 @@ class AccountancyService @Autowired constructor(
     val productClient: ProductClient
 ) {
 
+    val logger: Logger = LoggerFactory.getLogger(AccountancyService::class.java)
+
     fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): ConfirmOrderResponse =
         request.validate(invoiceRepository::getInvoiceByOrderId).run {
 
@@ -41,6 +45,7 @@ class AccountancyService @Autowired constructor(
                 .getOrNull()
                 .orEmpty()
             if (list.isEmpty()) throw OrderContainsInvalidProductsException(productNumbers)
+            logger.info("Received products details $list")
 
             val invoice = invoiceRepository.save(
                 Invoice(
@@ -60,6 +65,7 @@ class AccountancyService @Autowired constructor(
                         .toSet(),
                 )
             )
+            logger.info("Saved invoice $invoice")
 
             ConfirmOrderResponse(
                 orderId = invoice.orderId,
@@ -83,6 +89,7 @@ class AccountancyService @Autowired constructor(
                 .onFailure { throw ProductServiceResponseException() }
                 .getOrNull()
                 .orEmpty()
+            logger.info("Created products $createdProducts")
 
             val invoice = invoiceRepository.save(Invoice(
                 status = InvoiceStatus.CREATED,
@@ -101,6 +108,7 @@ class AccountancyService @Autowired constructor(
                 }.toSet(),
             )
             )
+            logger.info("Saved invoice $invoice")
             return@run ConfirmOrderResponse(
                 orderId = invoice.orderId,
                 amount = invoice.total,
@@ -127,6 +135,7 @@ class AccountancyService @Autowired constructor(
             if (this.status != InvoiceStatus.CREATED) throw InvalidStatusOfInvoice()
             if (money < this.total) throw NotEnoughMoneyException()
             val paidInvoice = this.copy(status = InvoiceStatus.PAID)
+            logger.info("invoice paid $paidInvoice")
             return invoiceRepository.saveAndFlush(paidInvoice).toInvoiceResponse()
         }
 
@@ -135,6 +144,7 @@ class AccountancyService @Autowired constructor(
             if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.id ?: -1)
             runCatching { storeClient.checkTransfer(this.orderId) }
                 .onFailure { throw StoreServiceResponseException() }
+            logger.info("Transfer was checked")
             val refundInvoice = this.copy(status = InvoiceStatus.REFUND)
             invoiceRepository.saveAndFlush(refundInvoice).toInvoiceResponse()
         }
@@ -148,7 +158,10 @@ class AccountancyService @Autowired constructor(
 
     fun cancelExpiredInvoice(date: LocalDateTime): List<ConfirmOrderResponse> {
         val invoiceToCancelList = invoiceRepository.findAllByStatusAndCreatedAtLessThan(InvoiceStatus.CREATED, date)
-        invoiceToCancelList.forEach { cancelInvoice(it.id ?: -1) }
+        invoiceToCancelList.forEach {
+            cancelInvoice(it.id ?: -1)
+            logger.info("Invoice $it.id status was changed to cancel")
+        }
         return invoiceToCancelList.toInvoiceResponseList()
     }
 }

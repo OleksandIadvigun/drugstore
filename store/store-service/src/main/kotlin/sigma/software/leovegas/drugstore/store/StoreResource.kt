@@ -1,5 +1,7 @@
 package sigma.software.leovegas.drugstore.store
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -16,6 +18,8 @@ import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequ
 @RestController
 @RequestMapping("/api/v1/store")
 class StoreResource(private val storeService: StoreService) {
+
+    val logger: Logger = LoggerFactory.getLogger(StoreResource::class.java)
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/transfer-certificate")
@@ -49,7 +53,9 @@ class StoreResource(private val storeService: StoreService) {
         val status = when (e) {
             else -> HttpStatus.BAD_REQUEST
         }
-        ResponseEntity.status(status).body(ApiError(status.value(), status.name, e.message))
+        val error = ApiError(status.value(), status.reasonPhrase, e.message)
+        logger.warn("$error , ${e.javaClass}")
+        ResponseEntity.status(status).body(error)
     }
 }
 
