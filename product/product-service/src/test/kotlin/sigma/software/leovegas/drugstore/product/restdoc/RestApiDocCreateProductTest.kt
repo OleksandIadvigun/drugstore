@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.product
+package sigma.software.leovegas.drugstore.product.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
+import sigma.software.leovegas.drugstore.product.ProductProperties
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 
 @DisplayName("Create product REST API Doc test")

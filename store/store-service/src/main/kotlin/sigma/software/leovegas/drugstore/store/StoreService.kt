@@ -81,4 +81,6 @@ class StoreService @Autowired constructor(
         }
         products
     }
+
+    fun checkTransfer(orderNumber: Long): Long = orderNumber.validate(storeRepository::getTransferCertificateByOrderId)
 }

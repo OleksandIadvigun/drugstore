@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.product
+package sigma.software.leovegas.drugstore.product.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
@@ -10,9 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.product.Product
+import sigma.software.leovegas.drugstore.product.ProductProperties
+import sigma.software.leovegas.drugstore.product.ProductRepository
+import sigma.software.leovegas.drugstore.product.ProductStatus
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 
-@DisplayName("Receive products REST API Doc test")
-class RestApiDocReceiveProductsTest @Autowired constructor(
+@DisplayName("Deliver products quantity REST API Doc test")
+class RestApiDocDeliverProductsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
@@ -22,7 +28,7 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
 
 
     @Test
-    fun `should receive products`() {
+    fun `should deliver products`() {
 
         // given
         transactionTemplate.execute {
@@ -37,31 +43,42 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
                         name = "test1",
                         price = BigDecimal("20.00"),
                         quantity = 5,
-                        status = ProductStatus.CREATED,
+                        status = ProductStatus.RECEIVED,
                     ),
                     Product(
                         name = "test2",
                         price = BigDecimal("20.00"),
                         quantity = 3,
-                        status = ProductStatus.CREATED,
+                        status = ProductStatus.RECEIVED,
                     )
                 )
             ).map { it.id ?: -1 }.toList()
-        } ?: listOf(-1L)
+        }.get()
 
         // and
         val body = objectMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(ids)
+            .writeValueAsString(
+                listOf(
+                    DeliverProductsQuantityRequest(
+                        id = ids[0],
+                        quantity = 2
+                    ),
+                    DeliverProductsQuantityRequest(
+                        id = ids[1],
+                        quantity = 2
+                    )
+                )
+            )
 
-        of("receive-products").`when`()
+        of("deliver-products").`when`()
             .body(body)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .put("http://${productProperties.host}:$port/api/v1/products/receive")
+            .put("http://${productProperties.host}:$port/api/v1/products/deliver")
             .then()
             .assertThat().statusCode(202)
             .assertThat().body("size()", `is`(2))
-            .assertThat().body("[0].status", equalTo("RECEIVED"))
-            .assertThat().body("[1].status", equalTo("RECEIVED"))
+            .assertThat().body("[0].quantity", equalTo(3))
+            .assertThat().body("[1].quantity", equalTo(1))
     }
 }

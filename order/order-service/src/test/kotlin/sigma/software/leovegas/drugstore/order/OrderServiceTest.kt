@@ -246,12 +246,12 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val changedOrder = transactionTemplate.execute {
-            orderService.changeOrderStatus(orderToChange.id, OrderStatusDTO.BOOKED)
+            orderService.changeOrderStatus(orderToChange.id, OrderStatusDTO.CONFIRMED)
         }.get()
 
         // then
         assertThat(changedOrder.id).isEqualTo(orderToChange.id)
-        assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.BOOKED)
+        assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.CONFIRMED)
     }
 
     @Test
@@ -538,7 +538,7 @@ class OrderServiceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 3,
@@ -547,7 +547,7 @@ class OrderServiceTest @Autowired constructor(
                         )
                     ),
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 5,
@@ -556,7 +556,7 @@ class OrderServiceTest @Autowired constructor(
                         )
                     ),
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 1,

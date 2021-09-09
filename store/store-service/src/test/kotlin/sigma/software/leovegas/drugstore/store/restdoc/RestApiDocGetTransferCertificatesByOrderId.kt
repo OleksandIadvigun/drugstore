@@ -1,12 +1,12 @@
 package sigma.software.leovegas.drugstore.store.restdoc
 
-import org.assertj.core.api.Assertions.fail
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.store.StoreProperties
 import sigma.software.leovegas.drugstore.store.StoreRepository
 import sigma.software.leovegas.drugstore.store.TransferCertificate
@@ -39,7 +39,7 @@ class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
                     comment = "RECEIVED"
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         of("get-transfer-certificates-by-order-id").`when`()
             .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate/order/$orderId")

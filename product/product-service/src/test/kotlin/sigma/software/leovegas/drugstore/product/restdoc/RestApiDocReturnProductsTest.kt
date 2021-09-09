@@ -1,15 +1,18 @@
-package sigma.software.leovegas.drugstore.product
+package sigma.software.leovegas.drugstore.product.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.product.Product
+import sigma.software.leovegas.drugstore.product.ProductProperties
+import sigma.software.leovegas.drugstore.product.ProductRepository
 import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 
 @DisplayName("Return products quantity REST API Doc test")
@@ -38,7 +41,7 @@ class RestApiDocReturnProductsTest @Autowired constructor(
                     quantity = 10
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
         val body = objectMapper

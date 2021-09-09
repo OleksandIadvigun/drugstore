@@ -3,7 +3,6 @@ package sigma.software.leovegas.drugstore.accountancy.restdoc.invoice
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
-import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
@@ -60,41 +59,6 @@ class RestApiDocCancelInvoiceTest @Autowired constructor(
             )
         }.get()
 
-        stubFor(
-            put("/api/v1/orders/cancel/${savedInvoice.orderId}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                )
-        )
-
-        stubFor(
-            put("/api/v1/orders/change-status/${savedInvoice.orderId}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(OrderStatusDTO.CANCELLED)
-                    )
-                )
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.CANCELLED))
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                )
-        )
-
         // and
         stubFor(
             post("/api/v1/store/return")
@@ -111,7 +75,7 @@ class RestApiDocCancelInvoiceTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.REFUND)) //todo
+                                .writeValueAsString(OrderResponse(orderStatus = OrderStatusDTO.CONFIRMED)) //todo
                         )
                         .withStatus(HttpStatus.OK.value())
                 )

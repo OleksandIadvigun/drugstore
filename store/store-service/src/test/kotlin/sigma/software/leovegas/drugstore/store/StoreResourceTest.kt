@@ -1,15 +1,14 @@
 package sigma.software.leovegas.drugstore.store
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -22,6 +21,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
@@ -65,7 +65,7 @@ class StoreResourceTest @Autowired constructor(
                     comment = "RECEIVED"
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate.exchange(
@@ -77,7 +77,7 @@ class StoreResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).hasSize(1)
         assertThat(body[0].orderId).isEqualTo(1)
@@ -119,7 +119,7 @@ class StoreResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).hasSize(2)
         assertThat(body[0].orderId).isEqualTo(1)
@@ -145,7 +145,7 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -206,7 +206,7 @@ class StoreResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body.orderId).isEqualTo(1)
         assertThat(body.status).isEqualTo(TransferStatusDTO.RECEIVED)
@@ -231,7 +231,7 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -307,7 +307,7 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -336,7 +336,7 @@ class StoreResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).isNotNull
         assertThat(body.orderId).isEqualTo(1)
@@ -375,7 +375,7 @@ class StoreResourceTest @Autowired constructor(
 
         //and
         stubFor(
-            get("/api/v1/products/details?ids=${productResponse[0].id}&ids=${productResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productResponse[0].id}&ids=${productResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -399,7 +399,32 @@ class StoreResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(2)
+    }
+
+    @Test
+    fun `should return orderNumber if no transfer certificate found`() {
+
+        // setup
+        transactionTemplate.execute {
+            storeRepository.deleteAll()
+        }
+
+        // given
+        val orderNumber: Long = 1
+
+        // when
+        val response = restTemplate.exchange(
+            "$baseUrl/api/v1/store/check-transfer/1",
+            HttpMethod.GET, null, respTypeRef<Long>()
+        )
+
+        // then
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+
+        // and
+        val body = response.body.get()
+        assertThat(body).isEqualTo(orderNumber)
     }
 }

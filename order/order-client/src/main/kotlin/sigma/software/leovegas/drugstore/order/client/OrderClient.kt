@@ -37,13 +37,4 @@ interface OrderClient {
 
     @RequestLine("POST /api/v1/orders/confirm")
     fun confirmOrder(@RequestBody orderId: Long): ConfirmOrderResponse
-
-    @RequestLine("PUT /api/v1/orders/pay/{orderNumber}")
-    fun payOrder(@Param orderNumber: Long): OrderResponse
-
-    @RequestLine("PUT /api/v1/orders/refund/{orderNumber}")
-    fun refundOrder(@Param orderNumber: Long): OrderResponse
-
-    @RequestLine("PUT /api/v1/orders/cancel/{orderNumber}")
-    fun cancelOrder(@Param orderNumber: Long): OrderResponse
 }

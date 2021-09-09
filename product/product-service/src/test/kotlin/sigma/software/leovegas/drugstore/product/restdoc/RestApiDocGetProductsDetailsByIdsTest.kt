@@ -1,6 +1,5 @@
-package sigma.software.leovegas.drugstore.product
+package sigma.software.leovegas.drugstore.product.restdoc
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.equalTo
@@ -8,29 +7,31 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.product.Product
+import sigma.software.leovegas.drugstore.product.ProductProperties
+import sigma.software.leovegas.drugstore.product.ProductRepository
+import sigma.software.leovegas.drugstore.product.ProductStatus
 
-@DisplayName("Deliver products quantity REST API Doc test")
-class RestApiDocDeliverProductsTest @Autowired constructor(
+@DisplayName("Get products details by Ids REST API Doc test")
+class RestApiDocGetProductsDetailsByIdsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
     val productProperties: ProductProperties,
-    val objectMapper: ObjectMapper,
 ) : RestApiDocumentationTest(productProperties) {
 
 
     @Test
-    fun `should deliver products`() {
+    fun `should get products details by ids`() {
 
         // given
         transactionTemplate.execute {
-            productRepository.deleteAllInBatch()
+            productRepository.deleteAll()
         }
 
-        // and
+        // given
         val ids = transactionTemplate.execute {
             productRepository.saveAll(
                 listOf(
@@ -48,32 +49,15 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
                     )
                 )
             ).map { it.id ?: -1 }.toList()
-        } ?: listOf(-1L)
+        }.get()
 
-        // and
-        val body = objectMapper
-            .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(
-                listOf(
-                    DeliverProductsQuantityRequest(
-                        id = ids[0],
-                        quantity = 2
-                    ),
-                    DeliverProductsQuantityRequest(
-                        id = ids[1],
-                        quantity = 2
-                    )
-                )
-            )
-
-        of("deliver-products").`when`()
-            .body(body)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .put("http://${productProperties.host}:$port/api/v1/products/deliver")
+        of("get-products-details-by-ids").`when`()
+            .get("http://${productProperties.host}:$port/api/v1/products/details?ids=${ids[0]}&ids=${ids[1]}")
             .then()
-            .assertThat().statusCode(202)
+            .assertThat().statusCode(200)
             .assertThat().body("size()", `is`(2))
-            .assertThat().body("[0].quantity", equalTo(3))
-            .assertThat().body("[1].quantity", equalTo(1))
+            .assertThat().body("[0].name", equalTo("test1"))
+            .assertThat().body("[0].quantity", equalTo(5))
+            .assertThat().body("[0].price", equalTo(20.0F))
     }
 }

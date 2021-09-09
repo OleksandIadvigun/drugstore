@@ -1,8 +1,8 @@
-package sigma.software.leovegas.drugstore.product
+package sigma.software.leovegas.drugstore.product.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
@@ -10,12 +10,16 @@ import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.product.Product
+import sigma.software.leovegas.drugstore.product.ProductProperties
+import sigma.software.leovegas.drugstore.product.ProductRepository
+import sigma.software.leovegas.drugstore.product.ProductStatus
 
 @DisplayName("Get popular products REST API Doc test")
 class RestApiDocGetPopularProductsTest @Autowired constructor(
@@ -59,11 +63,11 @@ class RestApiDocGetPopularProductsTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
         stubFor(
-            get("/api/v1/orders/total-buys")
+            WireMock.get("/api/v1/orders/total-buys")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

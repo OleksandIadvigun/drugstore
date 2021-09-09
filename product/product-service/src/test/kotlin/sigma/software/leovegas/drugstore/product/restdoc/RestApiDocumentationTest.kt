@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.product
+package sigma.software.leovegas.drugstore.product.restdoc
 
 import io.restassured.RestAssured
 import io.restassured.builder.RequestSpecBuilder
@@ -12,6 +12,8 @@ import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.restassured3.RestAssuredRestDocumentation
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import sigma.software.leovegas.drugstore.product.ProductProperties
+import sigma.software.leovegas.drugstore.product.WireMockTest
 
 @AutoConfigureRestDocs
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

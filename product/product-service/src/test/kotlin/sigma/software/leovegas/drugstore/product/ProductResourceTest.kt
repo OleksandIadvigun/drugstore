@@ -1,8 +1,8 @@
 package sigma.software.leovegas.drugstore.product
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
@@ -11,7 +11,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -24,6 +23,7 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
@@ -72,10 +72,10 @@ class ProductResourceTest @Autowired constructor(
                     quantity = 3,
                 )
             )
-        } ?: fail("created may not be null")
+        }.get()
 
         // and
-        val productNumber = created.id ?: fail("id may not be null")
+        val productNumber = created.id
 
         // when
         val response = restTemplate.exchange(
@@ -87,7 +87,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val price = response.body ?: fail("price may not be null")
+        val price = response.body
         assertThat(price).isEqualTo(BigDecimal("1.23"))
     }
 
@@ -118,7 +118,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body[0].createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(body[0].status).isEqualTo(ProductStatusDTO.CREATED)
@@ -136,7 +136,7 @@ class ProductResourceTest @Autowired constructor(
                     status = ProductStatus.CREATED
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         val httpEntity = HttpEntity(listOf(saved.id))
 
@@ -153,7 +153,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(1)
         assertThat(body[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
     }
@@ -182,7 +182,7 @@ class ProductResourceTest @Autowired constructor(
                     )
                 )
             ).map { it.id }
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate
@@ -197,7 +197,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body[0].name).isEqualTo("test1")
         assertThat(body[0].quantity).isEqualTo(1)
@@ -242,14 +242,14 @@ class ProductResourceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         //and
         val responseExpected = mapOf(saved[2].id to 9, saved[1].id to 5, saved[0].id to 1)
 
         // and
         stubFor(
-            get("/api/v1/orders/total-buys")
+            WireMock.get("/api/v1/orders/total-buys")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -276,7 +276,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body.content[0].id).isEqualTo(saved[1].id)
         assertThat(body.content[0].name).isEqualTo("aspirin2")
@@ -323,7 +323,7 @@ class ProductResourceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate
@@ -337,7 +337,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body.content[0].id).isEqualTo(saved[0].id)
         assertThat(body.content[0].price).isEqualTo(BigDecimal("10.00"))
@@ -384,7 +384,7 @@ class ProductResourceTest @Autowired constructor(
                     )
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val response = restTemplate
@@ -398,7 +398,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body.content[0].id).isEqualTo(saved[1].id)
         assertThat(body.content[0].price).isEqualTo(BigDecimal("50.00"))
@@ -442,14 +442,14 @@ class ProductResourceTest @Autowired constructor(
                     )
                 )
             )
-        }?.map { it.id } ?: fail("result is expected")
+        }?.map { it.id }.get()
 
         //and
         val responseExpected = mapOf(ids[2] to 9, ids[1] to 5, ids[0] to 1)
 
         // and
         stubFor(
-            get("/api/v1/orders/total-buys")
+            WireMock.get("/api/v1/orders/total-buys")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -475,7 +475,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(2)
         assertThat(body.content[0].id).isEqualTo(ids[1])
         assertThat(body.content[1].id).isEqualTo(ids[0])
@@ -492,7 +492,7 @@ class ProductResourceTest @Autowired constructor(
                     quantity = 10
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
         val httpEntity = HttpEntity(
@@ -517,7 +517,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(1)
         assertThat(body[0].quantity).isEqualTo(7)  // 10 - 3
         assertThat(body[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
@@ -534,7 +534,7 @@ class ProductResourceTest @Autowired constructor(
                     quantity = 10
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // and
         val httpEntity = HttpEntity(
@@ -559,7 +559,7 @@ class ProductResourceTest @Autowired constructor(
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
 
         // and
-        val body = response.body ?: fail("body may not be null")
+        val body = response.body.get("body")
         assertThat(body).hasSize(1)
         assertThat(body[0].quantity).isEqualTo(13)  // 10 + 3 = 13
         assertThat(body[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())

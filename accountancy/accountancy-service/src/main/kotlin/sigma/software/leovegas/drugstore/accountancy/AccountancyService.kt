@@ -125,8 +125,6 @@ class AccountancyService @Autowired constructor(
         id.validate { invoiceRepository.findById(id) }.run {
             if (this.status != InvoiceStatus.CREATED) throw InvalidStatusOfInvoice()
             if (money < this.total) throw NotEnoughMoneyException()
-            runCatching { orderClient.payOrder(this.orderId) }
-                .onFailure { throw OrderServiceResponseException() }
             val paidInvoice = this.copy(status = InvoiceStatus.PAID)
             return invoiceRepository.saveAndFlush(paidInvoice).toInvoiceResponse()
         }
@@ -136,18 +134,14 @@ class AccountancyService @Autowired constructor(
             if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.id ?: -1)
             runCatching { storeClient.checkTransfer(this.orderId) }
                 .onFailure { throw StoreServiceResponseException() }
-            runCatching { orderClient.refundOrder(this.orderId) }
-                .onFailure { throw OrderServiceResponseException() }
             val refundInvoice = this.copy(status = InvoiceStatus.REFUND)
             invoiceRepository.saveAndFlush(refundInvoice).toInvoiceResponse()
         }
 
     fun cancelInvoice(id: Long): ConfirmOrderResponse =
         id.validate { invoiceRepository.findById(id) }.run {
-            if (this.status.name == "PAID") throw OrderAlreadyPaidException(this.orderId)
+            if (this.status.name == "PAID") throw InvoiceAlreadyPaidException(this.orderId)
             val toUpdate = this.copy(status = InvoiceStatus.CANCELLED)
-            runCatching { orderClient.cancelOrder(this.orderId) }
-                .onFailure { throw OrderServiceResponseException() }
             return invoiceRepository.saveAndFlush(toUpdate).toInvoiceResponse()
         }
 

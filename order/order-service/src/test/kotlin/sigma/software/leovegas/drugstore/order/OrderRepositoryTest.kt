@@ -60,7 +60,7 @@ class OrderRepositoryTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 1,
@@ -69,7 +69,7 @@ class OrderRepositoryTest @Autowired constructor(
                         )
                     ),
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 1,
@@ -78,7 +78,7 @@ class OrderRepositoryTest @Autowired constructor(
                         )
                     ),
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 2,

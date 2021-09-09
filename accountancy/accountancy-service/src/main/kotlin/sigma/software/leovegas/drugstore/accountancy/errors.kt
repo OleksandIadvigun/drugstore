@@ -5,7 +5,7 @@ open class AccountancyServiceException(message: String) : RuntimeException(messa
 open class OrderAlreadyConfirmedException(orderNumber: Long) :
     AccountancyServiceException("Order($orderNumber) already has invoice")
 
-class OrderAlreadyPaidException(orderNumber: Long?) :
+class InvoiceAlreadyPaidException(orderNumber: Long?) :
     AccountancyServiceException("Order($orderNumber) already paid. Please, first do refund")
 
 class OrderContainsInvalidProductsException(productNumbers: List<Number> = listOf()) :

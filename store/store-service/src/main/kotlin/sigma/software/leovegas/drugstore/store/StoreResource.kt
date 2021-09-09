@@ -39,6 +39,11 @@ class StoreResource(private val storeService: StoreService) {
     fun checkAvailability(@RequestBody products: List<DeliverProductsQuantityRequest>) =
         storeService.checkAvailability(products)
 
+    @GetMapping("/check-transfer/{orderNumber}")
+    @ResponseStatus(HttpStatus.OK)
+    fun checkTransfer(@PathVariable orderNumber: Long) =
+        storeService.checkTransfer(orderNumber)
+
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {

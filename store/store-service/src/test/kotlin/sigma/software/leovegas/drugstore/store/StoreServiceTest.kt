@@ -1,15 +1,14 @@
 package sigma.software.leovegas.drugstore.store
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,6 +19,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
@@ -54,7 +54,7 @@ class StoreServiceTest @Autowired constructor(
         // when
         val created = transactionTemplate.execute {
             storeService.createTransferCertificate(transferCertificateRequest)
-        } ?: fail("result expected")
+        }.get()
 
         // then
         assertThat(created.id).isNotNull
@@ -81,12 +81,12 @@ class StoreServiceTest @Autowired constructor(
                     comment = "RECEIVED"
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
         // when
         val actual = transactionTemplate.execute {
             storeService.getTransferCertificatesByOrderId(created.orderId)
-        } ?: fail("result is expected")
+        }.get()
 
         // then
         assertThat(actual[0].orderId).isEqualTo(created.orderId)
@@ -121,7 +121,7 @@ class StoreServiceTest @Autowired constructor(
         // when
         val actual = transactionTemplate.execute {
             storeService.getTransferCertificates()
-        } ?: fail("result is expected")
+        }.get()
 
         // then
         assertThat(actual).hasSize(2)
@@ -150,7 +150,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -226,7 +226,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -243,7 +243,7 @@ class StoreServiceTest @Autowired constructor(
         // when
         val transferCertificate = transactionTemplate.execute {
             storeService.deliverProducts(orderId)
-        } ?: fail("result is expected")
+        }.get()
 
         // then
         assertThat(transferCertificate.id).isNotNull
@@ -253,6 +253,11 @@ class StoreServiceTest @Autowired constructor(
 
     @Test
     fun `should not deliver product if accountancy server not available`() {
+
+        // setup
+        transactionTemplate.execute {
+            storeRepository.deleteAll()
+        }
 
         // given
         val orderId: Long = 1
@@ -285,7 +290,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -311,7 +316,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -353,7 +358,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -406,7 +411,7 @@ class StoreServiceTest @Autowired constructor(
         // when
         val transferCertificate = transactionTemplate.execute {
             storeService.receiveProduct(orderId)
-        } ?: fail("result is expected")
+        }.get()
 
         // then
         assertThat(transferCertificate.id).isNotNull
@@ -453,7 +458,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -503,7 +508,7 @@ class StoreServiceTest @Autowired constructor(
 
         //and
         stubFor(
-            get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?ids=1&ids=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -552,9 +557,9 @@ class StoreServiceTest @Autowired constructor(
             )
         )
 
-        //and
+        // and
         stubFor(
-            get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?ids=1&ids=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -567,10 +572,56 @@ class StoreServiceTest @Autowired constructor(
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
+
         // when
         val exception = assertThrows<InsufficientAmountOfProductException> {
             storeService.checkAvailability(products)
         }
         assertThat(exception.message).contains("Insufficient amount product with id =")
+    }
+
+    @Test
+    fun `should return orderNumber if no transfer certificate found`() {
+
+        // setup
+        transactionTemplate.execute {
+            storeRepository.deleteAll()
+        }
+
+        // given
+        val orderNumber: Long = 1
+
+        // when
+        val actual = storeService.checkTransfer(orderNumber)
+
+        // then
+        assertThat(orderNumber).isEqualTo(actual)
+    }
+
+    @Test
+    fun `should not return orderNumber if  transfer certificate was found`() {
+
+        // setup
+        transactionTemplate.execute {
+            storeRepository.deleteAll()
+        }
+
+        // given
+        val orderNumber: Long = 1
+
+        // and
+        transactionTemplate.execute {
+            storeRepository.save(
+                TransferCertificate(
+                    orderId = orderNumber, status = TransferStatus.DELIVERED
+                )
+            )
+        }
+
+        // when
+        val exception = assertThrows<ProductsAlreadyDelivered> {
+            storeService.checkTransfer(orderNumber)
+        }
+        assertThat(exception.message).contains("Products from order($orderNumber) already delivered")
     }
 }

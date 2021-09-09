@@ -3,7 +3,6 @@ package sigma.software.leovegas.drugstore.accountancy.restdoc.invoice
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
@@ -22,7 +21,6 @@ import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.extensions.get
-import sigma.software.leovegas.drugstore.order.api.OrderResponse
 
 @DisplayName("Refund invoice REST API Doc test")
 class RestApiDocRefundInvoiceTest @Autowired constructor(
@@ -64,20 +62,6 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(savedInvoice.orderId)
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                )
-        )
-
-        stubFor(
-            put("/api/v1/orders/refund/${savedInvoice.orderId}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
                         )
                         .withStatus(HttpStatus.OK.value())
                 )

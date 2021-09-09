@@ -1,5 +1,6 @@
-package sigma.software.leovegas.drugstore.product
+package sigma.software.leovegas.drugstore.product.restdoc
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.equalTo
@@ -7,26 +8,32 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
+import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.product.Product
+import sigma.software.leovegas.drugstore.product.ProductProperties
+import sigma.software.leovegas.drugstore.product.ProductRepository
+import sigma.software.leovegas.drugstore.product.ProductStatus
 
-@DisplayName("Get products details by Ids REST API Doc test")
-class RestApiDocGetProductsDetailsByIdsTest @Autowired constructor(
+@DisplayName("Receive products REST API Doc test")
+class RestApiDocReceiveProductsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
     val productProperties: ProductProperties,
+    val objectMapper: ObjectMapper,
 ) : RestApiDocumentationTest(productProperties) {
 
 
     @Test
-    fun `should get products details by ids`() {
+    fun `should receive products`() {
 
         // given
         transactionTemplate.execute {
-            productRepository.deleteAll()
+            productRepository.deleteAllInBatch()
         }
 
-        // given
+        // and
         val ids = transactionTemplate.execute {
             productRepository.saveAll(
                 listOf(
@@ -34,25 +41,31 @@ class RestApiDocGetProductsDetailsByIdsTest @Autowired constructor(
                         name = "test1",
                         price = BigDecimal("20.00"),
                         quantity = 5,
-                        status = ProductStatus.RECEIVED,
+                        status = ProductStatus.CREATED,
                     ),
                     Product(
                         name = "test2",
                         price = BigDecimal("20.00"),
                         quantity = 3,
-                        status = ProductStatus.RECEIVED,
+                        status = ProductStatus.CREATED,
                     )
                 )
             ).map { it.id ?: -1 }.toList()
         } ?: listOf(-1L)
 
-        of("get-products-details-by-ids").`when`()
-            .get("http://${productProperties.host}:$port/api/v1/products/details?ids=${ids[0]}&ids=${ids[1]}")
+        // and
+        val body = objectMapper
+            .writerWithDefaultPrettyPrinter()
+            .writeValueAsString(ids)
+
+        of("receive-products").`when`()
+            .body(body)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .put("http://${productProperties.host}:$port/api/v1/products/receive")
             .then()
-            .assertThat().statusCode(200)
+            .assertThat().statusCode(202)
             .assertThat().body("size()", `is`(2))
-            .assertThat().body("[0].name", equalTo("test1"))
-            .assertThat().body("[0].quantity", equalTo(5))
-            .assertThat().body("[0].price", equalTo(20.0F))
+            .assertThat().body("[0].status", equalTo("RECEIVED"))
+            .assertThat().body("[1].status", equalTo("RECEIVED"))
     }
 }

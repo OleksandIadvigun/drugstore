@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.post
-import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
@@ -34,7 +33,6 @@ import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
-import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
@@ -333,20 +331,6 @@ class AccountancyResourceTest @Autowired constructor(
                 )
         )
 
-        stubFor(
-            put("/api/v1/orders/refund/${savedInvoice.orderId}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                )
-        )
-
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/accountancy/invoice/refund/${savedInvoice.id}",
@@ -385,20 +369,6 @@ class AccountancyResourceTest @Autowired constructor(
                 )
             )
         }.get()
-
-        stubFor(
-            put("/api/v1/orders/pay/${savedInvoice.orderId}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                )
-        )
 
         // and
         val httpEntity = HttpEntity(
@@ -447,20 +417,6 @@ class AccountancyResourceTest @Autowired constructor(
                 )
             )
         }.get()
-
-        stubFor(
-            put("/api/v1/orders/cancel/${savedInvoice.orderId}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(OrderResponse(savedInvoice.orderId))
-                        )
-                        .withStatus(HttpStatus.OK.value())
-                )
-        )
 
         // when
         val response = restTemplate.exchange(

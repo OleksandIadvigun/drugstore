@@ -384,47 +384,6 @@ class OrderResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should change order status`() {
-
-        // given
-        val orderCreated = transactionTemplate.execute {
-            orderRepository.save(
-                Order(
-                    orderItems = setOf(
-                        OrderItem(
-                            productId = 1L,
-                            quantity = 3
-                        )
-                    ),
-                    orderStatus = OrderStatus.CREATED
-                )
-            )
-        }?.toOrderResponseDTO().get()
-
-        // and
-        val httpEntity = HttpEntity(
-            OrderStatus.BOOKED
-        )
-
-        // when
-        val response = restTemplate
-            .exchange(
-                "$baseUrl/api/v1/orders/change-status/${orderCreated.id}", PUT,
-                httpEntity, respTypeRef<OrderResponse>()
-            )
-
-        // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
-
-        // and
-        val body = response.body.get("body")
-        assertThat(body).isNotNull
-        assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
-        assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
-        assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.BOOKED)
-    }
-
-    @Test
     fun `should get productId to quantity sorted by quantity `() {
 
         // given
@@ -436,7 +395,7 @@ class OrderResourceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 4,
@@ -445,7 +404,7 @@ class OrderResourceTest @Autowired constructor(
                         ),
                     ),
                     Order(
-                        orderStatus = OrderStatus.PAID,
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
                                 productId = 5,

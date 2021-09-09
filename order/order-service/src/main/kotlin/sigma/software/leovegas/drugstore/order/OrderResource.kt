@@ -52,11 +52,6 @@ class OrderResource(private val orderService: OrderService) {
     fun updateOrder(@PathVariable("id") id: Long, @RequestBody updateOrderRequest: UpdateOrderRequest) =
         orderService.updateOrder(id, updateOrderRequest)
 
-    @PutMapping("/change-status/{id}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    fun changeOrderStatus(@PathVariable("id") id: Long, @RequestBody orderStatus: OrderStatusDTO) =
-        orderService.changeOrderStatus(id, orderStatus)
-
     @PostMapping("/confirm")
     @ResponseStatus(HttpStatus.CREATED)
     fun confirmOrder(@RequestBody orderId: Long) =

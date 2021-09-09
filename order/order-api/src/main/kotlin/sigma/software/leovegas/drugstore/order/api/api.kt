@@ -32,10 +32,6 @@ enum class OrderStatusDTO {
     CANCELLED,
     UPDATED,
     CONFIRMED,
-    REFUND,
-    PAID,
-    BOOKED,
-    DELIVERED,
 }
 
 data class OrderItemDTO(

@@ -25,5 +25,5 @@ interface StoreClient {
     fun checkAvailability(products: List<DeliverProductsQuantityRequest>): List<DeliverProductsQuantityRequest>
 
     @RequestLine("GET /api/v1/store/check-transfer/{orderNumber}")
-    fun checkTransfer(@Param orderNumber: Long): Long //todo
+    fun checkTransfer(@Param orderNumber: Long): Long
 }

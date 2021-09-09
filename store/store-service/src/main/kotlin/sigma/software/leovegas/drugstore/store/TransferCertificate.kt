@@ -40,5 +40,5 @@ data class TransferCertificate(
 
     @NotEmpty
     @Column(name = "comment", nullable = false, updatable = false)
-    val comment: String,
+    val comment: String = "undefined",
 )
