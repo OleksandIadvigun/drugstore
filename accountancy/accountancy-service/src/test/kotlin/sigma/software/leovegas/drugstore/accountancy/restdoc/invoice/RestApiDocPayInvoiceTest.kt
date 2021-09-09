@@ -30,10 +30,15 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
     fun `should pay invoice`() {
 
         // given
+        transactionalTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.CREATED,
                     productItems = setOf(
@@ -53,13 +58,13 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
             .writeValueAsString(BigDecimal("90.00"))
 
         of("pay-invoice").`when`()
-            .pathParam("id", savedInvoice.id)
+            .pathParam("id", savedInvoice.orderNumber)
             .body(body)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/pay/{id}")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("orderNumber", equalTo(1))
             .assertThat().body("amount", equalTo(90.0F))
     }
 }

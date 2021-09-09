@@ -64,7 +64,7 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
 
         // and
         val response = ConfirmOrderResponse(
-            orderId = order.id ?: -1,
+            orderNumber = order.id ?: -1,
             amount = BigDecimal("20.00")
         )
 
@@ -95,7 +95,7 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
             .post("http://${orderProperties.host}:$port/api/v1/orders/confirm")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("orderId", equalTo(order.id.get().toInt()))
+            .assertThat().body("orderNumber", equalTo(order.id.get().toInt()))
             .assertThat().body("amount", equalTo(20.0F))
     }
 }

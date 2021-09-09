@@ -33,12 +33,12 @@ class GetTransferCertificatesFeignClientWireMockTest @Autowired constructor(
         val responseExpected = listOf(
             TransferCertificateResponse(
                 id = 1,
-                orderId = 1,
+                orderNumber = 1,
                 status = TransferStatusDTO.DELIVERED
             ),
             TransferCertificateResponse(
                 id = 2,
-                orderId = 2,
+                orderNumber = 2,
                 status = TransferStatusDTO.RECEIVED
             )
         )

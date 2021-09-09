@@ -31,7 +31,7 @@ class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
 
         // given
         val responseExpected = ConfirmOrderResponse(
-            orderId = 1,
+            orderNumber = 1,
             amount = BigDecimal("120.00"), // price * quantity
         )
 
@@ -55,7 +55,7 @@ class RefundInvoiceFeignClientWireMockTest @Autowired constructor(
         val responseActual = accountancyClient.refundInvoice(1)
 
         // then
-        assertThat(responseActual.orderId).isEqualTo(responseExpected.orderId)
+        assertThat(responseActual.orderNumber).isEqualTo(responseExpected.orderNumber)
         assertThat(responseActual.amount).isEqualTo(responseExpected.amount)
     }
 }

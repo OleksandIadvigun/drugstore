@@ -12,7 +12,6 @@ import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
-import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.client.ProductClient
 import sigma.software.leovegas.drugstore.store.client.StoreClient
@@ -20,7 +19,6 @@ import sigma.software.leovegas.drugstore.store.client.StoreClient
 @Service
 @Transactional
 class AccountancyService @Autowired constructor(
-    val orderClient: OrderClient,
     val invoiceRepository: InvoiceRepository,
     val storeClient: StoreClient,
     val productClient: ProductClient
@@ -29,8 +27,7 @@ class AccountancyService @Autowired constructor(
     val logger: Logger = LoggerFactory.getLogger(AccountancyService::class.java)
 
     fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): ConfirmOrderResponse =
-        request.validate(invoiceRepository::getInvoiceByOrderId).run {
-
+        request.validate(invoiceRepository::getInvoiceByOrderNumber).run {
 
             val productNumbers = productItems.map { it.productId }.distinct()
             val productQuantities = productItems.associate { it.productId to it.quantity }
@@ -55,7 +52,7 @@ class AccountancyService @Autowired constructor(
             val invoice = invoiceRepository.save(
                 Invoice(
                     type = InvoiceType.OUTCOME,
-                    orderId = orderId,
+                    orderNumber = orderNumber,
                     status = InvoiceStatus.CREATED,
                     productItems = invoiceItems.toSet(),
                     total = invoiceItems.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
@@ -64,7 +61,7 @@ class AccountancyService @Autowired constructor(
             logger.info("Saved invoice $invoice")
 
             val confirmOrderResponse = ConfirmOrderResponse(
-                orderId = invoice.orderId,
+                orderNumber = invoice.orderNumber,
                 amount = invoice.total
             )
             logger.info("Order confirmed $confirmOrderResponse")
@@ -90,9 +87,9 @@ class AccountancyService @Autowired constructor(
             logger.info("Created products $createdProducts")
 
             val invoice = invoiceRepository.save(Invoice(
-                status = InvoiceStatus.CREATED,
+                status = InvoiceStatus.PAID,
                 type = InvoiceType.INCOME,
-                orderId = kotlin.random.Random(10000L).nextLong(),
+                orderNumber = (0..100000).random().toLong(),
                 total = createdProducts.map { it.price.multiply(BigDecimal(it.quantity)) }
                     .reduce(BigDecimal::plus)
                     .setScale(2, RoundingMode.HALF_EVEN),
@@ -109,7 +106,7 @@ class AccountancyService @Autowired constructor(
 
             logger.info("Saved invoice $invoice")
             val confirmOrderResponse = ConfirmOrderResponse(
-                orderId = invoice.orderId,
+                orderNumber = invoice.orderNumber,
                 amount = invoice.total,
             )
             logger.info("Order confirmed $confirmOrderResponse")
@@ -122,10 +119,10 @@ class AccountancyService @Autowired constructor(
             this.toInvoiceResponse()
         }
 
-    fun getInvoiceDetailsByOrderId(id: Long): List<ItemDTO> =
-        id.validate { invoiceRepository.getInvoiceByOrderId(id) }.run {
+    fun getInvoiceDetailsByOrderNumber(orderNumber: Long): List<ItemDTO> =
+        orderNumber.validate { invoiceRepository.getInvoiceByOrderNumber(orderNumber) }.run {
             logger.info("Invoice found $this")
-            if (status != InvoiceStatus.PAID) throw NotPaidInvoiceException(id)
+            if (status != InvoiceStatus.PAID) throw NotPaidInvoiceException(orderNumber)
             val productItems = productItems
                 .map {
                     ItemDTO(
@@ -137,8 +134,8 @@ class AccountancyService @Autowired constructor(
             return@run productItems
         }
 
-    fun payInvoice(id: Long, money: BigDecimal): ConfirmOrderResponse =
-        id.validate(invoiceRepository::findById).run {
+    fun payInvoice(orderNumber: Long, money: BigDecimal): ConfirmOrderResponse =
+        orderNumber.validate(invoiceRepository::getInvoiceByOrderNumber).run {
             logger.info("Invoice found $this")
 
             if (this.status != InvoiceStatus.CREATED) throw InvalidStatusOfInvoice()
@@ -150,25 +147,25 @@ class AccountancyService @Autowired constructor(
             return@run invoice.toInvoiceResponse()
         }
 
-    fun refundInvoice(id: Long): ConfirmOrderResponse =
-        id.validate(invoiceRepository::findById).run {
+    fun refundInvoice(orderNumber: Long): ConfirmOrderResponse =
+        orderNumber.validate(invoiceRepository::getInvoiceByOrderNumber).run {
 
             if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.id ?: -1)
 
-            runCatching { storeClient.checkTransfer(this.orderId) }
+            runCatching { storeClient.checkTransfer(this.orderNumber) }
                 .onFailure { throw StoreServiceResponseException() }
             logger.info("Transfer was checked")
 
             val invoiceToSave = this.copy(status = InvoiceStatus.REFUND)
             val invoice = invoiceRepository.saveAndFlush(invoiceToSave)
             logger.info("invoice refund $invoice")
-           return@run invoice.toInvoiceResponse()
+            return@run invoice.toInvoiceResponse()
         }
 
-    fun cancelInvoice(id: Long): ConfirmOrderResponse =
-        id.validate(invoiceRepository::findById).run {
+    fun cancelInvoice(orderNumber: Long): ConfirmOrderResponse =
+        orderNumber.validate(invoiceRepository::getInvoiceByOrderNumber).run {
 
-            if (this.status.name == "PAID") throw InvoiceAlreadyPaidException(this.orderId)
+            if (this.status.name == "PAID") throw InvoiceAlreadyPaidException(this.orderNumber)
 
             val invoiceToSave = this.copy(status = InvoiceStatus.CANCELLED)
             val invoice = invoiceRepository.saveAndFlush(invoiceToSave)
@@ -179,8 +176,9 @@ class AccountancyService @Autowired constructor(
     fun getSalePrice(ids: List<Long>): Map<Long, BigDecimal> =
         ids.validate().run {
             val profitTimes = BigDecimal(2.00)
-            val prices = productClient.getProductPrice(this)
-                .apply { this.values.map { it.multiply(profitTimes) } }
+            val prices = productClient
+                .getProductPrice(this)
+                .mapValues { it.value.multiply(profitTimes) }
             logger.info("Sale prices $prices")
             prices
         }
@@ -194,4 +192,3 @@ class AccountancyService @Autowired constructor(
         return invoiceToCancelList.toInvoiceResponseList()
     }
 }
-

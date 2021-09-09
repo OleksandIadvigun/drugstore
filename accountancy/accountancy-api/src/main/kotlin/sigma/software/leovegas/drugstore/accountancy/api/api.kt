@@ -10,24 +10,13 @@ data class CreateIncomeInvoiceRequest(
 
 data class CreateOutcomeInvoiceRequest(
     val productItems: List<ItemDTO>,
-    val orderId: Long
-)
-
-data class MarkupUpdateRequest(
-    val priceItemId: Long = -1,
-    val markup: BigDecimal = BigDecimal.ZERO
+    val orderNumber: Long
 )
 
 // Response
 
-data class MarkupUpdateResponse(
-    val priceItemId: Long = -1,
-    val price: BigDecimal = BigDecimal.ZERO,
-    val markup: BigDecimal = BigDecimal.ZERO
-)
-
 data class ConfirmOrderResponse(
-    val orderId: Long = -1,
+    val orderNumber: Long = -1,
     val amount: BigDecimal = BigDecimal.ZERO,
 )
 

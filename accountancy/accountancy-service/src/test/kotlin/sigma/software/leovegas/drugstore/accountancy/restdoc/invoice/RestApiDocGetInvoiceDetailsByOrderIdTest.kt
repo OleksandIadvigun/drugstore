@@ -37,7 +37,7 @@ class RestApiDocGetInvoiceDetailsByOrderIdTest @Autowired constructor(
                 Invoice(
                     status = InvoiceStatus.PAID,
                     type = InvoiceType.OUTCOME,
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -50,7 +50,7 @@ class RestApiDocGetInvoiceDetailsByOrderIdTest @Autowired constructor(
         }.get()
 
         of("get-invoice-details-by-order-id").`when`()
-            .pathParam("id", savedInvoice.orderId)
+            .pathParam("id", savedInvoice.orderNumber)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/details/order-id/{id}")
             .then()

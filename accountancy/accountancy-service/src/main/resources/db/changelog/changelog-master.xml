@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="order_id" type="BIGINT"/>
+            <column name="order_number" type="BIGINT"/>
             <column name="total" type="Decimal(11,2)"/>
             <column name="type" type="VARCHAR(15)"/>
             <column name="status" type="VARCHAR(15)"/>

@@ -98,7 +98,7 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
             .post("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/outcome")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("amount", equalTo(80.0F))
-            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("amount", equalTo(160.0F))
+            .assertThat().body("orderNumber", equalTo(1))
     }
 }

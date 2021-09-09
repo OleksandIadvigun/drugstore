@@ -8,7 +8,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
 // Invoice entity -> InvoiceResponse
 
 fun Invoice.toInvoiceResponse() = ConfirmOrderResponse(
-    orderId = orderId,
+    orderNumber = orderNumber,
     amount = total,
 )
 

@@ -12,7 +12,7 @@ import sigma.software.leovegas.drugstore.store.StoreRepository
 import sigma.software.leovegas.drugstore.store.TransferCertificate
 import sigma.software.leovegas.drugstore.store.TransferStatus
 
-@DisplayName("Get transfer certificates by order id REST API Doc test")
+@DisplayName("Get transfer certificates by order number REST API Doc test")
 class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
     @LocalServerPort val port: Int,
     val storeProperties: StoreProperties,
@@ -21,20 +21,20 @@ class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
 ) : RestApiDocumentationTest(storeProperties) {
 
     @Test
-    fun `should get transfer certificate by order id`() {
+    fun `should get transfer certificate by order number`() {
 
         // given
         transactionTemplate.execute {
             storeRepository.deleteAllInBatch()
         }
 
-        val orderId: Long = 1
+        val orderNumber: Long = 1
 
         // and
         transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    orderId = orderId,
+                    orderNumber = orderNumber,
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
                 )
@@ -42,9 +42,9 @@ class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
         }.get()
 
         of("get-transfer-certificates-by-order-id").`when`()
-            .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate/order/$orderId")
+            .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate/order/$orderNumber")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("[0].orderId", equalTo(1))
+            .assertThat().body("[0].orderNumber", equalTo(1))
     }
 }

@@ -29,7 +29,7 @@ class InvoiceRepositoryTest @Autowired constructor(
         val created = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1,
+                    orderNumber = 1,
                     total = BigDecimal("10.00"),
                     status = InvoiceStatus.CREATED,
                 )
@@ -37,7 +37,7 @@ class InvoiceRepositoryTest @Autowired constructor(
         }.get()
 
         // when
-        val actual = invoiceRepository.getInvoiceByOrderId(created.orderId ?: -1).get()
+        val actual = invoiceRepository.getInvoiceByOrderNumber(created.orderNumber ?: -1).get()
 
         // then
         assertThat(actual.id).isEqualTo(created.id)
@@ -59,12 +59,12 @@ class InvoiceRepositoryTest @Autowired constructor(
             invoiceRepository.saveAll(
                 listOf(
                     Invoice(
-                        orderId = 1,
+                        orderNumber = 1,
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.CREATED,
                     ),
                     Invoice(
-                        orderId = 2,
+                        orderNumber = 2,
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.PAID,
                     )
@@ -81,7 +81,7 @@ class InvoiceRepositoryTest @Autowired constructor(
         // then
         assertThat(actual).hasSize(1)
         assertThat(actual[0].id).isEqualTo(created[0].id)
-        assertThat(actual[0].orderId).isEqualTo(1)
+        assertThat(actual[0].orderNumber).isEqualTo(1)
         assertThat(actual[0].total).isEqualTo(BigDecimal("10.00"))
         assertThat(actual[0].status).isEqualTo(InvoiceStatus.CREATED)
     }
@@ -99,12 +99,12 @@ class InvoiceRepositoryTest @Autowired constructor(
             invoiceRepository.saveAll(
                 listOf(
                     Invoice(
-                        orderId = 1,
+                        orderNumber = 1,
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.CREATED,
                     ),
                     Invoice(
-                        orderId = 2,
+                        orderNumber = 2,
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.PAID,
                     )
@@ -118,7 +118,7 @@ class InvoiceRepositoryTest @Autowired constructor(
         // then
         assertThat(actual).hasSize(1)
         assertThat(actual[0].id).isEqualTo(created[0].id)
-        assertThat(actual[0].orderId).isEqualTo(1)
+        assertThat(actual[0].orderNumber).isEqualTo(1)
         assertThat(actual[0].total).isEqualTo(BigDecimal("10.00"))
         assertThat(actual[0].status).isEqualTo(InvoiceStatus.CREATED)
     }

@@ -103,6 +103,6 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
             .put("http://${storeProperties.host}:$port/api/v1/store/receive")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("orderNumber", equalTo(1))
     }
 }

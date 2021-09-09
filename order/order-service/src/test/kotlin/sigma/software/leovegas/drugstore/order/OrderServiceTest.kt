@@ -462,7 +462,7 @@ class OrderServiceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     ConfirmOrderResponse(
-                                        orderId = order.id ?: -1,
+                                        orderNumber = order.id ?: -1,
                                         amount = BigDecimal("20.00"),
                                     )
                                 )
@@ -474,7 +474,7 @@ class OrderServiceTest @Autowired constructor(
         val invoice = orderService.confirmOrder(order.id ?: -1)
 
         // then
-        assertThat(invoice.orderId).isEqualTo(order.id ?: -1)
+        assertThat(invoice.orderNumber).isEqualTo(order.id ?: -1)
         assertThat(invoice.amount).isEqualTo(BigDecimal("20.00"))
     }
 

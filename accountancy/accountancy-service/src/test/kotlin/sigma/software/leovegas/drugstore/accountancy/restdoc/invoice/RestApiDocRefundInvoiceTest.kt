@@ -35,10 +35,15 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
     fun `should refund invoice`() {
 
         // given
+        transactionalTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
@@ -54,26 +59,26 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
         }.get()
 
         stubFor(
-            WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderId}")
+            WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(savedInvoice.orderId)
+                                .writeValueAsString(savedInvoice.orderNumber)
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
         )
 
         of("refund-invoice").`when`()
-            .pathParam("id", savedInvoice.id)
+            .pathParam("orderNumber", savedInvoice.orderNumber)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/refund/{id}")
+            .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/refund/{orderNumber}")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("orderNumber", equalTo(1))
             .assertThat().body("amount", equalTo(90.0F))
     }
 }

@@ -30,8 +30,8 @@ data class TransferCertificate(
     val id: Long? = null,
 
     @NotNull
-    @Column(name = "order_id", nullable = false)
-    val orderId: Long = -1,
+    @Column(name = "order_number", nullable = false)
+    val orderNumber: Long = -1,
 
     @NotNull
     @Enumerated(EnumType.STRING)

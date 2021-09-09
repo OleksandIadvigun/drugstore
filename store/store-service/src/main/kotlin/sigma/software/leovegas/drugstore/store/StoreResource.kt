@@ -26,17 +26,17 @@ class StoreResource(private val storeService: StoreService) {
     fun getTransferCertificates() = storeService.getTransferCertificates()
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/transfer-certificate/order/{id}")
-    fun getTransferCertificateByOrderId(@PathVariable("id") id: Long) =
-        storeService.getTransferCertificatesByOrderId(id)
+    @GetMapping("/transfer-certificate/order/{orderNumber}")
+    fun getTransferCertificateByOrderNumber(@PathVariable("orderNumber") orderNumber: Long) =
+        storeService.getTransferCertificatesByOrderId(orderNumber)
 
     @PutMapping("/receive")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun receiveProducts(@RequestBody invoiceId: Long) = storeService.receiveProduct(invoiceId)
+    fun receiveProducts(@RequestBody orderNumber: Long) = storeService.receiveProduct(orderNumber)
 
     @PutMapping("/deliver")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun deliverProducts(@RequestBody orderId: Long) = storeService.deliverProducts(orderId)
+    fun deliverProducts(@RequestBody orderNumber: Long) = storeService.deliverProducts(orderNumber)
 
     @PutMapping("/availability")
     @ResponseStatus(HttpStatus.ACCEPTED)

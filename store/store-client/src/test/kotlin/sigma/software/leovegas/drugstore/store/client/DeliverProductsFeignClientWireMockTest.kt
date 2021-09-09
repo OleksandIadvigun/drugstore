@@ -39,7 +39,7 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
         // and
         val responseExpected = TransferCertificateResponse(
             id = 1,
-            orderId = 1,
+            orderNumber = 1,
             status = TransferStatusDTO.DELIVERED
         )
 

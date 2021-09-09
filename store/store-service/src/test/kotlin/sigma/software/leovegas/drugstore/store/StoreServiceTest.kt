@@ -46,7 +46,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         val transferCertificateRequest = TransferCertificateRequest(
-            orderId = 1,
+            orderNumber = 1,
             status = TransferStatusDTO.RECEIVED,
             comment = "RECEIVED"
         )
@@ -58,7 +58,7 @@ class StoreServiceTest @Autowired constructor(
 
         // then
         assertThat(created.id).isNotNull
-        assertThat(created.orderId).isEqualTo(1)
+        assertThat(created.orderNumber).isEqualTo(1)
         assertThat(created.status).isEqualTo(TransferStatusDTO.RECEIVED)
         assertThat(created.comment).isEqualTo("RECEIVED")
 
@@ -76,7 +76,7 @@ class StoreServiceTest @Autowired constructor(
         val created = transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    orderId = 1,
+                    orderNumber = 1,
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
                 )
@@ -85,11 +85,11 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val actual = transactionTemplate.execute {
-            storeService.getTransferCertificatesByOrderId(created.orderId)
+            storeService.getTransferCertificatesByOrderId(created.orderNumber)
         }.get()
 
         // then
-        assertThat(actual[0].orderId).isEqualTo(created.orderId)
+        assertThat(actual[0].orderNumber).isEqualTo(created.orderNumber)
     }
 
     @Test
@@ -105,12 +105,12 @@ class StoreServiceTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        orderId = 1,
+                        orderNumber = 1,
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        orderId = 2,
+                        orderNumber = 2,
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -126,9 +126,9 @@ class StoreServiceTest @Autowired constructor(
         // then
         assertThat(actual).hasSize(2)
         assertThat(actual[0].status).isEqualTo(TransferStatusDTO.RECEIVED)
-        assertThat(actual[0].orderId).isEqualTo(1)
+        assertThat(actual[0].orderNumber).isEqualTo(1)
         assertThat(actual[1].status).isEqualTo(TransferStatusDTO.DELIVERED)
-        assertThat(actual[1].orderId).isEqualTo(2)
+        assertThat(actual[1].orderNumber).isEqualTo(2)
     }
 
     @Test
@@ -247,7 +247,7 @@ class StoreServiceTest @Autowired constructor(
 
         // then
         assertThat(transferCertificate.id).isNotNull
-        assertThat(transferCertificate.orderId).isEqualTo(orderId)
+        assertThat(transferCertificate.orderNumber).isEqualTo(orderId)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 
@@ -415,7 +415,7 @@ class StoreServiceTest @Autowired constructor(
 
         // then
         assertThat(transferCertificate.id).isNotNull
-        assertThat(transferCertificate.orderId).isEqualTo(orderId)
+        assertThat(transferCertificate.orderNumber).isEqualTo(orderId)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }
 
@@ -613,7 +613,7 @@ class StoreServiceTest @Autowired constructor(
         transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    orderId = orderNumber, status = TransferStatus.DELIVERED
+                    orderNumber = orderNumber, status = TransferStatus.DELIVERED
                 )
             )
         }

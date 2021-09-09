@@ -36,7 +36,7 @@ class GetTransferCertificateByOrderIdIdsFeignClientWireMockTest @Autowired const
         val responseExpected =
             TransferCertificateResponse(
                 id = 1,
-                orderId = orderNumber,
+                orderNumber = orderNumber,
                 status = TransferStatusDTO.DELIVERED
             )
 
@@ -60,7 +60,7 @@ class GetTransferCertificateByOrderIdIdsFeignClientWireMockTest @Autowired const
         val responseActual = storeClient.getTransferCertificatesByOrderId(orderNumber)
 
         //  then
-        assertThat(responseActual.orderId).isEqualTo(orderNumber)
+        assertThat(responseActual.orderNumber).isEqualTo(orderNumber)
         assertThat(responseActual.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 }

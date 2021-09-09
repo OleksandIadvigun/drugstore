@@ -322,7 +322,7 @@ class OrderResourceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     ConfirmOrderResponse(
-                                        orderId = order.id.get(),
+                                        orderNumber = order.id.get(),
                                         amount = BigDecimal("20.00")
                                     )
                                 )
@@ -338,7 +338,7 @@ class OrderResourceTest @Autowired constructor(
             .exchange("$baseUrl/api/v1/orders/confirm", POST, http, respTypeRef<ConfirmOrderResponse>())
 
         // then
-        assertThat(invoice.body?.orderId).isEqualTo(order.id.get())
+        assertThat(invoice.body?.orderNumber).isEqualTo(order.id.get())
     }
 
     @Test

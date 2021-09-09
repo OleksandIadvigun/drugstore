@@ -6,7 +6,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceReq
 
 fun CreateOutcomeInvoiceRequest.validate(functor: (Long) -> Optional<Invoice>): CreateOutcomeInvoiceRequest =
     apply {
-        functor(orderId).ifPresent { throw OrderAlreadyConfirmedException(orderId) }
+        functor(orderNumber).ifPresent { throw OrderAlreadyConfirmedException(orderNumber) }
         if (productItems.isEmpty()) throw ProductsItemsAreEmptyException()
     }
 

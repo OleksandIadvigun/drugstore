@@ -7,7 +7,7 @@ import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 // TransferCertificateRequest -> TransferCertificate Entity
 
 fun TransferCertificateRequest.toTransferCertificate() = TransferCertificate(
-    orderId = orderId,
+    orderNumber = orderNumber,
     status = status.toEntity(),
     comment = comment
 )
@@ -16,7 +16,7 @@ fun TransferCertificateRequest.toTransferCertificate() = TransferCertificate(
 
 fun TransferCertificate.toTransferCertificateResponse() = TransferCertificateResponse(
     id = id ?: -1,
-    orderId = orderId,
+    orderNumber = orderNumber,
     status = status.toDTO(),
     comment = comment
 )

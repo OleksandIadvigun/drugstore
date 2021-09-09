@@ -30,7 +30,7 @@ class StoreService @Autowired constructor(
         }
 
     fun getTransferCertificatesByOrderId(id: Long) = id.run {
-        val transferCertificate = storeRepository.findAllByOrderId(id)
+        val transferCertificate = storeRepository.findAllByOrderNumber(id)
         logger.info("Transfer Certificate $transferCertificate")
         transferCertificate.toTransferCertificateResponseList()
     }
@@ -42,10 +42,10 @@ class StoreService @Autowired constructor(
         return transferCertificateList.toTransferCertificateResponseList()
     }
 
-    fun deliverProducts(orderId: Long): TransferCertificateResponse =
-        orderId.validate(storeRepository::getTransferCertificateByOrderId).run {
+    fun deliverProducts(orderNumber: Long): TransferCertificateResponse =
+        orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
-            val invoiceDetails = runCatching { accountancyClient.getInvoiceDetailsByOrderId(this) }
+            val invoiceDetails = runCatching { accountancyClient.getInvoiceDetailsByOrderNumber(this) }
                 .onFailure { throw AccountancyServerResponseException(this) }
                 .getOrNull()
                 .orEmpty()
@@ -68,10 +68,10 @@ class StoreService @Autowired constructor(
             return@run transferCertificate
         }
 
-    fun receiveProduct(orderId: Long) =
-        orderId.validate(storeRepository::getTransferCertificateByOrderId).run {
+    fun receiveProduct(orderNumber: Long) =
+        orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
-            val invoiceItems = runCatching { accountancyClient.getInvoiceDetailsByOrderId(this) }
+            val invoiceItems = runCatching { accountancyClient.getInvoiceDetailsByOrderNumber(this) }
                 .onFailure { throw AccountancyServerResponseException(this) }
                 .getOrNull()
                 .orEmpty()
@@ -107,5 +107,5 @@ class StoreService @Autowired constructor(
         return@run products
     }
 
-    fun checkTransfer(orderNumber: Long): Long = orderNumber.validate(storeRepository::getTransferCertificateByOrderId)
+    fun checkTransfer(orderNumber: Long): Long = orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber)
 }

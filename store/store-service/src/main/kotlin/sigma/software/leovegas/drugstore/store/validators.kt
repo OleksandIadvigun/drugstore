@@ -14,7 +14,7 @@ fun List<DeliverProductsQuantityRequest>.validate() =
     onEach { if (it.quantity <= 0) throw NotCorrectQuantityException() }
 
 fun TransferCertificateRequest.validate() = apply {
-    if (orderId < 0 || comment == "undefined" || status == TransferStatusDTO.NONE) {
+    if (orderNumber < 0 || comment == "undefined" || status == TransferStatusDTO.NONE) {
         throw NotCorrectRequestException()
     }
 }

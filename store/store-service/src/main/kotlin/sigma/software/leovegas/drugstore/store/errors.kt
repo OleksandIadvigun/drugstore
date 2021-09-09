@@ -9,7 +9,7 @@ class InsufficientAmountOfProductException(productId: Long) : StoreServiceExcept
 class ProductsAlreadyDelivered(orderId: Long) : StoreServiceException("Products from order($orderId) already delivered")
 
 class AccountancyServerResponseException(orderId: Long) :
-    StoreServiceException("Can't receive invoice details by order($orderId")
+    StoreServiceException("Can't receive invoice details by order($orderId)")
 
 class ProductServerResponseException() :
     StoreServiceException("Ups... some problems with product service")

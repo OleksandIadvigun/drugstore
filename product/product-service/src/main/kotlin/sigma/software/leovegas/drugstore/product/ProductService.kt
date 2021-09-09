@@ -99,7 +99,8 @@ class ProductService(
         }
 
     fun receiveProducts(ids: List<Long>) = ids.run {
-        val productsReceived = productRepository.findAllById(ids).map { it.copy(status = ProductStatus.RECEIVED) }
+        val productsToReceive = productRepository.findAllById(ids).map { it.copy(status = ProductStatus.RECEIVED) }
+        val productsReceived = productRepository.saveAllAndFlush(productsToReceive)
         logger.info("Received Products $productsReceived")
         productsReceived.toReceiveProductResponseList()
     }
@@ -116,8 +117,7 @@ class ProductService(
                     it.copy(quantity = it.quantity.minus(idsToQuantity[it.id] ?: -1))
                 }
 
-            val productsDelivered =
-                productRepository.saveAllAndFlush(toUpdate)
+            val productsDelivered = productRepository.saveAllAndFlush(toUpdate)
             logger.info("Delivered Products $productsDelivered")
             return@run productsDelivered.toReduceProductQuantityResponseList()
         }
@@ -141,4 +141,3 @@ class ProductService(
             return@run productsPrice
         }
 }
-

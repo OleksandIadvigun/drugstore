@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface InvoiceRepository : JpaRepository<Invoice, Long> {
 
-    fun getInvoiceByOrderId(orderId: Long): Optional<Invoice>
+    fun getInvoiceByOrderNumber(orderNumber: Long): Optional<Invoice>
 
     fun findAllByStatusAndCreatedAtLessThan(status: InvoiceStatus, expireDate: LocalDateTime): List<Invoice>
 

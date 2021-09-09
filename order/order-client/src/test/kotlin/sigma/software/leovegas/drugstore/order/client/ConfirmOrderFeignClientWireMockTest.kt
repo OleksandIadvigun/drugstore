@@ -35,7 +35,7 @@ class ConfirmOrderFeignClientWireMockTest @Autowired constructor(
 
         // and
         val responseExpected = ConfirmOrderResponse(
-            orderId = 1,
+            orderNumber = 1,
             amount = BigDecimal.TEN
         )
 
@@ -66,7 +66,7 @@ class ConfirmOrderFeignClientWireMockTest @Autowired constructor(
         val responseActual = orderClient.confirmOrder(request)
 
         //  then
-        assertThat(responseActual.orderId).isEqualTo(responseExpected.orderId)
+        assertThat(responseActual.orderNumber).isEqualTo(responseExpected.orderNumber)
         assertThat(responseActual.amount).isEqualTo(responseExpected.amount)
     }
 }

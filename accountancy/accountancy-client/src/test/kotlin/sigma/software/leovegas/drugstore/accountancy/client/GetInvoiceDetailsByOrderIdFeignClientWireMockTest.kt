@@ -53,7 +53,7 @@ class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.getInvoiceDetailsByOrderId(1L)
+        val responseActual = accountancyClient.getInvoiceDetailsByOrderNumber(1L)
 
         // then
         assertThat(responseActual[0].productId).isEqualTo(1L)

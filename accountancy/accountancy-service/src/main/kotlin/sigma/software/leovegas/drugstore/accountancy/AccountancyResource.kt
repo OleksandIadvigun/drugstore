@@ -41,29 +41,29 @@ class AccountancyResource(private val service: AccountancyService) {
         service.createOutcomeInvoice(createOutcomeInvoiceRequest)
 
     @ResponseStatus(ACCEPTED)
-    @PutMapping("/invoice/pay/{id}")
-    fun payInvoice(@PathVariable id: Long, @RequestBody money: BigDecimal): ConfirmOrderResponse =
-        service.payInvoice(id, money)
+    @PutMapping("/invoice/pay/{orderNumber}")
+    fun payInvoice(@PathVariable orderNumber: Long, @RequestBody money: BigDecimal): ConfirmOrderResponse =
+        service.payInvoice(orderNumber, money)
 
     @ResponseStatus(ACCEPTED)
-    @PutMapping("/invoice/cancel/{id}")
-    fun cancelInvoice(@PathVariable id: Long): ConfirmOrderResponse =
-        service.cancelInvoice(id)
+    @PutMapping("/invoice/cancel/{orderNumber}")
+    fun cancelInvoice(@PathVariable orderNumber: Long): ConfirmOrderResponse =
+        service.cancelInvoice(orderNumber)
 
     @ResponseStatus(ACCEPTED)
-    @PutMapping("/invoice/refund/{id}")
-    fun refundInvoice(@PathVariable id: Long): ConfirmOrderResponse =
-        service.refundInvoice(id)
+    @PutMapping("/invoice/refund/{orderNumber}")
+    fun refundInvoice(@PathVariable orderNumber: Long): ConfirmOrderResponse =
+        service.refundInvoice(orderNumber)
 
     @ResponseStatus(OK)
-    @GetMapping("/invoice/{id}")
-    fun getInvoiceById(@PathVariable id: Long): ConfirmOrderResponse =
-        service.getInvoiceById(id)
+    @GetMapping("/invoice/{orderNumber}")
+    fun getInvoiceById(@PathVariable orderNumber: Long): ConfirmOrderResponse =
+        service.getInvoiceById(orderNumber)
 
     @ResponseStatus(OK)
-    @GetMapping("/invoice/details/order-id/{id}")
-    fun getInvoiceDetailsByOrderId(@PathVariable id: Long): List<ItemDTO> =
-        service.getInvoiceDetailsByOrderId(id)
+    @GetMapping("/invoice/details/order-id/{orderNumber}")
+    fun getInvoiceDetailsByOrderNumber(@PathVariable orderNumber: Long): List<ItemDTO> =
+        service.getInvoiceDetailsByOrderNumber(orderNumber)
 
     @ResponseStatus(OK)
     @GetMapping("/sale-price")

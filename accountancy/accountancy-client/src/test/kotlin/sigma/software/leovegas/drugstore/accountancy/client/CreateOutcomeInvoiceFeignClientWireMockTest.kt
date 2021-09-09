@@ -34,7 +34,7 @@ class CreateOutcomeInvoiceFeignClientWireMockTest @Autowired constructor(
 
         // given
         val request = CreateOutcomeInvoiceRequest(
-            orderId = 1,
+            orderNumber = 1,
             productItems = listOf(
                 ItemDTO(
                     productId = 1,
@@ -45,7 +45,7 @@ class CreateOutcomeInvoiceFeignClientWireMockTest @Autowired constructor(
 
         // and
         val responseExpected = ConfirmOrderResponse(
-            orderId = 1L,
+            orderNumber = 1L,
             amount = BigDecimal("15.00"), // price * quantity
         )
 
@@ -76,7 +76,7 @@ class CreateOutcomeInvoiceFeignClientWireMockTest @Autowired constructor(
         val responseActual = accountancyClient.createOutcomeInvoice(request)
 
         // then
-        assertThat(responseActual.orderId).isEqualTo(1)
+        assertThat(responseActual.orderNumber).isEqualTo(1)
         assertThat(responseActual.amount).isEqualTo(BigDecimal("15.00"))
     }
 }

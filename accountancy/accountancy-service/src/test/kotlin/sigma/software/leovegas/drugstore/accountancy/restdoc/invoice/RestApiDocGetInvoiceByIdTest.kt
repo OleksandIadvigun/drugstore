@@ -30,7 +30,7 @@ class RestApiDocGetInvoiceByIdTest @Autowired constructor(
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -50,6 +50,6 @@ class RestApiDocGetInvoiceByIdTest @Autowired constructor(
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("amount", equalTo(90.0F))
-            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("orderNumber", equalTo(1))
     }
 }

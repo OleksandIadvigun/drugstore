@@ -102,8 +102,8 @@ class AccountancyServiceTest @Autowired constructor(
 
         // then
         assertThat(actual).isNotNull
-        assertThat(actual.orderId).isEqualTo(orderId)
-        assertThat(actual.amount).isEqualTo(BigDecimal("80.00")) // sum of all quantity * price
+        assertThat(actual.orderNumber).isEqualTo(orderId)
+        assertThat(actual.amount).isEqualTo(BigDecimal("160.00")) // sum of all quantity * price
     }
 
     @Test
@@ -201,7 +201,7 @@ class AccountancyServiceTest @Autowired constructor(
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1,
+                    orderNumber = 1,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -219,11 +219,11 @@ class AccountancyServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<OrderAlreadyConfirmedException> {
-            service.createOutcomeInvoice(CreateOutcomeInvoiceRequest(invoiceRequest, savedInvoice.orderId))
+            service.createOutcomeInvoice(CreateOutcomeInvoiceRequest(invoiceRequest, savedInvoice.orderNumber))
         }
 
         // then
-        assertThat(exception.message).contains("Order(${savedInvoice.orderId}) already has invoice")
+        assertThat(exception.message).contains("Order(${savedInvoice.orderNumber}) already has invoice")
     }
 
     @Test
@@ -234,7 +234,7 @@ class AccountancyServiceTest @Autowired constructor(
             .execute {
                 invoiceRepository.save(
                     Invoice(
-                        orderId = 1L,
+                        orderNumber = 1L,
                         total = BigDecimal("90.00"),
                         productItems = setOf(
                             ProductItem(
@@ -282,7 +282,7 @@ class AccountancyServiceTest @Autowired constructor(
                 Invoice(
                     status = InvoiceStatus.PAID,
                     type = InvoiceType.OUTCOME,
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -295,7 +295,7 @@ class AccountancyServiceTest @Autowired constructor(
         }.get()
 
         // when
-        val actual = service.getInvoiceDetailsByOrderId(savedInvoice.orderId)
+        val actual = service.getInvoiceDetailsByOrderNumber(savedInvoice.orderNumber)
 
         // then
         assertThat(actual).isNotNull
@@ -312,7 +312,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<InvoiceNotFoundException> {
-            service.getInvoiceDetailsByOrderId(invalidOrderNumber)
+            service.getInvoiceDetailsByOrderNumber(invalidOrderNumber)
         }
 
         // then
@@ -323,10 +323,15 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should refund invoice`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
@@ -342,29 +347,34 @@ class AccountancyServiceTest @Autowired constructor(
         }.get()
 
         stubFor(
-            WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderId}")
+            WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(savedInvoice.orderId)
+                                .writeValueAsString(savedInvoice.orderNumber)
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
         )
 
         // when
-        val actual = service.refundInvoice(savedInvoice.id ?: -1)
+        val actual = service.refundInvoice(savedInvoice.orderNumber)
 
         // then
-        assertThat(actual.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(actual.orderNumber).isEqualTo(savedInvoice.orderNumber)
         assertThat(actual.amount).isEqualTo(savedInvoice.total)
     }
 
     @Test
     fun `should not refund if invoice not exist`() {
+
+        // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
 
         // given
         val invalidOrderNumber: Long = -15
@@ -382,10 +392,15 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not refund if store service not available`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = -5,
+                    orderNumber = -5,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
@@ -402,7 +417,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<StoreServiceResponseException> {
-            service.refundInvoice(savedInvoice.id.get())
+            service.refundInvoice(savedInvoice.orderNumber.get())
         }
 
         // then
@@ -413,10 +428,15 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not refund non-paid invoice`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.CREATED,
                     productItems = setOf(
@@ -433,7 +453,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<NotPaidInvoiceException> {
-            service.refundInvoice(savedInvoice.id ?: -1)
+            service.refundInvoice(savedInvoice.orderNumber)
         }
 
         // then
@@ -444,10 +464,15 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should pay invoice`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.CREATED,
                     productItems = setOf(
@@ -463,10 +488,10 @@ class AccountancyServiceTest @Autowired constructor(
         }.get()
 
         // when
-        val actual = service.payInvoice(savedInvoice.id ?: -1, BigDecimal("90.0"))
+        val actual = service.payInvoice(savedInvoice.orderNumber, BigDecimal("90.0"))
 
         // then
-        assertThat(actual.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(actual.orderNumber).isEqualTo(savedInvoice.orderNumber)
         assertThat(actual.amount).isEqualTo(savedInvoice.total)
     }
 
@@ -474,6 +499,11 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not pay if invoice not exist`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val invalidOrderNumber: Long = -15
 
         // when
@@ -489,10 +519,15 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not pay invoice if status not created`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
@@ -509,7 +544,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<InvalidStatusOfInvoice> {
-            service.payInvoice(savedInvoice.id ?: -1, BigDecimal("100.00"))
+            service.payInvoice(savedInvoice.orderNumber, BigDecimal("100.00"))
         }
 
         // then
@@ -521,10 +556,15 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not pay invoice if not enough money`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.CREATED,
                     productItems = setOf(
@@ -541,7 +581,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<NotEnoughMoneyException> {
-            service.payInvoice(savedInvoice.id ?: -1, BigDecimal("10.00"))
+            service.payInvoice(savedInvoice.orderNumber, BigDecimal("10.00"))
         }
 
         // then
@@ -560,7 +600,7 @@ class AccountancyServiceTest @Autowired constructor(
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -575,10 +615,10 @@ class AccountancyServiceTest @Autowired constructor(
         }.get()
 
         // when
-        val actual = service.cancelInvoice(savedInvoice.id ?: -1)
+        val actual = service.cancelInvoice(savedInvoice.orderNumber)
 
         // then
-        assertThat(actual.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(actual.orderNumber).isEqualTo(savedInvoice.orderNumber)
         assertThat(actual.amount).isEqualTo(savedInvoice.total)
 
     }
@@ -587,7 +627,13 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not cancel non-existing invoice`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val invalidOrderNumber: Long = -15
+
         // when
         val exception = assertThrows<InvoiceNotFoundException> {
             service.cancelInvoice(invalidOrderNumber)
@@ -601,10 +647,15 @@ class AccountancyServiceTest @Autowired constructor(
     fun `should not cancel paid invoice`() {
 
         // given
+        transactionTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
@@ -621,11 +672,11 @@ class AccountancyServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<InvoiceAlreadyPaidException> {
-            service.cancelInvoice(savedInvoice.id ?: -1)
+            service.cancelInvoice(savedInvoice.orderNumber)
         }
 
         // then
-        assertThat(exception.message).contains("Order(${savedInvoice.orderId}) already paid. Please, first do refund")
+        assertThat(exception.message).contains("Order(${savedInvoice.orderNumber}) already paid. Please, first do refund")
     }
 
     @Test
@@ -656,7 +707,8 @@ class AccountancyServiceTest @Autowired constructor(
         val priceMap = service.getSalePrice(ids)
 
         // then
-        assertThat(priceMap[1]).isEqualTo(BigDecimal("1.23"))
-        assertThat(priceMap[2]).isEqualTo(BigDecimal("1.24"))
+        println(priceMap)
+        assertThat(priceMap[1]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")))
+        assertThat(priceMap[2]).isEqualTo(BigDecimal("1.24").multiply(BigDecimal("2")))
     }
 }

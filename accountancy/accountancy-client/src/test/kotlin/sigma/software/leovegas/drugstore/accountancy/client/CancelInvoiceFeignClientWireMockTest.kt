@@ -31,7 +31,7 @@ class CancelInvoiceFeignClientWireMockTest @Autowired constructor(
 
         // given
         val responseExpected = ConfirmOrderResponse(
-            orderId = 1L,
+            orderNumber = 1L,
             amount = BigDecimal("120.00"), // price * quantity
         )
 
@@ -55,7 +55,7 @@ class CancelInvoiceFeignClientWireMockTest @Autowired constructor(
         val responseActual = accountancyClient.cancelInvoice(1L)
 
         // then
-        assertThat(responseActual.orderId).isEqualTo(1L)
+        assertThat(responseActual.orderNumber).isEqualTo(1L)
         assertThat(responseActual.amount).isEqualTo(BigDecimal("120.00"))
     }
 }

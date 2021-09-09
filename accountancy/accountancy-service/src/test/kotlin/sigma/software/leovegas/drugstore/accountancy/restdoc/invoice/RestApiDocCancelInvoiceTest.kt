@@ -45,7 +45,7 @@ class RestApiDocCancelInvoiceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -82,12 +82,12 @@ class RestApiDocCancelInvoiceTest @Autowired constructor(
         )
 
         of("cancel-invoice").`when`()
-            .pathParam("id", savedInvoice.id)
+            .pathParam("id", savedInvoice.orderNumber)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/cancel/{id}")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderId", equalTo(1))
+            .assertThat().body("orderNumber", equalTo(1))
             .assertThat().body("amount", equalTo(90.0F))
     }
 }

@@ -18,17 +18,17 @@ interface AccountancyClient {
     @RequestLine("POST /api/v1/accountancy/invoice/outcome")
     fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): ConfirmOrderResponse
 
-    @RequestLine("PUT /api/v1/accountancy/invoice/pay/{id}")
-    fun payInvoice(@Param id: Long): ConfirmOrderResponse
+    @RequestLine("PUT /api/v1/accountancy/invoice/pay/{orderNumber}")
+    fun payInvoice(@Param orderNumber: Long): ConfirmOrderResponse
 
-    @RequestLine("PUT /api/v1/accountancy/invoice/cancel/{id}")
-    fun cancelInvoice(@Param id: Long): ConfirmOrderResponse
+    @RequestLine("PUT /api/v1/accountancy/invoice/cancel/{orderNumber}")
+    fun cancelInvoice(@Param orderNumber: Long): ConfirmOrderResponse
 
-    @RequestLine("PUT /api/v1/accountancy/invoice/refund/{id}")
-    fun refundInvoice(@Param id: Long): ConfirmOrderResponse
+    @RequestLine("PUT /api/v1/accountancy/invoice/refund/{orderNumber}")
+    fun refundInvoice(@Param orderNumber: Long): ConfirmOrderResponse
 
-    @RequestLine("GET /api/v1/accountancy/invoice/details/order-id/{orderId}")
-    fun getInvoiceDetailsByOrderId(@Param orderId: Long): List<ItemDTO>
+    @RequestLine("GET /api/v1/accountancy/invoice/details/order-id/{orderNumber}")
+    fun getInvoiceDetailsByOrderNumber(@Param orderNumber: Long): List<ItemDTO>
 
     @RequestLine("GET /api/v1/accountancy/sale-price?ids={ids}")
     fun getSalePrice(@Param ids: List<Long>): Map<Long, BigDecimal>

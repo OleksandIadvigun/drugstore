@@ -54,13 +54,13 @@ class StoreResourceTest @Autowired constructor(
             storeRepository.deleteAllInBatch()
         }
 
-        val orderId: Long = 1
+        val orderNumber: Long = 1
 
         // and
         transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    orderId = orderId,
+                    orderNumber = orderNumber,
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
                 )
@@ -69,7 +69,7 @@ class StoreResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/store/transfer-certificate/order/$orderId",
+            "$baseUrl/api/v1/store/transfer-certificate/order/$orderNumber",
             HttpMethod.GET, null, respTypeRef<List<TransferCertificateResponse>>()
         )
 
@@ -80,7 +80,7 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).hasSize(1)
-        assertThat(body[0].orderId).isEqualTo(1)
+        assertThat(body[0].orderNumber).isEqualTo(1)
     }
 
     @Test
@@ -96,12 +96,12 @@ class StoreResourceTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        orderId = 1,
+                        orderNumber = 1,
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        orderId = 2,
+                        orderNumber = 2,
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -122,8 +122,8 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).hasSize(2)
-        assertThat(body[0].orderId).isEqualTo(1)
-        assertThat(body[1].orderId).isEqualTo(2)
+        assertThat(body[0].orderNumber).isEqualTo(1)
+        assertThat(body[1].orderNumber).isEqualTo(2)
     }
 
     @Test
@@ -208,7 +208,7 @@ class StoreResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).isNotNull
-        assertThat(body.orderId).isEqualTo(1)
+        assertThat(body.orderNumber).isEqualTo(1)
         assertThat(body.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }
 
@@ -339,7 +339,7 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).isNotNull
-        assertThat(body.orderId).isEqualTo(1)
+        assertThat(body.orderNumber).isEqualTo(1)
         assertThat(body.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 

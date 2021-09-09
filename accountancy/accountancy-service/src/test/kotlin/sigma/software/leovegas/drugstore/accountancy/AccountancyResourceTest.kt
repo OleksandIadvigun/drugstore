@@ -129,7 +129,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body.amount).isEqualTo(BigDecimal("80.00"))
+        assertThat(body.amount).isEqualTo(BigDecimal("160.00"))
     }
 
     @Test
@@ -227,7 +227,7 @@ class AccountancyResourceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -254,14 +254,16 @@ class AccountancyResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body.amount).isEqualTo(savedInvoice.total)
-        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(body.orderNumber).isEqualTo(savedInvoice.orderNumber)
     }
 
     @Test
     fun `should get invoice details by order id`() {
 
         // given
-        transactionalTemplate.execute { invoiceRepository.deleteAll() }
+        transactionalTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
 
         // and
         val savedInvoice = transactionalTemplate.execute {
@@ -269,7 +271,7 @@ class AccountancyResourceTest @Autowired constructor(
                 Invoice(
                     status = InvoiceStatus.PAID,
                     type = InvoiceType.OUTCOME,
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -283,7 +285,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/invoice/details/order-id/${savedInvoice.orderId}",
+            "$baseUrl/api/v1/accountancy/invoice/details/order-id/${savedInvoice.orderNumber}",
             GET,
             null,
             respTypeRef<List<ItemDTO>>()
@@ -302,10 +304,15 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should refund invoice`() {
 
         // given
+        transactionalTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
@@ -321,14 +328,14 @@ class AccountancyResourceTest @Autowired constructor(
         }.get()
 
         stubFor(
-            WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderId}")
+            WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(savedInvoice.orderId)
+                                .writeValueAsString(savedInvoice.orderNumber)
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
@@ -336,7 +343,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/invoice/refund/${savedInvoice.id}",
+            "$baseUrl/api/v1/accountancy/invoice/refund/${savedInvoice.orderNumber}",
             PUT,
             null,
             respTypeRef<ConfirmOrderResponse>()
@@ -347,7 +354,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(body.orderNumber).isEqualTo(savedInvoice.orderNumber)
         assertThat(body.amount).isEqualTo(savedInvoice.total)
     }
 
@@ -355,10 +362,15 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should pay invoice`() {
 
         // given
+        transactionalTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.CREATED,
                     productItems = setOf(
@@ -380,7 +392,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/invoice/pay/${savedInvoice.id}",
+            "$baseUrl/api/v1/accountancy/invoice/pay/${savedInvoice.orderNumber}",
             PUT,
             httpEntity,
             respTypeRef<ConfirmOrderResponse>()
@@ -391,7 +403,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(body.orderNumber).isEqualTo(savedInvoice.orderNumber)
         assertThat(body.amount).isEqualTo(savedInvoice.total)
     }
 
@@ -399,6 +411,11 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should cancel invoice by id`() {
 
         // given
+        transactionalTemplate.execute{
+            invoiceRepository.deleteAll()
+        }
+
+        // and
         transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
@@ -407,7 +424,7 @@ class AccountancyResourceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderId = 1L,
+                    orderNumber = 1L,
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -423,7 +440,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/invoice/cancel/${savedInvoice.id}",
+            "$baseUrl/api/v1/accountancy/invoice/cancel/${savedInvoice.orderNumber}",
             PUT,
             null,
             respTypeRef<ConfirmOrderResponse>()
@@ -434,7 +451,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body.orderId).isEqualTo(savedInvoice.orderId)
+        assertThat(body.orderNumber).isEqualTo(savedInvoice.orderNumber)
         assertThat(body.amount).isEqualTo(savedInvoice.total)
     }
 
@@ -472,7 +489,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body[1]).isEqualTo(BigDecimal("1.23"))
-        assertThat(body[2]).isEqualTo(BigDecimal("1.24"))
+        assertThat(body[1]).isEqualTo(BigDecimal("2.46"))
+        assertThat(body[2]).isEqualTo(BigDecimal("2.48"))
     }
 }
