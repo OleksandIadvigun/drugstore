@@ -9,7 +9,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
+import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
+import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.client.ProductClient
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
@@ -22,6 +24,7 @@ import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 class StoreService @Autowired constructor(
     val storeRepository: StoreRepository,
     val accountancyClient: AccountancyClient,
+    val accountancyClientProto: AccountancyClientProto,
     val productClient: ProductClient,
 ) {
 
@@ -58,16 +61,15 @@ class StoreService @Autowired constructor(
     fun deliverProducts(orderNumber: String): TransferCertificateResponse =
         orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
-            val invoiceDetails = runCatching {
-                accountancyClient.getInvoiceDetailsByOrderNumber(this)
+            val invoiceDetails: AccountancyProto.InvoiceDetails = runCatching {
+                accountancyClientProto.getInvoiceDetailsByOrderNumber(this)
+            }.onFailure { error ->
+                throw AccountancyServerResponseException(error.localizedMessage.messageSpliterator())
             }
-                .onFailure { error ->
-                    throw AccountancyServerResponseException(error.localizedMessage.messageSpliterator())
-                }
-                .getOrNull()
-                .orEmpty()
+                .getOrThrow()
             logger.info("Received invoice details $invoiceDetails")
-            val products = invoiceDetails
+
+            val products = invoiceDetails.itemsList
                 .map { DeliverProductsQuantityRequest(productNumber = it.productNumber, quantity = it.quantity) }
 
             checkAvailability(products)
@@ -87,15 +89,15 @@ class StoreService @Autowired constructor(
     fun receiveProduct(orderNumber: String) =
         orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
-            val invoiceItems = runCatching { accountancyClient.getInvoiceDetailsByOrderNumber(this) }
-                .onFailure { exception ->
-                    throw AccountancyServerResponseException(exception.localizedMessage.messageSpliterator())
-                }
-                .getOrNull()
-                .orEmpty()
-            logger.info("Received invoice details ${invoiceItems}")
+            val invoiceDetails: AccountancyProto.InvoiceDetails = runCatching {
+                accountancyClientProto.getInvoiceDetailsByOrderNumber(this)
+            }.onFailure { error ->
+                throw AccountancyServerResponseException(error.localizedMessage.messageSpliterator())
+            }
+                .getOrThrow()
+            logger.info("Received invoice details ${invoiceDetails.itemsList}")
 
-            runCatching { productClient.receiveProducts(invoiceItems.map { it.productNumber }) }
+            runCatching { productClient.receiveProducts(invoiceDetails.itemsList.map { it.productNumber }) }
                 .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrNull()
                 .orEmpty()

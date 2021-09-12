@@ -1,2 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  sigma.software.leovegas.drugstore.accountancy.client.AccountancyClientConfiguration
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+#  sigma.software.leovegas.drugstore.accountancy.client.AccountancyClientConfiguration

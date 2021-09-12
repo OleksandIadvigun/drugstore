@@ -19,7 +19,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
@@ -144,10 +146,11 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = listOf(
-            ItemDTO(productNumber = "1", quantity = 2),
-            ItemDTO(productNumber = "2", quantity = 3),
+        val itemsList = listOf(
+            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
+            AccountancyProto.Item.newBuilder().setProductNumber( "2").setQuantity(3).build(),
         )
+        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
@@ -155,14 +158,9 @@ class StoreServiceTest @Autowired constructor(
         // and
         stubFor(
             WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
+                        .withProtobufResponse { invoiceDetailsProto }
                 )
         )
 
@@ -288,10 +286,11 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = listOf(
-            ItemDTO(productNumber = "3", quantity = 2),
-            ItemDTO(productNumber = "4", quantity = 3),
+        val itemsList = listOf(
+            AccountancyProto.Item.newBuilder().setProductNumber( "3").setQuantity(2).build(),
+            AccountancyProto.Item.newBuilder().setProductNumber( "4").setQuantity(3).build(),
         )
+        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
@@ -299,14 +298,9 @@ class StoreServiceTest @Autowired constructor(
         // and
         stubFor(
             WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
+                        .withProtobufResponse { invoiceDetailsProto }
                 )
         )
 
@@ -360,25 +354,21 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = listOf(
-            ItemDTO(productNumber = "1", quantity = 2),
-            ItemDTO(productNumber = "2", quantity = 3),
+        val itemsList = listOf(
+            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
+            AccountancyProto.Item.newBuilder().setProductNumber( "2").setQuantity(3).build(),
         )
+        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-number/${orderNumber}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
+                        .withProtobufResponse { invoiceDetailsProto }
                 )
         )
 
@@ -460,27 +450,24 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = listOf(
-            ItemDTO(productNumber = "5", quantity = 2),
-            ItemDTO(productNumber = "6", quantity = 3),
+        val itemsList = listOf(
+            AccountancyProto.Item.newBuilder().setProductNumber( "5").setQuantity(2).build(),
+            AccountancyProto.Item.newBuilder().setProductNumber( "6").setQuantity(3).build(),
         )
+        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
-        val orderNumber = "3"
+        val orderNumber = "1"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-number/${orderNumber}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
+                        .withProtobufResponse { invoiceDetailsProto }
                 )
         )
+
         // when
         val exception = assertThrows<ProductServerResponseException> {
             storeService.receiveProduct(orderNumber)

@@ -13,8 +13,8 @@ import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.api.messageSpliterator
+import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.client.ProductClient
@@ -129,7 +129,7 @@ class AccountancyService @Autowired constructor(
             this.toInvoiceResponseWithStatus()
         }
 
-    fun getInvoiceDetailsByOrderNumber(orderNumber: String): List<ItemDTO> =
+    fun getInvoiceDetailsByOrderNumber(orderNumber: String): AccountancyProto.InvoiceDetails =
         orderNumber.validate {
             invoiceRepository.getInvoiceByOrderNumberAndStatusNotLike(
                 orderNumber,
@@ -139,15 +139,14 @@ class AccountancyService @Autowired constructor(
             .run {
                 logger.info("Invoice found $this")
                 if (status != InvoiceStatus.PAID) throw NotPaidInvoiceException(orderNumber)
-                val productItems = productItems
-                    .map {
-                        ItemDTO(
-                            productNumber = it.productNumber,
-                            quantity = it.quantity
-                        )
-                    }
+                val invoiceItems = productItems.map {
+                    AccountancyProto.Item.newBuilder()
+                        .setProductNumber(it.productNumber)
+                        .setQuantity(it.quantity)
+                        .build()
+                }
                 logger.info("Invoice details $productItems")
-                return@run productItems
+                return@run AccountancyProto.InvoiceDetails.newBuilder().addAllItems(invoiceItems).build()
             }
 
     fun payInvoice(orderNumber: String, money: BigDecimal): ConfirmOrderResponse =

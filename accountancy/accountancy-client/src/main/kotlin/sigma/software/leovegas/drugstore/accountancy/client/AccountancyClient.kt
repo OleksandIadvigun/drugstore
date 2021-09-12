@@ -4,12 +4,13 @@ import feign.Headers
 import feign.Param
 import feign.RequestLine
 import java.math.BigDecimal
+import org.springframework.cloud.openfeign.FeignClient
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
-import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 
 @Headers("Content-Type: application/json")
+@FeignClient(name = "FEIGN", configuration = [AccountancyClientConfiguration::class])
 interface AccountancyClient {
 
     @RequestLine("POST api/v1/accountancy/invoice/income")
@@ -27,9 +28,7 @@ interface AccountancyClient {
     @RequestLine("PUT /api/v1/accountancy/invoice/refund/{orderNumber}")
     fun refundInvoice(@Param orderNumber: String): ConfirmOrderResponse
 
-    @RequestLine("GET /api/v1/accountancy/invoice/details/order-number/{orderNumber}")
-    fun getInvoiceDetailsByOrderNumber(@Param orderNumber: String): List<ItemDTO>
-
     @RequestLine("GET /api/v1/accountancy/sale-price?productNumbers={productNumbers}")
     fun getSalePrice(@Param productNumbers: List<String>): Map<String, BigDecimal>
+
 }

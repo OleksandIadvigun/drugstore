@@ -301,9 +301,9 @@ class AccountancyServiceTest @Autowired constructor(
 
         // then
         assertThat(actual).isNotNull
-        assertThat(actual).hasSize(1)
-        assertThat(actual[0].productNumber).isEqualTo("1")
-        assertThat(actual[0].quantity).isEqualTo(3)
+        assertThat(actual.itemsList).hasSize(1)
+        assertThat(actual.itemsList[0].productNumber).isEqualTo("1")
+        assertThat(actual.itemsList[0].quantity).isEqualTo(3)
     }
 
     @Test

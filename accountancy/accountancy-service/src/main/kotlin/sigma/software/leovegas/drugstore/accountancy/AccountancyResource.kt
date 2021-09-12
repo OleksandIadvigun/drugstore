@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.accountancy
 
+
 import java.math.BigDecimal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,8 +23,9 @@ import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
-import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.api.ApiError
+import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+
 
 @RestController
 @RequestMapping("/api/v1/accountancy")
@@ -62,14 +64,16 @@ class AccountancyResource(private val service: AccountancyService) {
         service.getInvoiceByInvoiceNumber(invoiceNumber)
 
     @ResponseStatus(OK)
-    @GetMapping("/invoice/details/order-number/{orderNumber}")
-    fun getInvoiceDetailsByOrderNumber(@PathVariable orderNumber: String): List<ItemDTO> =
-        service.getInvoiceDetailsByOrderNumber(orderNumber)
-
-    @ResponseStatus(OK)
     @GetMapping("/sale-price")
     fun getSalePrice(@RequestParam("productNumbers") productNumbers: List<String>): Map<String, BigDecimal> =
         service.getSalePrice(productNumbers)
+
+    // protobuf request ----------------------------->
+
+    @ResponseStatus(OK)
+    @GetMapping("/invoice/details/order-number/{orderNumber}", produces = ["application/x-protobuf"])
+    fun getInvoiceDetailsByOrderNumberProto(@PathVariable orderNumber: String): AccountancyProto.InvoiceDetails =
+        service.getInvoiceDetailsByOrderNumber(orderNumber)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

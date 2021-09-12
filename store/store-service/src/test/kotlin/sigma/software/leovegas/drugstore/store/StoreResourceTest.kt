@@ -21,8 +21,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
@@ -139,10 +141,11 @@ class StoreResourceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = listOf(
-            ItemDTO(productNumber = "1", quantity = 2),
-            ItemDTO(productNumber = "2", quantity = 3),
+        val itemsList = listOf(
+            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
+            AccountancyProto.Item.newBuilder().setProductNumber( "2").setQuantity(3).build(),
         )
+        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
@@ -150,14 +153,9 @@ class StoreResourceTest @Autowired constructor(
         // and
         stubFor(
             WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
+                        .withProtobufResponse { invoiceDetailsProto }
                 )
         )
 
@@ -225,10 +223,11 @@ class StoreResourceTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = listOf(
-            ItemDTO(productNumber = "1", quantity = 2),
-            ItemDTO(productNumber = "2", quantity = 3),
+        val itemsList = listOf(
+            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
+            AccountancyProto.Item.newBuilder().setProductNumber( "2").setQuantity(3).build(),
         )
+        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
@@ -236,14 +235,9 @@ class StoreResourceTest @Autowired constructor(
         // and
         stubFor(
             WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
+                        .withProtobufResponse { invoiceDetailsProto }
                 )
         )
 

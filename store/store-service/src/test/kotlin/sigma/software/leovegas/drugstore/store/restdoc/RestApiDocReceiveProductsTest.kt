@@ -1,6 +1,7 @@
 package sigma.software.leovegas.drugstore.store.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.put
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
 import sigma.software.leovegas.drugstore.store.StoreProperties
@@ -39,26 +42,20 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
         }
 
         // and
-        val accountancyResponse = listOf(
-            ItemDTO(
-                productNumber = "1",
-                quantity = 2
-            )
+        val itemsList = listOf(
+            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
         )
+        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
+        // and
         val orderNumber = "1"
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(accountancyResponse)
-                        )
+                        .withProtobufResponse { invoiceDetailsProto }
                 )
         )
 

@@ -44,5 +44,9 @@
             <groupId>sigma.software.leovegas.drugstore.order.api</groupId>
             <artifactId>order-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.api</groupId>
+            <artifactId>drugstore-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

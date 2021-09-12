@@ -28,6 +28,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
+import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
@@ -296,7 +297,7 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/invoice/details/order-number/${savedInvoice.orderNumber}",
             GET,
             null,
-            respTypeRef<List<ItemDTO>>()
+            respTypeRef<AccountancyProto.InvoiceDetails>()
         )
 
         // then
@@ -304,8 +305,8 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body[0].productNumber).isEqualTo(savedInvoice.productItems.iterator().next().productNumber)
-        assertThat(body[0].quantity).isEqualTo(savedInvoice.productItems.iterator().next().quantity)
+        assertThat(body.itemsList[0].productNumber).isEqualTo(savedInvoice.productItems.iterator().next().productNumber)
+        assertThat(body.itemsList[0].quantity).isEqualTo(savedInvoice.productItems.iterator().next().quantity)
     }
 
     @Test
