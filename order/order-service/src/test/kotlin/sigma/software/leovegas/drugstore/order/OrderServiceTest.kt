@@ -479,7 +479,7 @@ class OrderServiceTest @Autowired constructor(
     }
 
     @Test
-    fun `should not confirm order if internal server is unavailable`() {
+    fun `should not confirm order if accountancy server is unavailable`() {
 
         // given
         val order = transactionTemplate.execute {
@@ -497,12 +497,12 @@ class OrderServiceTest @Autowired constructor(
         }.get()
 
         // when
-        val exception = assertThrows<AccountancyServerNotAvailableException> {
+        val exception = assertThrows<AccountancyServerException> {
             orderService.confirmOrder(order.id ?: -1)
         }
 
         // then
-        assertThat(exception.message).contains("We can't create invoice. Try again later")
+        assertThat(exception.message).startsWith("Ups... some problems in accountancy service.")
     }
 
     @Test

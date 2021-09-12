@@ -64,8 +64,8 @@ class OrderResource(private val orderService: OrderService) {
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
         val status = when (e) {
-            is AccountancyServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
-            is ProductServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
+            is AccountancyServerException -> HttpStatus.GATEWAY_TIMEOUT
+            is ProductServerException -> HttpStatus.GATEWAY_TIMEOUT
             else -> HttpStatus.BAD_REQUEST
         }
         val error = ApiError(status.value(), status.reasonPhrase, e.message)

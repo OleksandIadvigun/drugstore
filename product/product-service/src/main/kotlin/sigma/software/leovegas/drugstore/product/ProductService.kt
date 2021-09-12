@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
+import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
@@ -32,7 +33,7 @@ class ProductService(
         if (sortField == "popularity") {
             val pageableForPopularity: Pageable = PageRequest.of(page, size)
             val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
-                .onFailure { throw OrderServerNotAvailableException("Something's wrong, please try again later") }
+                .onFailure {error ->  throw OrderServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products quantity $productsQuantity")
 
@@ -45,8 +46,13 @@ class ProductService(
                     pageableForPopularity
                 )
             logger.info("Received popular products $products")
+            if(products.isEmpty()) return listOf()
 
-            val productsPrice = accountancyClient.getSalePrice(products.map { it.id ?: -1 })
+            val productsPrice = runCatching {
+                accountancyClient.getSalePrice(products.map { it.id ?: -1 })
+            }
+                .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
+                .getOrThrow()
             logger.info("Received products price $productsPrice")
 
             val productForSale = products.map { it.copy(price = productsPrice[it.id] ?: BigDecimal.ZERO) }
@@ -58,19 +64,24 @@ class ProductService(
             search, ProductStatus.RECEIVED, 0, pageable
         )
         logger.info("Received sorted by $sortField products $products")
+        if(products.isEmpty()) return listOf()
 
-        val productsPrice = accountancyClient.getSalePrice(products.map { it.id ?: -1 })
-        logger.info("Received products price $productsPrice")
+        val productsPrice = runCatching {
+            accountancyClient.getSalePrice(products.map { it.id ?: -1 })
+        }
+            .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
+            .getOrThrow()
+            logger.info("Received products price $productsPrice")
 
-        val productForSale = products.map { it.copy(price = productsPrice[it.id] ?: BigDecimal.ZERO) }
-        return productForSale.toSearchProductResponseList()
+            val productForSale = products.map { it.copy(price = productsPrice[it.id] ?: BigDecimal.ZERO) }
+            return productForSale.toSearchProductResponseList()
     }
 
     fun getPopularProducts(page: Int, size: Int):
             List<GetProductResponse> {
         val pageableForPopularity: Pageable = PageRequest.of(page, size)
         val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
-            .onFailure { throw OrderServerNotAvailableException("Something's wrong, please try again later") }
+            .onFailure {error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received products quantity $productsQuantity")
 
@@ -86,7 +97,7 @@ class ProductService(
 
     fun getProductsDetailsByIds(ids: List<Long>) =
         ids.run {
-            val products = productRepository.findAllById(this)
+            val products = productRepository.findAllByIdInAndStatus(this, ProductStatus.RECEIVED)
             logger.info("Products $products")
             products.toProductDetailsResponseList()
         }

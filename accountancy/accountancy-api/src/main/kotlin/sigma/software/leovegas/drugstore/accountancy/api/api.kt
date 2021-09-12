@@ -20,9 +20,15 @@ data class ConfirmOrderResponse(
     val amount: BigDecimal = BigDecimal.ZERO,
 )
 
+data class InvoiceResponse(
+    val orderNumber: Long = -1,
+    val amount: BigDecimal = BigDecimal.ZERO,
+    val status: InvoiceStatusDTO = InvoiceStatusDTO.NONE
+)
 // DTOs
 
 enum class InvoiceStatusDTO {
+    NONE,
     CREATED,
     CANCELLED,
     PAID,

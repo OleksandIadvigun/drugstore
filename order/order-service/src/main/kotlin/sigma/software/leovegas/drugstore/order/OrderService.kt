@@ -11,6 +11,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
+import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.order.OrderStatus.CONFIRMED
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
 import sigma.software.leovegas.drugstore.order.OrderStatus.UPDATED
@@ -88,14 +89,14 @@ class OrderService @Autowired constructor(
             val products = runCatching {
                 productClient.getProductsDetailsByIds(orderItemsIds)
             }
-                .onFailure { throw ProductServerNotAvailableException() }
+                .onFailure {error -> throw ProductServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products details $products")
 
             val price = runCatching {
                 accountancyClient.getSalePrice(orderItemsIds)
             }
-                .onFailure { throw AccountancyServerNotAvailableException() }
+                .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products prices $price")
 
@@ -136,7 +137,7 @@ class OrderService @Autowired constructor(
                     logger.info("Invoice was created $createOutcomeInvoice")
                     createOutcomeInvoice
                 }
-                    .onFailure { throw AccountancyServerNotAvailableException() }
+                    .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                     .getOrThrow()
             }
 

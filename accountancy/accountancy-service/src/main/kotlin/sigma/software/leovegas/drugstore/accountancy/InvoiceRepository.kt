@@ -8,6 +8,10 @@ interface InvoiceRepository : JpaRepository<Invoice, Long> {
 
     fun getInvoiceByOrderNumber(orderNumber: Long): Optional<Invoice>
 
+    fun getInvoiceByOrderNumberAndStatusLike(orderNumber: Long, invoiceStatus: InvoiceStatus): Optional<Invoice>
+
+    fun getInvoiceByOrderNumberAndStatusNotLike(orderNumber: Long, invoiceStatus: InvoiceStatus): Optional<Invoice>
+
     fun findAllByStatusAndCreatedAtLessThan(status: InvoiceStatus, expireDate: LocalDateTime): List<Invoice>
 
     fun findAllByStatus(status: InvoiceStatus): List<Invoice>

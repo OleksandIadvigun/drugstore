@@ -83,7 +83,7 @@ class ProductResource(private val service: ProductService) {
             is ResourceNotFoundException -> HttpStatus.BAD_REQUEST
             is NotCorrectRequestException -> HttpStatus.BAD_REQUEST
             is NotEnoughQuantityProductException -> HttpStatus.BAD_REQUEST
-            is OrderServerNotAvailableException -> HttpStatus.GATEWAY_TIMEOUT
+            is OrderServerException -> HttpStatus.GATEWAY_TIMEOUT
             else -> HttpStatus.BAD_REQUEST
         }
         val error = ApiError(status.value(), status.reasonPhrase, e.message)

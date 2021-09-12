@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.api.ApiError
 
@@ -57,7 +58,7 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(OK)
     @GetMapping("/invoice/{orderNumber}")
-    fun getInvoiceById(@PathVariable orderNumber: Long): ConfirmOrderResponse =
+    fun getInvoiceById(@PathVariable orderNumber: Long): InvoiceResponse =
         service.getInvoiceById(orderNumber)
 
     @ResponseStatus(OK)

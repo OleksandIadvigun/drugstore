@@ -2,20 +2,20 @@ package sigma.software.leovegas.drugstore.store
 
 open class StoreServiceException(message: String) : RuntimeException(message)
 
-class InsufficientAmountOfProductException(productId: Long) : StoreServiceException(
-    "Insufficient amount product with id = $productId"
+class InsufficientAmountOfProductException(productId: Long, available: Int) : StoreServiceException(
+    "Insufficient amount product with id = $productId. Available only $available items."
 )
 
-class ProductsAlreadyDelivered(orderId: Long) : StoreServiceException("Products from order($orderId) already delivered")
+class ProductsAlreadyDelivered(orderId: Long) : StoreServiceException("Products from order($orderId) already delivered.")
 
-class AccountancyServerResponseException(orderId: Long) :
-    StoreServiceException("Can't receive invoice details by order($orderId)")
+class AccountancyServerResponseException(message: String) :
+    StoreServiceException("Ups... some problems in accountancy service. $message.")
 
-class ProductServerResponseException() :
-    StoreServiceException("Ups... some problems with product service")
+class ProductServerResponseException(message: String) :
+    StoreServiceException("Ups... some problems in product service. $message.")
 
 class NotCorrectQuantityException() :
-    StoreServiceException("Quantity in request should be grater than 0")
+    StoreServiceException("Quantity in request should be grater than 0.")
 
 class NotCorrectRequestException() :
-    StoreServiceException("Request body is not valid. Please, fulfill all necessary fields")
+    StoreServiceException("Request body is not valid. Please, fulfill all necessary fields.")

@@ -169,11 +169,13 @@ class ProductResourceTest @Autowired constructor(
             repository.saveAll(
                 listOf(
                     Product(
+                        status = ProductStatus.RECEIVED,
                         name = "test1",
                         price = BigDecimal("20.00"),
                         quantity = 1
                     ),
                     Product(
+                        status = ProductStatus.RECEIVED,
                         name = "test2",
                         price = BigDecimal("30.00"),
                         quantity = 2

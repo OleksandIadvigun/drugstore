@@ -268,7 +268,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Can't receive invoice details by order($orderId")
+        assertThat(exception.message).startsWith("Ups... some problems in accountancy service")
     }
 
     @Test
@@ -336,7 +336,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Ups... some problems with product service")
+        assertThat(exception.message).startsWith("Ups... some problems in product service.")
     }
 
     @Test
@@ -436,7 +436,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Can't receive invoice details by order($orderId")
+        assertThat(exception.message).startsWith("Ups... some problems in accountancy service.")
     }
 
     @Test
@@ -475,7 +475,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Ups... some problems with product service")
+        assertThat(exception.message).startsWith("Ups... some problems in product service.")
 
     }
 

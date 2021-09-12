@@ -13,6 +13,8 @@ interface ProductRepository : JpaRepository<Product, Long> {
 
     fun findAllByIdInOrderByCreatedAtDesc(ids: List<Long>): List<Product>
 
+    fun findAllByIdInAndStatus(ids: List<Long>, status: ProductStatus): List<Product>
+
     fun findAllByNameContainingAndStatusAndQuantityGreaterThan(
         name: String?, status: ProductStatus, quantity: Int, pageable: Pageable?
     ): List<Product>

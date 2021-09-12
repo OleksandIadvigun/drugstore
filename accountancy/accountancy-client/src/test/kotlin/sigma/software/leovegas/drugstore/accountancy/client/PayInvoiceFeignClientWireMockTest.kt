@@ -52,7 +52,7 @@ class PayInvoiceFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.payInvoice(1)
+        val responseActual = accountancyClient.payInvoice(1, BigDecimal("200.00"))
 
         // then
         assertThat(responseActual.orderNumber).isEqualTo(responseExpected.orderNumber)

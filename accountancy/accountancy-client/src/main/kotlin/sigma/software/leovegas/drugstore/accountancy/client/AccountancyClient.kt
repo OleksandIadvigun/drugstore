@@ -19,7 +19,7 @@ interface AccountancyClient {
     fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): ConfirmOrderResponse
 
     @RequestLine("PUT /api/v1/accountancy/invoice/pay/{orderNumber}")
-    fun payInvoice(@Param orderNumber: Long): ConfirmOrderResponse
+    fun payInvoice(@Param orderNumber: Long, money: BigDecimal): ConfirmOrderResponse
 
     @RequestLine("PUT /api/v1/accountancy/invoice/cancel/{orderNumber}")
     fun cancelInvoice(@Param orderNumber: Long): ConfirmOrderResponse

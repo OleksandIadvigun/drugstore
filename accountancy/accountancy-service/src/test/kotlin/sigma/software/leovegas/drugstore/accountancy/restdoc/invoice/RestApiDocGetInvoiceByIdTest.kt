@@ -10,6 +10,7 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.Invoice
 import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
+import sigma.software.leovegas.drugstore.accountancy.InvoiceStatus
 import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
@@ -51,5 +52,6 @@ class RestApiDocGetInvoiceByIdTest @Autowired constructor(
             .assertThat().statusCode(200)
             .assertThat().body("amount", equalTo(90.0F))
             .assertThat().body("orderNumber", equalTo(1))
+            .assertThat().body("status", equalTo("NONE"))
     }
 }

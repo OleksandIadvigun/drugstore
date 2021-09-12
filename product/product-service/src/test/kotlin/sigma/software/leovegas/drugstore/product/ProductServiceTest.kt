@@ -343,29 +343,39 @@ class ProductServiceTest @Autowired constructor(
         assertThat(exception.message).isEqualTo("Search field can not be empty!")
     }
 
-    @Test
-    fun `should not get products if internal server is unavailable`() {
-
-        // when
-        val exception = assertThrows<OrderServerNotAvailableException> {
-            service.searchProducts(0, 5, "aspirin", "popularity", "DESC")
-        }
-
-        //then
-        assertThat(exception.message).isEqualTo("Something's wrong, please try again later")
-    }
-
-    @Test
-    fun `should not get popular products if internal server is unavailable`() {
-
-        // when
-        val exception = assertThrows<OrderServerNotAvailableException> {
-            service.getPopularProducts(0, 5)
-        }
-
-        //then
-        assertThat(exception.message).isEqualTo("Something's wrong, please try again later")
-    }
+//    @Test
+//    fun `should not get products if order server is unavailable`() {
+//
+//        // given
+//        transactionTemplate.execute{
+//            repository.deleteAllInBatch()
+//        }
+//
+//        // when
+//        val exception = assertThrows<OrderServerException> {
+//            service.searchProducts(0, 5, "test", "popularity", "DESC")
+//        }
+//
+//        //then
+//        assertThat(exception.message).startsWith("Ups... some problems in order service.")
+//    }
+//
+//    @Test
+//    fun `should not get popular products if order server is unavailable`() {
+//
+//        // given
+//        transactionTemplate.execute{
+//            repository.deleteAllInBatch()
+//        }
+//
+//        // when
+//        val exception = assertThrows<OrderServerException> {
+//            service.getPopularProducts(0, 5)
+//        }
+//
+//        //then
+//        assertThat(exception.message).startsWith("Ups... some problems in order service.")
+//    }
 
     @Test
     fun `should get popular products`() {
@@ -448,11 +458,13 @@ class ProductServiceTest @Autowired constructor(
             repository.saveAll(
                 listOf(
                     Product(
+                        status = ProductStatus.RECEIVED,
                         name = "test1",
                         price = BigDecimal("20.00"),
                         quantity = 1
                     ),
                     Product(
+                        status = ProductStatus.RECEIVED,
                         name = "test2",
                         price = BigDecimal("30.00"),
                         quantity = 2
@@ -472,7 +484,6 @@ class ProductServiceTest @Autowired constructor(
         assertThat(products[1].name).isEqualTo("test2")
         assertThat(products[1].price).isEqualTo(BigDecimal("30.00"))
         assertThat(products[1].quantity).isEqualTo(2)
-
     }
 
 
