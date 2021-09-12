@@ -304,7 +304,7 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should refund invoice`() {
 
         // given
-        transactionalTemplate.execute{
+        transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
@@ -362,7 +362,7 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should pay invoice`() {
 
         // given
-        transactionalTemplate.execute{
+        transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
@@ -411,7 +411,7 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should cancel invoice by id`() {
 
         // given
-        transactionalTemplate.execute{
+        transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 

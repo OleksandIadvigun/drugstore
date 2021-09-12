@@ -30,7 +30,7 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
     fun `should pay invoice`() {
 
         // given
-        transactionalTemplate.execute{
+        transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 

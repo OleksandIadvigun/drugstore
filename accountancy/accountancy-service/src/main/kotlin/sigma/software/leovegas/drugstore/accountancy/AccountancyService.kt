@@ -36,7 +36,7 @@ class AccountancyService @Autowired constructor(
             val productPrice = getSalePrice(productNumbers)
 
             val list = runCatching { productClient.getProductsDetailsByIds(productNumbers) }
-                .onFailure {error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
+                .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrNull()
                 .orEmpty()
             if (list.isEmpty()) throw OrderContainsInvalidProductsException(productNumbers)
@@ -89,7 +89,7 @@ class AccountancyService @Autowired constructor(
             val createdProducts = runCatching {
                 productClient.createProduct(productsToCreate)
             }
-                .onFailure {error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator())}
+                .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrNull()
                 .orEmpty()
             logger.info("Created products $createdProducts")
@@ -128,20 +128,25 @@ class AccountancyService @Autowired constructor(
         }
 
     fun getInvoiceDetailsByOrderNumber(orderNumber: Long): List<ItemDTO> =
-        orderNumber.validate { invoiceRepository.getInvoiceByOrderNumberAndStatusNotLike(orderNumber, InvoiceStatus.CANCELLED) }
-            .run {
-            logger.info("Invoice found $this")
-            if (status != InvoiceStatus.PAID) throw NotPaidInvoiceException(orderNumber)
-            val productItems = productItems
-                .map {
-                    ItemDTO(
-                        productId = it.productId,
-                        quantity = it.quantity
-                    )
-                }
-            logger.info("Invoice details $productItems")
-            return@run productItems
+        orderNumber.validate {
+            invoiceRepository.getInvoiceByOrderNumberAndStatusNotLike(
+                orderNumber,
+                InvoiceStatus.CANCELLED
+            )
         }
+            .run {
+                logger.info("Invoice found $this")
+                if (status != InvoiceStatus.PAID) throw NotPaidInvoiceException(orderNumber)
+                val productItems = productItems
+                    .map {
+                        ItemDTO(
+                            productId = it.productId,
+                            quantity = it.quantity
+                        )
+                    }
+                logger.info("Invoice details $productItems")
+                return@run productItems
+            }
 
     fun payInvoice(orderNumber: Long, money: BigDecimal): ConfirmOrderResponse =
         orderNumber.validate(invoiceRepository::getInvoiceByOrderNumber).run {
@@ -162,7 +167,7 @@ class AccountancyService @Autowired constructor(
             if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.id ?: -1)
 
             runCatching { storeClient.checkTransfer(this.orderNumber) }
-                .onFailure {error -> throw StoreServiceResponseException(error.localizedMessage.messageSpliterator()) }
+                .onFailure { error -> throw StoreServiceResponseException(error.localizedMessage.messageSpliterator()) }
             logger.info("Transfer was checked")
 
             val invoiceToSave = this.copy(status = InvoiceStatus.REFUND)
@@ -189,7 +194,7 @@ class AccountancyService @Autowired constructor(
                 productClient.getProductPrice(this)
                     .mapValues { it.value.multiply(profitTimes) }
             }
-                .onFailure {error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator())}
+                .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received prices $prices")
             return@run prices

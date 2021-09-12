@@ -90,14 +90,6 @@
             <artifactId>spring-cloud-contract-wiremock</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>sigma.software.leovegas.drugstore.product.client</groupId>
-            <artifactId>product-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>sigma.software.leovegas.drugstore.product.client</groupId>
-            <artifactId>product-client</artifactId>
-        </dependency>
     </dependencies>
     <build>
         <plugins>

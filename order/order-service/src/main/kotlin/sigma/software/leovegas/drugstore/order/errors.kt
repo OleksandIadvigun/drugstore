@@ -13,7 +13,7 @@ class ProductServerException(message: String) :
 class AccountancyServerException(message: String) :
     OrderServiceException("Ups... some problems in accountancy service. $message.")
 
-class OrderNotCreatedException(id: Long) : OrderServiceException("Order must be created.")
+class OrderNotCreatedException(id: Long) : OrderServiceException("Order($id) must be created.")
 
 class OrderStatusException(message: String) : OrderServiceException(message)
 

@@ -50,7 +50,7 @@ class StoreService @Autowired constructor(
                 accountancyClient.getInvoiceDetailsByOrderNumber(this)
             }
                 .onFailure { error ->
-                    throw AccountancyServerResponseException( error.localizedMessage.messageSpliterator())
+                    throw AccountancyServerResponseException(error.localizedMessage.messageSpliterator())
                 }
                 .getOrNull()
                 .orEmpty()
@@ -60,7 +60,7 @@ class StoreService @Autowired constructor(
 
             checkAvailability(products)
             runCatching { productClient.deliverProducts(products) }
-                .onFailure {error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
+                .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrNull()
                 .orEmpty()
             logger.info("Products are delivered")
@@ -77,7 +77,7 @@ class StoreService @Autowired constructor(
 
             val invoiceItems = runCatching { accountancyClient.getInvoiceDetailsByOrderNumber(this) }
                 .onFailure { exception ->
-                    throw AccountancyServerResponseException( exception.localizedMessage.messageSpliterator())
+                    throw AccountancyServerResponseException(exception.localizedMessage.messageSpliterator())
                 }
                 .getOrNull()
                 .orEmpty()
@@ -100,13 +100,13 @@ class StoreService @Autowired constructor(
         val productsMap = runCatching {
             productClient.getProductsDetailsByIds(products.map { it.id }).associate { it.id to it.quantity }
         }
-            .onFailure {error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
+            .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received product details ${productsMap.entries}")
 
         forEach {
             if (it.quantity > (productsMap[it.id] ?: -1)) {
-                throw InsufficientAmountOfProductException(it.id, productsMap[it.id]?: -1)
+                throw InsufficientAmountOfProductException(it.id, productsMap[it.id] ?: -1)
             }
         }
         logger.info("Products quantity is sufficient $products")

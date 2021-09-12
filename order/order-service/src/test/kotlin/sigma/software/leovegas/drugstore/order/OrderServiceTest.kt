@@ -413,7 +413,7 @@ class OrderServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Order must be created")
+        assertThat(exception.message).contains("Order"," must be created")
 
     }
 

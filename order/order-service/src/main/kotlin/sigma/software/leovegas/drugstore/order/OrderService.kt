@@ -89,14 +89,14 @@ class OrderService @Autowired constructor(
             val products = runCatching {
                 productClient.getProductsDetailsByIds(orderItemsIds)
             }
-                .onFailure {error -> throw ProductServerException(error.localizedMessage.messageSpliterator()) }
+                .onFailure { error -> throw ProductServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products details $products")
 
             val price = runCatching {
                 accountancyClient.getSalePrice(orderItemsIds)
             }
-                .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
+                .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products prices $price")
 
@@ -137,7 +137,7 @@ class OrderService @Autowired constructor(
                     logger.info("Invoice was created $createOutcomeInvoice")
                     createOutcomeInvoice
                 }
-                    .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
+                    .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                     .getOrThrow()
             }
 

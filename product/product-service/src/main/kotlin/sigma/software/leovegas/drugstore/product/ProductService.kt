@@ -33,7 +33,7 @@ class ProductService(
         if (sortField == "popularity") {
             val pageableForPopularity: Pageable = PageRequest.of(page, size)
             val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
-                .onFailure {error ->  throw OrderServerException(error.localizedMessage.messageSpliterator()) }
+                .onFailure { error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products quantity $productsQuantity")
 
@@ -46,12 +46,12 @@ class ProductService(
                     pageableForPopularity
                 )
             logger.info("Received popular products $products")
-            if(products.isEmpty()) return listOf()
+            if (products.isEmpty()) return listOf()
 
             val productsPrice = runCatching {
                 accountancyClient.getSalePrice(products.map { it.id ?: -1 })
             }
-                .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
+                .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products price $productsPrice")
 
@@ -64,24 +64,24 @@ class ProductService(
             search, ProductStatus.RECEIVED, 0, pageable
         )
         logger.info("Received sorted by $sortField products $products")
-        if(products.isEmpty()) return listOf()
+        if (products.isEmpty()) return listOf()
 
         val productsPrice = runCatching {
             accountancyClient.getSalePrice(products.map { it.id ?: -1 })
         }
-            .onFailure {error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
+            .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
-            logger.info("Received products price $productsPrice")
+        logger.info("Received products price $productsPrice")
 
-            val productForSale = products.map { it.copy(price = productsPrice[it.id] ?: BigDecimal.ZERO) }
-            return productForSale.toSearchProductResponseList()
+        val productForSale = products.map { it.copy(price = productsPrice[it.id] ?: BigDecimal.ZERO) }
+        return productForSale.toSearchProductResponseList()
     }
 
     fun getPopularProducts(page: Int, size: Int):
             List<GetProductResponse> {
         val pageableForPopularity: Pageable = PageRequest.of(page, size)
         val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
-            .onFailure {error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
+            .onFailure { error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received products quantity $productsQuantity")
 

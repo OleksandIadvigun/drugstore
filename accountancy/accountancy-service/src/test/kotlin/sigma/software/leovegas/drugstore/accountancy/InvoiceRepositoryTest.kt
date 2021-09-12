@@ -37,7 +37,7 @@ class InvoiceRepositoryTest @Autowired constructor(
         }.get()
 
         // when
-        val actual = invoiceRepository.getInvoiceByOrderNumber(created.orderNumber ?: -1).get()
+        val actual = invoiceRepository.getInvoiceByOrderNumber(created.orderNumber).get()
 
         // then
         assertThat(actual.id).isEqualTo(created.id)

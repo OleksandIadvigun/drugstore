@@ -35,7 +35,7 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
     fun `should refund invoice`() {
 
         // given
-        transactionalTemplate.execute{
+        transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 

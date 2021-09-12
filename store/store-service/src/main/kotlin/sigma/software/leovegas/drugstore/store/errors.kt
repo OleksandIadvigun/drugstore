@@ -6,7 +6,8 @@ class InsufficientAmountOfProductException(productId: Long, available: Int) : St
     "Insufficient amount product with id = $productId. Available only $available items."
 )
 
-class ProductsAlreadyDelivered(orderId: Long) : StoreServiceException("Products from order($orderId) already delivered.")
+class ProductsAlreadyDelivered(orderId: Long) :
+    StoreServiceException("Products from order($orderId) already delivered.")
 
 class AccountancyServerResponseException(message: String) :
     StoreServiceException("Ups... some problems in accountancy service. $message.")
