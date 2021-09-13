@@ -181,7 +181,7 @@ class OrderServiceTest @Autowired constructor(
         }
 
         // when
-        val orders = orderService.getOrders()
+        val orders = orderService.getOrders(page = 0, size = 5)
 
         // then
         assertThat(orders).hasSize(2)

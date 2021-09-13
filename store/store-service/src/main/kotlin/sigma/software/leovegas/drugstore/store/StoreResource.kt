@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
@@ -23,7 +24,10 @@ class StoreResource(private val storeService: StoreService) {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/transfer-certificate")
-    fun getTransferCertificates() = storeService.getTransferCertificates()
+    fun getTransferCertificates(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "5") size: Int,
+    ) = storeService.getTransferCertificates(page, size)
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/transfer-certificate/order/{orderNumber}")

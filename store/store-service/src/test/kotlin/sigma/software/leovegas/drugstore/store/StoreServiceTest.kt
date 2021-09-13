@@ -120,7 +120,7 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val actual = transactionTemplate.execute {
-            storeService.getTransferCertificates()
+            storeService.getTransferCertificates(page = 0, size = 5)
         }.get()
 
         // then

@@ -29,8 +29,11 @@ interface OrderClient {
     @RequestLine("GET /api/v1/orders/{id}/details")
     fun getOrderDetails(@Param("id") id: Long): OrderDetailsDTO
 
-    @RequestLine("GET /api/v1/orders")
-    fun getOrders(): List<OrderResponse>
+    @RequestLine("GET /api/v1/orders?page={page}&size={size}")
+    fun getOrders(
+        @Param("page") page: Int = 0,
+        @Param("size") size: Int = 5
+    ): List<OrderResponse>
 
     @RequestLine("GET /api/v1/orders/total-buys")
     fun getProductsIdToQuantity(): Map<Long, Int>

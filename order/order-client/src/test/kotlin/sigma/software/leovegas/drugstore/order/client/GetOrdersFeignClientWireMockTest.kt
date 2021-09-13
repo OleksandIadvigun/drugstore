@@ -55,7 +55,7 @@ class GetOrdersFeignClientWireMockTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/orders")
+            get("/api/v1/orders?page=0&size=5")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

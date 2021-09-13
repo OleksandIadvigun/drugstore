@@ -163,6 +163,11 @@ class OrderResourceTest @Autowired constructor(
     @Test
     fun `should get order details`() {
 
+        // setup
+        transactionTemplate.execute{
+            orderRepository.deleteAll()
+        }
+
         // given
         stubFor(
             WireMock.get("/api/v1/products/details?ids=1&ids=2")
@@ -218,6 +223,26 @@ class OrderResourceTest @Autowired constructor(
                                     )
                                 )
                         )
+                )
+        )
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?ids=2&ids=1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair(1, BigDecimal("40.00")), Pair(2, BigDecimal("60.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 

@@ -5,6 +5,8 @@ import java.math.RoundingMode
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
@@ -52,8 +54,9 @@ class OrderService @Autowired constructor(
         return@run orders
     }
 
-    fun getOrders(): List<OrderResponse> {
-        val orders = orderRepository.findAll()
+    fun getOrders(page: Int, size: Int): List<OrderResponse> {
+        val pageable: Pageable = PageRequest.of(page, size)
+        val orders = orderRepository.findAll(pageable).content
         logger.info("Orders found $orders")
         return orders.toOrderResponseList()
     }

@@ -3,6 +3,8 @@ package sigma.software.leovegas.drugstore.store
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
@@ -37,8 +39,9 @@ class StoreService @Autowired constructor(
     }
 
 
-    fun getTransferCertificates(): List<TransferCertificateResponse> {
-        val transferCertificateList = storeRepository.findAll()
+    fun getTransferCertificates(page: Int, size: Int): List<TransferCertificateResponse> {
+        val pageable: Pageable = PageRequest.of(page, size)
+        val transferCertificateList = storeRepository.findAll(pageable).content
         logger.info("Transfer Certificate list $transferCertificateList")
         return transferCertificateList.toTransferCertificateResponseList()
     }

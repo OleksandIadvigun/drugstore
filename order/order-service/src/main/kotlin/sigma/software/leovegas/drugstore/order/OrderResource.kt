@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
@@ -49,7 +50,10 @@ class OrderResource(private val orderService: OrderService) {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = ["", "/"])
-    fun getOrders() = orderService.getOrders()
+    fun getOrders(
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "5") size: Int,
+    ) = orderService.getOrders(page, size)
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)

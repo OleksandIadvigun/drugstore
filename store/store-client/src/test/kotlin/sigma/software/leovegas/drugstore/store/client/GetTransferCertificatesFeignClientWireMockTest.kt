@@ -45,7 +45,7 @@ class GetTransferCertificatesFeignClientWireMockTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/store/transfer-certificate")
+            get("/api/v1/store/transfer-certificate?page=0&size=5")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
