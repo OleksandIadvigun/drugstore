@@ -4,14 +4,45 @@ networks:
     name: drugstore
     driver: bridge
 services:
+  db_product:
+    container_name: db_product
+    image: mysql:8.0.26
+#    volumes:
+#      - ./mysql:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: db_product
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports: [ '3308:3306' ]
+    networks: [ drugstore ]
   product-service:
     container_name: product
+    restart: always
     image: drugstore/product-service
     build:
       context: ../product/product-service/
       dockerfile: ./Dockerfile
     ports: [ '8081:8081' ]
     networks: [ drugstore ]
+    depends_on: [ db_product ]
+  db_order:
+    container_name: db_order
+    image: mysql:8.0.26
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: db_order
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports: [ "3307:3306" ]
+    networks: [ drugstore ]
+  #    healthcheck:
+  #      retries: 9
+  #      timeout: 3s
+  #      interval: 3s
+  #      test: [ "CMD", "mysqladmin" ,"ping", "-h", "127.0.0.2" ]
   order-service:
     container_name: order
     image: drugstore/order-service
@@ -20,25 +51,20 @@ services:
       dockerfile: ./Dockerfile
     ports: [ '8082:8082' ]
     networks: [ drugstore ]
-    depends_on: [order-mysql]
+    depends_on: [db_order]
 #      order-mysql:
 #        condition: service_healthy
-  order-mysql:
-    container_name: order-mysql
-    image: mysql:5
+  db_store:
+    container_name: db_store
+    image: mysql:8.0.26
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: orderpass
-      MYSQL_DATABASE: order-service
-      MYSQL_USER: orderuser
-      MYSQL_PASSWORD: orderpass
-    ports: [ "3306:3306" ]
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: db_store
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports: [ "3309:3306" ]
     networks: [ drugstore ]
-#    healthcheck:
-#      retries: 9
-#      timeout: 3s
-#      interval: 3s
-#      test: [ "CMD", "mysqladmin" ,"ping", "-h", "127.0.0.2" ]
   store-service:
     container_name: store
     image: drugstore/store-service
@@ -46,6 +72,18 @@ services:
       context: ../store/store-service/
       dockerfile: ./Dockerfile
     ports: [ '8083:8083' ]
+    networks: [ drugstore ]
+    depends_on: [ db_store ]
+  db_accountancy:
+    container_name: db_accountancy
+    image: mysql:8.0.26
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: db_accountancy
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports: [ "3309:3306" ]
     networks: [ drugstore ]
   accountancy-service:
     container_name: accountancy
@@ -55,3 +93,4 @@ services:
       dockerfile: ./Dockerfile
     ports: [ '8084:8084' ]
     networks: [ drugstore ]
+    depends_on: [ db_accountancy ]

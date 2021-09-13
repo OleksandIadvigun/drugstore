@@ -1,3 +1,22 @@
+spring:
+  output.ansi.enabled: always
+  liquibase.enabled: true
+  application.name: drugstore
+  datasource:
+    driver-class-name: org.hsqldb.jdbc.JDBCDriver
+    url: jdbc:hsqldb:file:./target/hsqldb/${spring.application.name};ifexists=false;hsqldb.lock_file=false
+    username: sa
+    password:
+    type: com.zaxxer.hikari.HikariDataSource
+  liquibase.change-log: classpath:/db/changelog/changelog-master.xml
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.HSQLDialect
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
 product:
   host: 127.0.0.1
   port: 8079

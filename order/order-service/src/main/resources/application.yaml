@@ -4,9 +4,9 @@ spring:
   application.name: drugstore
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://order-mysql:3306/order-service?autoreconnect=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
-    username: orderuser
-    password: orderpass
+    url: jdbc:mysql://db_order:3306/db_order?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    username: admin
+    password: admin
   jpa:
     hibernate:
       ddl-auto: validate
