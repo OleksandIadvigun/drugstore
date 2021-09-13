@@ -3,7 +3,6 @@ package sigma.software.leovegas.drugstore.accountancy
 import java.util.Optional
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
-import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
 fun CreateOutcomeInvoiceRequest.validate(functor: (Long, InvoiceStatus) -> Optional<Invoice>): CreateOutcomeInvoiceRequest =
     apply {

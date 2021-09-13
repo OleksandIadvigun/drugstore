@@ -296,18 +296,18 @@ class StoreResourceTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 quantity = 10
             ),
             ProductDetailsResponse(
-                id = 2,
+                productNumber = 2,
                 quantity = 20
             ),
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}&ids=${productDetailsResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -364,18 +364,18 @@ class StoreResourceTest @Autowired constructor(
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 quantity = 10
             ),
             ProductDetailsResponse(
-                id = 2,
+                productNumber = 2,
                 quantity = 15
             )
         )
 
         //and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productResponse[0].id}&ids=${productResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productResponse[0].productNumber}&ids=${productResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

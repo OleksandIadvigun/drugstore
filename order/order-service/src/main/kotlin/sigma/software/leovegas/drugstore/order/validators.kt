@@ -7,7 +7,7 @@ import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
 fun CreateOrderRequest.validate() = apply {
     if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
     orderItems.forEach {
-        if (it.productId < 0 || it.quantity <= 0) {
+        if (it.productNumber < 0 || it.quantity <= 0) {
             throw OrderRequestException("Not correct product number or quantity")
         }
     }
@@ -16,7 +16,7 @@ fun CreateOrderRequest.validate() = apply {
 fun UpdateOrderRequest.validate() = apply {
     if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
     orderItems.forEach {
-        if (it.productId < 0 || it.quantity <= 0) {
+        if (it.productNumber < 0 || it.quantity <= 0) {
             throw OrderRequestException("Not correct product number or quantity")
         }
     }

@@ -56,13 +56,13 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         // and
         val response = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 name = "test1",
                 quantity = 3,
                 price = BigDecimal.ONE
             ),
             ProductDetailsResponse(
-                id = 2,
+                productNumber = 2,
                 name = "test2",
                 quantity = 4,
                 price = BigDecimal.TEN

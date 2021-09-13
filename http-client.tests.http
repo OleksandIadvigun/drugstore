@@ -1,3 +1,6 @@
+### Positive scenario
+###
+
 ### Create income ivoice
 POST http://localhost:{{accountancyPort}}/api/v1/accountancy/invoice/income
 Content-Type: application/json; charset=UTF-8
@@ -30,7 +33,7 @@ client.test("should create income", function() {
 });
 %}
 
-###
+### Receive product by income ivnoice
 PUT http://localhost:{{storePort}}/api/v1/store/receive
 Content-Type: application/json; charset=UTF-8
 
@@ -43,7 +46,7 @@ client.test("should receive products", function() {
 });
 %}
 
-###
+### Search aspirin
 GET http://localhost:{{productPort}}/api/v1/products/search?search=aspirin&sortField=price
 
 > {%
@@ -53,7 +56,7 @@ client.test("should search product aspirin", function() {
 });
 %}
 
-###
+### Search paracetamol
 GET http://localhost:{{productPort}}/api/v1/products/search?search=paracetamol&sortField=price
 
 > {%
@@ -63,14 +66,14 @@ client.test("should search product paracetamol", function() {
 });
 %}
 
-###
+### Create order
 POST http://localhost:{{orderPort}}/api/v1/orders
 Content-Type: application/json; charset=UTF-8
 
 {
   "orderItems": [
     {
-      "productId": 1,
+      "productNumber": 1,
       "quantity": 5
     }
   ]
@@ -79,26 +82,26 @@ Content-Type: application/json; charset=UTF-8
 
 > {%
 client.test("should create order", function() {
-     client.global.set("order_number_outcome",response.body.id);
+     client.global.set("order_number_outcome",response.body.orderNumber);
      client.assert(response.status === 201, "Response status is not 201");
-     client.assert(response.body.id != null, "Order id is null");
+     client.assert(response.body.orderNumber != null, "Order id is null");
      client.assert(response.body.orderStatus === "CREATED", "Order status is not created");
      client.assert(response.body.orderItems[0].quantity === 5, "Order item quantity is not 5");
 });
 %}
 
-###
+### Update Order
 PUT http://localhost:{{orderPort}}/api/v1/orders/{{order_number_outcome}}
 Content-Type: application/json; charset=UTF-8
 
 {
   "orderItems": [
     {
-      "productId": 1,
+      "productNumber": 1,
       "quantity": 5
     },
     {
-      "productId": 2,
+      "productNumber": 2,
       "quantity": 3
     }
   ]
@@ -108,14 +111,14 @@ Content-Type: application/json; charset=UTF-8
 client.test("should update order", function() {
     client.log(response.body.orderItems[0].quantity)
      client.assert(response.status === 202, "Response status is not 202");
-     client.assert(response.body.id != null, "Order id is null");
+     client.assert(response.body.orderNumber != null, "Order id is null");
      client.assert(response.body.orderStatus === "UPDATED", "Order status is not updated");
      client.assert(response.body.orderItems[0].quantity === 3, "Order item quantity is not 3");
      client.assert(response.body.orderItems[1].quantity === 5, "Order item quantity is not 5");
 });
 %}
 
-###
+### Get Order Details
 GET http://localhost:{{orderPort}}/api/v1/orders/{{order_number_outcome}}/details
 Content-Type: application/json; charset=UTF-8
 
@@ -130,7 +133,7 @@ client.test("should get order details", function() {
 });
 %}
 
-###
+### Confirm Order
 POST http://localhost:{{orderPort}}/api/v1/orders/confirm
 Content-Type: application/json; charset=UTF-8
 
@@ -139,12 +142,12 @@ Content-Type: application/json; charset=UTF-8
 > {%
 client.test("should confirm order", function() {
      client.assert(response.status === 201, "Response status is not 201");
-     client.assert(response.body.orderNumber === 1, "Order number is not 1");
+     client.assert(response.body.orderNumber.toString() === client.global.get("order_number_outcome"), "Order number is not 1");
      client.assert(response.body.amount === 440, "Amount is not 440");
 });
 %}
 
-###
+### Pay order
 PUT http://localhost:{{accountancyPort}}/api/v1/accountancy/invoice/pay/{{order_number_outcome}}
 Content-Type: application/json; charset=UTF-8
 
@@ -153,16 +156,12 @@ Content-Type: application/json; charset=UTF-8
 > {%
 client.test("should pay order", function() {
      client.assert(response.status === 202, "Response status is not 202");
-     client.assert(response.body.orderNumber === 1, "Order number is not 1");
+     client.assert(response.body.orderNumber.toString() === client.global.get("order_number_outcome"), "Order number is not 1");
      client.assert(response.body.amount === 440, "Amount is not 440");
 });
 %}
 
-####
-#PUT http://localhost:{{accountancyPort}}/api/v1/accountancy/invoice/refund/3
-#Content-Type: application/json; charset=UTF-8
-
-###
+### Deliver Products by Order
 PUT http://localhost:{{storePort}}/api/v1/store/deliver
 Content-Type: application/json; charset=UTF-8
 
@@ -171,9 +170,97 @@ Content-Type: application/json; charset=UTF-8
 > {%
 client.test("should deliver products", function() {
      client.assert(response.status === 202, "Response status is not 202");
-     client.assert(response.body.orderNumber === 1, "Order number is not 1");
+     client.assert(response.body.orderNumber.toString() === client.global.get("order_number_outcome"), "Order number is not 1");
      client.assert(response.body.status === "DELIVERED", "Status is not delivered");
 });
 %}
 
+### Scenario with refund
 ###
+
+### Search decatylen
+GET http://localhost:{{productPort}}/api/v1/products/search?search=decatylen&sortField=price
+
+> {%
+client.test("should search product aspirin", function() {
+     client.assert(response.status === 200, "Response status is not 200");
+     client.assert(response.body[0].name === "decatylen", "Name is not decatylen");
+});
+%}
+
+### Create order
+POST http://localhost:{{orderPort}}/api/v1/orders
+Content-Type: application/json; charset=UTF-8
+
+{
+  "orderItems": [
+    {
+      "productNumber": 3,
+      "quantity": 4
+    }
+  ]
+}
+
+
+> {%
+client.test("should create order", function() {
+     client.global.set("order_number_outcome",response.body.orderNumber);
+     client.assert(response.status === 201, "Response status is not 201");
+     client.assert(response.body.orderNumber != null, "Order id is null");
+     client.assert(response.body.orderStatus === "CREATED", "Order status is not created");
+     client.assert(response.body.orderItems[0].quantity === 4, "Order item quantity is not 4");
+});
+%}
+
+### Get Order Details
+GET http://localhost:{{orderPort}}/api/v1/orders/{{order_number_outcome}}/details
+Content-Type: application/json; charset=UTF-8
+
+> {%
+client.test("should get order details", function() {
+     client.assert(response.status === 200, "Response status is not 200");
+     client.assert(response.body.orderItemDetails[0].name === "decatylen", "Order item name is not decatylen");
+     client.assert(response.body.orderItemDetails[0].price === 30.00, "Order item price is not 40.00");
+     client.assert(response.body.total === 120, "Total is not 120");
+});
+%}
+
+### Confirm Order
+POST http://localhost:{{orderPort}}/api/v1/orders/confirm
+Content-Type: application/json; charset=UTF-8
+
+{{order_number_outcome}}
+
+> {%
+client.test("should confirm order", function() {
+     client.assert(response.status === 201, "Response status is not 201");
+     client.assert(response.body.orderNumber.toString() === client.global.get("order_number_outcome") , "Order number is not 1");
+     client.assert(response.body.amount === 120, "Amount is not 120");
+});
+%}
+
+### Pay order
+PUT http://localhost:{{accountancyPort}}/api/v1/accountancy/invoice/pay/{{order_number_outcome}}
+Content-Type: application/json; charset=UTF-8
+
+120
+
+> {%
+client.test("should pay order", function() {
+     client.assert(response.status === 202, "Response status is not 202");
+     client.assert(response.body.orderNumber.toString() === client.global.get("order_number_outcome"), "Order number is not 1");
+     client.assert(response.body.amount === 120, "Amount is not 120");
+});
+%}
+
+### Refund order
+PUT http://localhost:{{accountancyPort}}/api/v1/accountancy/invoice/refund/{{order_number_outcome}}
+Content-Type: application/json; charset=UTF-8
+
+> {%
+client.test("should refund order", function() {
+     client.assert(response.status === 202, "Response status is not 202");
+     client.assert(response.body.orderNumber.toString() === client.global.get("order_number_outcome"), "Order number is not 1");
+     client.assert(response.body.amount === 120, "Amount is not 120");
+});
+%}

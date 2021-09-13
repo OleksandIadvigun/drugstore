@@ -57,7 +57,7 @@ class StoreServiceTest @Autowired constructor(
         }.get()
 
         // then
-        assertThat(created.id).isNotNull
+        assertThat(created.certificateNumber).isNotNull
         assertThat(created.orderNumber).isEqualTo(1)
         assertThat(created.status).isEqualTo(TransferStatusDTO.RECEIVED)
         assertThat(created.comment).isEqualTo("RECEIVED")
@@ -215,18 +215,18 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 quantity = 10
             ),
             ProductDetailsResponse(
-                id = 2,
+                productNumber = 2,
                 quantity = 20
             ),
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}&ids=${productDetailsResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -246,7 +246,7 @@ class StoreServiceTest @Autowired constructor(
         }.get()
 
         // then
-        assertThat(transferCertificate.id).isNotNull
+        assertThat(transferCertificate.certificateNumber).isNotNull
         assertThat(transferCertificate.orderNumber).isEqualTo(orderId)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
@@ -305,18 +305,18 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                id = 3,
+                productNumber = 3,
                 quantity = 10
             ),
             ProductDetailsResponse(
-                id = 4,
+                productNumber = 4,
                 quantity = 20
             ),
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].id}&ids=${productDetailsResponse[1].id}")
+            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}&ids=${productDetailsResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -414,7 +414,7 @@ class StoreServiceTest @Autowired constructor(
         }.get()
 
         // then
-        assertThat(transferCertificate.id).isNotNull
+        assertThat(transferCertificate.certificateNumber).isNotNull
         assertThat(transferCertificate.orderNumber).isEqualTo(orderId)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }
@@ -497,11 +497,11 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 quantity = 10
             ),
             ProductDetailsResponse(
-                id = 2,
+                productNumber = 2,
                 quantity = 15
             )
         )
@@ -548,11 +548,11 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 quantity = 0
             ),
             ProductDetailsResponse(
-                id = 2,
+                productNumber = 2,
                 quantity = 0
             )
         )

@@ -61,11 +61,11 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
         // given
         val responseExpected = listOf(
             GetProductResponse(
-                id = 1,
+                productNumber = 1,
                 name = "test1"
             ),
             GetProductResponse(
-                id = 2,
+                productNumber = 2,
                 name = "test2"
             )
         )
@@ -90,9 +90,9 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
         val responseActual = productClient.getPopularProducts()
 
         // then
-        assertThat(responseActual[0].id).isEqualTo(1)
+        assertThat(responseActual[0].productNumber).isEqualTo(1)
         assertThat(responseActual[0].name).isEqualTo("test1")
-        assertThat(responseActual[1].id).isEqualTo(2)
+        assertThat(responseActual[1].productNumber).isEqualTo(2)
         assertThat(responseActual[1].name).isEqualTo("test2")
     }
 }

@@ -38,7 +38,7 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
 
         // and
         val responseExpected = TransferCertificateResponse(
-            id = 1,
+            certificateNumber = 1,
             orderNumber = orderNumber,
             status = TransferStatusDTO.RECEIVED
         )
@@ -71,7 +71,7 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
         val responseActual = storeClient.receiveProducts(orderNumber)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1)
+        assertThat(responseActual.certificateNumber).isEqualTo(1)
         assertThat(responseActual.orderNumber).isEqualTo(orderNumber)
         assertThat(responseActual.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }

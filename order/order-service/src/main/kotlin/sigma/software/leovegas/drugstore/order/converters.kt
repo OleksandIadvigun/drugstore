@@ -14,7 +14,7 @@ fun CreateOrderRequest.toEntity(): Order =
 
 fun Order.toOrderResponseDTO(): OrderResponse =
     OrderResponse(
-        id = id ?: -1,
+        orderNumber = id ?: -1,
         orderStatus = orderStatus.toDTO(),
         orderItems = orderItems.toDTOs(),
         createdAt = createdAt,
@@ -23,7 +23,7 @@ fun Order.toOrderResponseDTO(): OrderResponse =
 
 fun OrderResponse.toEntity(): Order =
     Order(
-        id = id,
+        id = orderNumber,
         orderStatus = orderStatus.toEntity(),
         orderItems = orderItems.toEntities(),
         createdAt = createdAt,
@@ -44,13 +44,13 @@ fun List<OrderItemDTO>.toEntities(): Set<OrderItem> =
 
 fun OrderItem.toDTO(): OrderItemDTO =
     OrderItemDTO(
-        productId = productId,
+        productNumber = productId,
         quantity = quantity,
     )
 
 fun OrderItemDTO.toEntity(): OrderItem =
     OrderItem(
-        productId = productId,
+        productId = productNumber,
         quantity = quantity,
     )
 

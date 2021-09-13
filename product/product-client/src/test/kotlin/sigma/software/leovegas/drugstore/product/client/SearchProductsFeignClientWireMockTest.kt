@@ -32,7 +32,7 @@ class SearchProductsFeignClientWireMockTest @Autowired constructor(
         // given
         val responseExpected = listOf(
             SearchProductResponse(
-                id = 1,
+                productNumber = 1,
                 name = "aspirin",
                 price = BigDecimal.ONE,
                 quantity = 1
@@ -60,6 +60,6 @@ class SearchProductsFeignClientWireMockTest @Autowired constructor(
 
         // then
         assertThat(responseActual).hasSize(1)
-        assertThat(responseActual[0].id).isEqualTo(1)
+        assertThat(responseActual[0].productNumber).isEqualTo(1)
     }
 }

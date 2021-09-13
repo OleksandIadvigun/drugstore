@@ -102,10 +102,10 @@ class OrderService @Autowired constructor(
 
             val orderItemDetails = products.map {
                 OrderItemDetailsDTO(
-                    productId = it.id,
+                    productNumber = it.productNumber,
                     name = it.name,
-                    quantity = orderItemsQuantity[it.id] ?: -1,
-                    price = price.getValue(it.id).setScale(2, RoundingMode.HALF_EVEN)
+                    quantity = orderItemsQuantity[it.productNumber] ?: -1,
+                    price = price.getValue(it.productNumber).setScale(2, RoundingMode.HALF_EVEN)
                 )
             }
 

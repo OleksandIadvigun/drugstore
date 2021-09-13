@@ -34,7 +34,7 @@ class GetOrdersFeignClientWireMockTest @Autowired constructor(
         // given
         val responseExpected = listOf(
             OrderResponse(
-                id = 1L,
+                orderNumber = 1L,
                 orderStatus = CREATED,
                 orderItems = listOf(
                     OrderItemDTO(1, 2)
@@ -43,7 +43,7 @@ class GetOrdersFeignClientWireMockTest @Autowired constructor(
                 updatedAt = LocalDateTime.now(),
             ),
             OrderResponse(
-                id = 2L,
+                orderNumber = 2L,
                 orderStatus = CREATED,
                 orderItems = listOf(
                     OrderItemDTO(3, 4)

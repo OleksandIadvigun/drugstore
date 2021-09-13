@@ -15,7 +15,7 @@ fun TransferCertificateRequest.toTransferCertificate() = TransferCertificate(
 // TransferCertificate entity -> TransferCertificateResponse
 
 fun TransferCertificate.toTransferCertificateResponse() = TransferCertificateResponse(
-    id = id ?: -1,
+    certificateNumber = id ?: -1,
     orderNumber = orderNumber,
     status = status.toDTO(),
     comment = comment

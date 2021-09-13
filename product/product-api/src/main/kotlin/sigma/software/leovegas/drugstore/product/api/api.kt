@@ -24,7 +24,7 @@ data class ReturnProductQuantityRequest(
 // Response
 
 data class SearchProductResponse(
-    val id: Long = -1,
+    val productNumber: Long = -1,
     val name: String = "undefined",
     val price: BigDecimal = BigDecimal.ZERO,
     val quantity: Int = 0,
@@ -33,14 +33,14 @@ data class SearchProductResponse(
 )
 
 data class ProductDetailsResponse(
-    val id: Long = -1,
+    val productNumber: Long = -1,
     val name: String = "undefined",
     val price: BigDecimal = BigDecimal.ZERO,
     val quantity: Int = -1,
 )
 
 data class GetProductResponse(
-    val id: Long = -1,
+    val productNumber: Long = -1,
     val name: String = "undefined",
 )
 

@@ -35,7 +35,7 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productId = 1L,
+                            productNumber = 1L,
                             quantity = 3
                         )
                     )
@@ -50,7 +50,7 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
                 UpdateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productId = 1L,
+                            productNumber = 1L,
                             quantity = 4
                         )
                     )
@@ -59,7 +59,7 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
 
         if (orderCreated != null) {
             of("update-order")
-                .pathParam("id", orderCreated.id)
+                .pathParam("id", orderCreated.orderNumber)
                 .`when`()
                 .body(orderJson)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -69,7 +69,7 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
                 .assertThat().body("orderStatus", equalTo("UPDATED"))
                 .assertThat().body("createdAt", not(emptyString()))
                 .assertThat().body("updatedAt", not(emptyString()))
-                .assertThat().body("orderItems[0].productId", equalTo(1))
+                .assertThat().body("orderItems[0].productNumber", equalTo(1))
                 .assertThat().body("orderItems[0].quantity", equalTo(4))
         }
     }

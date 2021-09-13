@@ -49,7 +49,7 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
 
         val productsDetails = listOf(
             ProductDetailsResponse(
-                id = 1L,
+                productNumber = 1L,
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 3,

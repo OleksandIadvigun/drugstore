@@ -106,14 +106,14 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 quantity = 10
             ),
         )
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=${productDetailsResponse[0].id}")
+            get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

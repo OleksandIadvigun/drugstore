@@ -62,7 +62,7 @@ class OrderResourceTest @Autowired constructor(
             CreateOrderRequest(
                 listOf(
                     OrderItemDTO(
-                        productId = 1L,
+                        productNumber = 1L,
                         quantity = 3
                     )
                 )
@@ -77,9 +77,9 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.id).isNotNull
+        assertThat(body.orderNumber).isNotNull
         assertThat(body.orderItems).hasSize(1)
-        assertThat(body.orderItems[0].productId).isEqualTo(1L)
+        assertThat(body.orderItems[0].productNumber).isEqualTo(1L)
         assertThat(body.orderItems[0].quantity).isEqualTo(3)
         assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
         assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
@@ -105,15 +105,15 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("$baseUrl/api/v1/orders/${orderCreated.id}", GET, null, respTypeRef<OrderResponse>())
+            .exchange("$baseUrl/api/v1/orders/${orderCreated.orderNumber}", GET, null, respTypeRef<OrderResponse>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
         val body = response.body.get("body")
-        assertThat(body.id).isEqualTo(orderCreated.id)
-        assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(body.orderNumber).isEqualTo(orderCreated.orderNumber)
+        assertThat(body.orderItems.iterator().next().productNumber).isEqualTo(1)
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(body.updatedAt).isAfterOrEqualTo(body.createdAt)
@@ -154,8 +154,8 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body[0].id).isEqualTo(orderCreated.id)
-        assertThat(body[0].orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(body[0].orderNumber).isEqualTo(orderCreated.orderNumber)
+        assertThat(body[0].orderItems.iterator().next().productNumber).isEqualTo(1)
         assertThat(body[0].orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(body[0].orderStatus).isEqualTo(OrderStatusDTO.CREATED)
     }
@@ -175,13 +175,13 @@ class OrderResourceTest @Autowired constructor(
                                 .writeValueAsString(
                                     listOf(
                                         SearchProductResponse(
-                                            id = 1L,
+                                            productNumber = 1L,
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00"),
                                         ),
                                         SearchProductResponse(
-                                            id = 2L,
+                                            productNumber = 2L,
                                             name = "test2",
                                             quantity = 4,
                                             price = BigDecimal("30.00")
@@ -204,13 +204,13 @@ class OrderResourceTest @Autowired constructor(
                                 .writeValueAsString(
                                     listOf(
                                         SearchProductResponse(
-                                            id = 1L,
+                                            productNumber = 1L,
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00"),
                                         ),
                                         SearchProductResponse(
-                                            id = 2L,
+                                            productNumber = 2L,
                                             name = "test2",
                                             quantity = 4,
                                             price = BigDecimal("30.00")
@@ -271,7 +271,7 @@ class OrderResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body.orderItemDetails).hasSize(2)
         assertThat(body.orderItemDetails.iterator().next().name).isEqualTo("test1")
-        assertThat(body.orderItemDetails.iterator().next().productId).isEqualTo(1)
+        assertThat(body.orderItemDetails.iterator().next().productNumber).isEqualTo(1)
         assertThat(body.orderItemDetails.iterator().next().quantity).isEqualTo(1)
         assertThat(body.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal("40.00").setScale(2))
         assertThat(body.total).isEqualTo((BigDecimal("160").setScale(2)))
@@ -408,7 +408,7 @@ class OrderResourceTest @Autowired constructor(
             UpdateOrderRequest(
                 listOf(
                     OrderItemDTO(
-                        productId = 1L,
+                        productNumber = 1L,
                         quantity = 5
                     )
                 )
@@ -417,7 +417,12 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("$baseUrl/api/v1/orders/${orderCreated.id}", PUT, httpEntity, respTypeRef<OrderResponse>())
+            .exchange(
+                "$baseUrl/api/v1/orders/${orderCreated.orderNumber}",
+                PUT,
+                httpEntity,
+                respTypeRef<OrderResponse>()
+            )
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.ACCEPTED)
@@ -426,7 +431,7 @@ class OrderResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(5)
-        assertThat(body.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(body.orderItems.iterator().next().productNumber).isEqualTo(1)
         assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
         assertThat(body.createdAt).isBefore(LocalDateTime.now())
         assertThat(body.updatedAt).isAfter(body.createdAt)

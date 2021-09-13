@@ -73,7 +73,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         val productsDetails = listOf(
             ProductDetailsResponse(
-                id = 1L,
+                productNumber = 1L,
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 3,
@@ -171,13 +171,13 @@ class AccountancyResourceTest @Autowired constructor(
 
         val productsDetails = listOf(
             ProductDetailsResponse(
-                id = 1L,
+                productNumber = 1L,
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 1,
             ),
             ProductDetailsResponse(
-                id = 2L,
+                productNumber = 2L,
                 name = "test2",
                 price = BigDecimal("20.00"),
                 quantity = 2,

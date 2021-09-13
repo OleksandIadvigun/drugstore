@@ -47,18 +47,18 @@ class RestApiDocCheckAvailabilityTest @Autowired constructor(
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                id = 1,
+                productNumber = 1,
                 quantity = 10
             ),
             ProductDetailsResponse(
-                id = 2,
+                productNumber = 2,
                 quantity = 15
             )
         )
 
         //and
         stubFor(
-            get("/api/v1/products/details?ids=${productResponse[0].id}&ids=${productResponse[1].id}")
+            get("/api/v1/products/details?ids=${productResponse[0].productNumber}&ids=${productResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

@@ -46,7 +46,7 @@ fun List<Product>.toReduceProductQuantityResponseList() = this.map(Product::toRe
 
 fun Product.toGetProductResponse() =
     GetProductResponse(
-        id = id ?: -1,
+        productNumber = id ?: -1,
         name = name
     )
 
@@ -56,7 +56,7 @@ fun List<Product>.toGetProductResponseList() = this.map(Product::toGetProductRes
 
 fun Product.toProductDetailsResponse() =
     ProductDetailsResponse(
-        id = id ?: -1,
+        productNumber = id ?: -1,
         name = name,
         price = price,
         quantity = quantity
@@ -68,7 +68,7 @@ fun List<Product>.toProductDetailsResponseList() = this.map(Product::toProductDe
 
 fun Product.toSearchProductResponse() =
     SearchProductResponse(
-        id = id ?: -1,
+        productNumber = id ?: -1,
         name = name,
         quantity = quantity,
         price = price,

@@ -34,11 +34,11 @@ class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
 
         // given
         val responseExpected = OrderResponse(
-            id = 1L,
+            orderNumber = 1L,
             orderStatus = CREATED,
             orderItems = listOf(
                 OrderItemDTO(
-                    productId = 1,
+                    productNumber = 1,
                     quantity = 2
                 )
             ),
@@ -65,14 +65,14 @@ class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
         val responseActual = orderClient.getOrderById(1L)
 
         //  then
-        assertThat(responseActual.id).isEqualTo(1L)
+        assertThat(responseActual.orderNumber).isEqualTo(1L)
         assertThat(responseActual.orderStatus).isEqualTo(CREATED)
         assertThat(responseActual.createdAt).isBefore(LocalDateTime.now())
         assertThat(responseActual.updatedAt).isBefore(LocalDateTime.now())
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and
-        assertThat(responseActual.orderItems.iterator().next().productId).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().productNumber).isEqualTo(1L)
         assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(2)
     }
 }

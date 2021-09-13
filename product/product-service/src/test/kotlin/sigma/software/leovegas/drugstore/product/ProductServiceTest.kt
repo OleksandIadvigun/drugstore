@@ -179,8 +179,8 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].id).isEqualTo(ids[1])
-        assertThat(all[1].id).isEqualTo(ids[0])
+        assertThat(all[0].productNumber).isEqualTo(ids[1])
+        assertThat(all[1].productNumber).isEqualTo(ids[0])
         assertThat(all[0].price).isEqualTo(BigDecimal("40.00"))
         assertThat(all[1].price).isEqualTo(BigDecimal("20.00"))
     }
@@ -252,9 +252,9 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].id).isEqualTo(saved[1].id)
+        assertThat(all[0].productNumber).isEqualTo(saved[1].id)
         assertThat(all[0].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(all[1].id).isEqualTo(saved[0].id)
+        assertThat(all[1].productNumber).isEqualTo(saved[0].id)
         assertThat(all[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
@@ -325,9 +325,9 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].id).isEqualTo(saved[0].id)
+        assertThat(all[0].productNumber).isEqualTo(saved[0].id)
         assertThat(all[0].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(all[1].id).isEqualTo(saved[1].id)
+        assertThat(all[1].productNumber).isEqualTo(saved[1].id)
         assertThat(all[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
@@ -439,9 +439,9 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].id).isEqualTo(saved[1].id)
+        assertThat(all[0].productNumber).isEqualTo(saved[1].id)
         assertThat(all[0].name).isEqualTo("aspirin2")
-        assertThat(all[1].id).isEqualTo(saved[0].id)
+        assertThat(all[1].productNumber).isEqualTo(saved[0].id)
         assertThat(all[1].name).isEqualTo("aspirin")
     }
 

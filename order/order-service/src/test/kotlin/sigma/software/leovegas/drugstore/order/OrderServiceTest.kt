@@ -44,7 +44,7 @@ class OrderServiceTest @Autowired constructor(
         val order = CreateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    productId = 1,
+                    productNumber = 1,
                     quantity = 3
                 )
             )
@@ -56,10 +56,10 @@ class OrderServiceTest @Autowired constructor(
         }.get()
 
         // then
-        assertThat(created.id).isNotNull
+        assertThat(created.orderNumber).isNotNull
         assertThat(created.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
         assertThat(created.orderItems[0].quantity).isEqualTo(3)
-        assertThat(created.orderItems[0].productId).isEqualTo(1)
+        assertThat(created.orderItems[0].productNumber).isEqualTo(1)
         assertThat(created.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(created.updatedAt).isAfterOrEqualTo(created.createdAt)
     }
@@ -94,11 +94,11 @@ class OrderServiceTest @Autowired constructor(
         }?.toOrderResponseDTO().get()
 
         // when
-        val actual = orderService.getOrderById(created.id)
+        val actual = orderService.getOrderById(created.orderNumber)
 
         // then
-        assertThat(actual.id).isEqualTo(created.id)
-        assertThat(actual.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(actual.orderNumber).isEqualTo(created.orderNumber)
+        assertThat(actual.orderItems.iterator().next().productNumber).isEqualTo(1)
         assertThat(actual.orderItems.iterator().next().quantity).isEqualTo(3)
     }
 
@@ -142,8 +142,8 @@ class OrderServiceTest @Autowired constructor(
         val actual = orderService.getOrdersByStatus(OrderStatusDTO.CREATED)
 
         // then
-        assertThat(actual[0].id).isEqualTo(created.id)
-        assertThat(actual[0].orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(actual[0].orderNumber).isEqualTo(created.orderNumber)
+        assertThat(actual[0].orderItems.iterator().next().productNumber).isEqualTo(1)
         assertThat(actual[0].orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(actual[0].orderStatus).isEqualTo(OrderStatusDTO.CREATED)
     }
@@ -208,7 +208,7 @@ class OrderServiceTest @Autowired constructor(
         val updateOrderRequest = UpdateOrderRequest(
             orderItems = listOf(
                 OrderItemDTO(
-                    productId = 1,
+                    productNumber = 1,
                     quantity = 4
                 )
             )
@@ -216,12 +216,12 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val changedOrder = transactionTemplate.execute {
-            orderService.updateOrder(orderToChange.id, updateOrderRequest)
+            orderService.updateOrder(orderToChange.orderNumber, updateOrderRequest)
         }.get()
 
         // then
         assertThat(changedOrder.orderItems.iterator().next().quantity).isEqualTo(4)
-        assertThat(changedOrder.orderItems.iterator().next().productId).isEqualTo(1)
+        assertThat(changedOrder.orderItems.iterator().next().productNumber).isEqualTo(1)
         assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
         assertThat(changedOrder.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(changedOrder.updatedAt).isAfterOrEqualTo(changedOrder.createdAt)
@@ -247,11 +247,11 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val changedOrder = transactionTemplate.execute {
-            orderService.changeOrderStatus(orderToChange.id, OrderStatusDTO.CONFIRMED)
+            orderService.changeOrderStatus(orderToChange.orderNumber, OrderStatusDTO.CONFIRMED)
         }.get()
 
         // then
-        assertThat(changedOrder.id).isEqualTo(orderToChange.id)
+        assertThat(changedOrder.orderNumber).isEqualTo(orderToChange.orderNumber)
         assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.CONFIRMED)
     }
 
@@ -274,7 +274,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
-            orderService.updateOrder(orderToUpdate.id, UpdateOrderRequest(listOf()))
+            orderService.updateOrder(orderToUpdate.orderNumber, UpdateOrderRequest(listOf()))
         }
 
         // then
@@ -290,7 +290,7 @@ class OrderServiceTest @Autowired constructor(
         val request = UpdateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    productId = 5L,
+                    productNumber = 5L,
                     quantity = 2
                 )
             )
@@ -339,13 +339,13 @@ class OrderServiceTest @Autowired constructor(
                                 .writeValueAsString(
                                     listOf(
                                         ProductDetailsResponse(
-                                            id = 1,
+                                            productNumber = 1,
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00")
                                         ),
                                         ProductDetailsResponse(
-                                            id = 2,
+                                            productNumber = 2,
                                             name = "test2",
                                             quantity = 4,
                                             price = BigDecimal("30.00")
@@ -381,7 +381,7 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(orderDetails.orderItemDetails).hasSize(2)
-        assertThat(orderDetails.orderItemDetails.iterator().next().productId).isEqualTo(1)
+        assertThat(orderDetails.orderItemDetails.iterator().next().productNumber).isEqualTo(1)
         assertThat(orderDetails.orderItemDetails.iterator().next().name).isEqualTo("test1")
         assertThat(orderDetails.orderItemDetails.iterator().next().quantity).isEqualTo(1)
         assertThat(orderDetails.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal("40.00").setScale(2))
@@ -413,7 +413,7 @@ class OrderServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(exception.message).contains("Order"," must be created")
+        assertThat(exception.message).contains("Order", " must be created")
 
     }
 

@@ -98,7 +98,7 @@ class StoreService @Autowired constructor(
 
     fun checkAvailability(products: List<DeliverProductsQuantityRequest>) = products.validate().run {
         val productsMap = runCatching {
-            productClient.getProductsDetailsByIds(products.map { it.id }).associate { it.id to it.quantity }
+            productClient.getProductsDetailsByIds(products.map { it.id }).associate { it.productNumber to it.quantity }
         }
             .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()

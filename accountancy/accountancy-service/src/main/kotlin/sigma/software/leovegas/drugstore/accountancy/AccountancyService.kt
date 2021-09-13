@@ -43,17 +43,17 @@ class AccountancyService @Autowired constructor(
             logger.info("Received products details $list")
 
             val invoiceItems = list.map {
-                if (it.quantity < productQuantities.getValue(it.id))              // todo
+                if (it.quantity < productQuantities.getValue(it.productNumber))              // todo
                     logger.error(
-                        " Not enough quantity of product ${it.id}, you should buy: " +
-                                "${productQuantities.getValue(it.id) - it.quantity}" +
+                        " Not enough quantity of product ${it.productNumber}, you should buy: " +
+                                "${productQuantities.getValue(it.productNumber) - it.quantity}" +
                                 " item(s) from dealer for realization of order $orderNumber"
                     )
                 ProductItem(
-                    productId = it.id,
+                    productId = it.productNumber,
                     name = it.name,
-                    price = productPrice.getValue(it.id),
-                    quantity = productQuantities.getValue(it.id),
+                    price = productPrice.getValue(it.productNumber),
+                    quantity = productQuantities.getValue(it.productNumber),
                 )
             }
 

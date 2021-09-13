@@ -36,7 +36,7 @@ class RestApiDocGetOrdersTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productId = 1L,
+                            productNumber = 1L,
                             quantity = 3
                         )
                     )

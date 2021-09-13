@@ -278,9 +278,9 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body[0].id).isEqualTo(saved[1].id)
+        assertThat(body[0].productNumber).isEqualTo(saved[1].id)
         assertThat(body[0].name).isEqualTo("aspirin2")
-        assertThat(body[1].id).isEqualTo(saved[0].id)
+        assertThat(body[1].productNumber).isEqualTo(saved[0].id)
         assertThat(body[1].name).isEqualTo("aspirin")
     }
 
@@ -359,9 +359,9 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body[0].id).isEqualTo(saved[0].id)
+        assertThat(body[0].productNumber).isEqualTo(saved[0].id)
         assertThat(body[0].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(body[1].id).isEqualTo(saved[1].id)
+        assertThat(body[1].productNumber).isEqualTo(saved[1].id)
         assertThat(body[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
@@ -441,9 +441,9 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body[0].id).isEqualTo(saved[1].id)
+        assertThat(body[0].productNumber).isEqualTo(saved[1].id)
         assertThat(body[0].price).isEqualTo(BigDecimal("100.00"))
-        assertThat(body[1].id).isEqualTo(saved[0].id)
+        assertThat(body[1].productNumber).isEqualTo(saved[0].id)
         assertThat(body[1].price).isEqualTo(BigDecimal("20.00"))
     }
 
@@ -538,8 +538,8 @@ class ProductResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).hasSize(2)
-        assertThat(body[0].id).isEqualTo(ids[1])
-        assertThat(body[1].id).isEqualTo(ids[0])
+        assertThat(body[0].productNumber).isEqualTo(ids[1])
+        assertThat(body[1].productNumber).isEqualTo(ids[0])
         assertThat(body[0].price).isEqualTo(BigDecimal("20.00"))
         assertThat(body[1].price).isEqualTo(BigDecimal("40.00"))
     }

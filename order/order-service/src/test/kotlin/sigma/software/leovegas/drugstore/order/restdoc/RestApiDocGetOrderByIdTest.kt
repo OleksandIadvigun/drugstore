@@ -30,7 +30,7 @@ class RestApiDocGetOrderByIdTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productId = 1L,
+                            productNumber = 1L,
                             quantity = 3
                         )
                     )
@@ -39,14 +39,14 @@ class RestApiDocGetOrderByIdTest @Autowired constructor(
         }
 
         if (orderCreated != null) {
-            of("get-order-by-id").pathParam("id", orderCreated.id).`when`()
+            of("get-order-by-id").pathParam("id", orderCreated.orderNumber).`when`()
                 .get("http://${orderProperties.host}:$port/api/v1/orders/{id}")
                 .then()
                 .assertThat().statusCode(200)
                 .assertThat().body("orderStatus", equalTo("CREATED"))
                 .assertThat().body("createdAt", not(emptyString()))
                 .assertThat().body("updatedAt", not(emptyString()))
-                .assertThat().body("orderItems[0].productId", equalTo(1))
+                .assertThat().body("orderItems[0].productNumber", equalTo(1))
                 .assertThat().body("orderItems[0].quantity", equalTo(3))
         }
     }

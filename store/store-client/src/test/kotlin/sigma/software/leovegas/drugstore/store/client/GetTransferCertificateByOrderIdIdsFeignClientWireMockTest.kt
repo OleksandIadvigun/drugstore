@@ -35,7 +35,7 @@ class GetTransferCertificateByOrderIdIdsFeignClientWireMockTest @Autowired const
         // and
         val responseExpected =
             TransferCertificateResponse(
-                id = 1,
+                certificateNumber = 1,
                 orderNumber = orderNumber,
                 status = TransferStatusDTO.DELIVERED
             )

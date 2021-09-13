@@ -92,7 +92,7 @@ class ProductService(
             .map(Product::toGetProductResponse)
         logger.info("Received popular products $products")
         val index = productsQuantity.keys.withIndex().associate { it.value to it.index }
-        return products.sortedBy { index[it.id] }
+        return products.sortedBy { index[it.productNumber] }
     }
 
     fun getProductsDetailsByIds(ids: List<Long>) =
