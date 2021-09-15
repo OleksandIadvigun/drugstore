@@ -27,7 +27,7 @@ enum class OrderStatus {
 }
 
 @Entity
-@Table(name = "order")
+@Table(name = "orders")
 data class Order(
 
     @Id

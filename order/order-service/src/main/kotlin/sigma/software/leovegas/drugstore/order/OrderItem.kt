@@ -20,7 +20,7 @@ data class OrderItem(
     val id: Long? = null,
 
     @NotNull
-    @Column(name = "price_item_id", nullable = false)
+    @Column(name = "product_id", nullable = false)
     val productId: Long = -1L,
 
     @NotNull
