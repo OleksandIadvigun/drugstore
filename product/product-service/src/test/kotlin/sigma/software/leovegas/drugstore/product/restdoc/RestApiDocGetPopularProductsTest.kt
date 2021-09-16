@@ -44,18 +44,21 @@ class RestApiDocGetPopularProductsTest @Autowired constructor(
             productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "test",
                         price = BigDecimal("20.00"),
                         quantity = 5,
                         status = ProductStatus.RECEIVED,
                     ),
                     Product(
+                        productNumber = "2",
                         name = "test2",
                         price = BigDecimal("30.00"),
                         quantity = 3,
                         status = ProductStatus.RECEIVED,
                     ),
                     Product(
+                        productNumber = "3",
                         name = "mostPopular",
                         price = BigDecimal("10.00"),
                         quantity = 7,
@@ -76,9 +79,9 @@ class RestApiDocGetPopularProductsTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        savedProducts[2].id to 8,
-                                        savedProducts[0].id to 5,
-                                        savedProducts[1].id to 2
+                                        savedProducts[2].productNumber to 8,
+                                        savedProducts[0].productNumber to 5,
+                                        savedProducts[1].productNumber to 2
                                     )
                                 )
                         )

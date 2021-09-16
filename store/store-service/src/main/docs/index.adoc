@@ -14,13 +14,13 @@ include::{snippets}/get-transfer-certificates/http-request.adoc[]
 .Response
 include::{snippets}/get-transfer-certificates/http-response.adoc[]
 
-== Get Transfer Certificate by Order Id
+== Get Transfer Certificate by Order Number
 
 .Request
-include::{snippets}/get-transfer-certificates-by-order-id/http-request.adoc[]
+include::{snippets}/get-transfer-certificates-by-order-number/http-request.adoc[]
 
 .Response
-include::{snippets}/get-transfer-certificates-by-order-id/http-response.adoc[]
+include::{snippets}/get-transfer-certificates-by-order-number/http-response.adoc[]
 
 == Receive Products
 

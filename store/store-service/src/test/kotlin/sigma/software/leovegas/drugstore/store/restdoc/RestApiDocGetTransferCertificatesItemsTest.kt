@@ -32,12 +32,14 @@ class RestApiDocGetTransferCertificatesItemsTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        orderNumber = 1,
+                        certificateNumber = "1",
+                        orderNumber = "1",
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        orderNumber = 2,
+                        certificateNumber = "2",
+                        orderNumber = "2",
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -49,7 +51,7 @@ class RestApiDocGetTransferCertificatesItemsTest @Autowired constructor(
             .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("[0].orderNumber", `is`(1))
+            .assertThat().body("[0].orderNumber", `is`("1"))
             .assertThat().body("size", `is`(2))
     }
 }

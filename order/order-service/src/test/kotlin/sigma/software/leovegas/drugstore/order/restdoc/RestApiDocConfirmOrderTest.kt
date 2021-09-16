@@ -37,14 +37,20 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
     @Test
     fun `should confirm order`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CREATED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                     )
@@ -56,15 +62,16 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
         val request = CreateOutcomeInvoiceRequest(
             listOf(
                 ItemDTO(
-                    productId = 1,
+                    productNumber = "1",
                     quantity = 1
                 )
-            ), order.id ?: -1
+            ),
+            order.orderNumber
         )
 
         // and
         val response = ConfirmOrderResponse(
-            orderNumber = order.id ?: -1,
+            orderNumber = order.orderNumber,
             amount = BigDecimal("20.00")
         )
 
@@ -90,12 +97,12 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
         )
 
         of("confirm-order").`when`()
-            .body(order.id)
+            .body(order.orderNumber)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .post("http://${orderProperties.host}:$port/api/v1/orders/confirm")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("orderNumber", equalTo(order.id.get().toInt()))
+            .assertThat().body("orderNumber", equalTo(order.orderNumber))
             .assertThat().body("amount", equalTo(20.0F))
     }
 }

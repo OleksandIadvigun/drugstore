@@ -39,7 +39,7 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
-                                    mapOf(Pair(1, BigDecimal("1.23")), Pair(2, BigDecimal("1.24")))
+                                    mapOf(Pair("1", BigDecimal("1.23")), Pair("2", BigDecimal("1.24")))
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())
@@ -48,11 +48,11 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
         )
 
         // when
-        val priceMap = productClient.getProductPrice(listOf(1, 2))
+        val priceMap = productClient.getProductPrice(listOf("1", "2"))
 
         // then
-        assertThat(priceMap.getValue(1)).isEqualTo(BigDecimal("1.23"))
-        assertThat(priceMap.getValue(2)).isEqualTo(BigDecimal("1.24"))
+        assertThat(priceMap.getValue("1")).isEqualTo(BigDecimal("1.23"))
+        assertThat(priceMap.getValue("2")).isEqualTo(BigDecimal("1.24"))
     }
 
     @Test
@@ -61,11 +61,11 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
         // given
         val responseExpected = listOf(
             GetProductResponse(
-                productNumber = 1,
+                productNumber = "1",
                 name = "test1"
             ),
             GetProductResponse(
-                productNumber = 2,
+                productNumber = "2",
                 name = "test2"
             )
         )
@@ -90,9 +90,9 @@ class GetProductsFeignClientWireMockTests @Autowired constructor(
         val responseActual = productClient.getPopularProducts()
 
         // then
-        assertThat(responseActual[0].productNumber).isEqualTo(1)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
         assertThat(responseActual[0].name).isEqualTo("test1")
-        assertThat(responseActual[1].productNumber).isEqualTo(2)
+        assertThat(responseActual[1].productNumber).isEqualTo("2")
         assertThat(responseActual[1].name).isEqualTo("test2")
     }
 }

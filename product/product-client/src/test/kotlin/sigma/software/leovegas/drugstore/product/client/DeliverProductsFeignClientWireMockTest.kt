@@ -34,7 +34,7 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
         // and
         val request = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 3
             )
         )
@@ -42,7 +42,7 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
         //and
         val responseExpected = listOf(
             DeliverProductsResponse(
-                id = 1L,
+                productNumber = "1",
                 quantity = 7,
                 updatedAt = LocalDateTime.now()
             )
@@ -75,7 +75,7 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
         val responseActual = productClient.deliverProducts(request)
 
         //  then
-        assertThat(responseActual[0].id).isEqualTo(1L)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
         assertThat(responseActual[0].quantity).isEqualTo(7)
         assertThat(responseActual[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }

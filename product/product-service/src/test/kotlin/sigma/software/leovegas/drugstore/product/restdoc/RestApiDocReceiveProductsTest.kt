@@ -34,29 +34,31 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
         }
 
         // and
-        val ids = transactionTemplate.execute {
+        val productNumbers = transactionTemplate.execute {
             productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "test1",
                         price = BigDecimal("20.00"),
                         quantity = 5,
                         status = ProductStatus.CREATED,
                     ),
                     Product(
+                        productNumber = "2",
                         name = "test2",
                         price = BigDecimal("20.00"),
                         quantity = 3,
                         status = ProductStatus.CREATED,
                     )
                 )
-            ).map { it.id ?: -1 }.toList()
-        } ?: listOf(-1L)
+            ).map { it.productNumber }
+        }
 
         // and
         val body = objectMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(ids)
+            .writeValueAsString(productNumbers)
 
         of("receive-products").`when`()
             .body(body)

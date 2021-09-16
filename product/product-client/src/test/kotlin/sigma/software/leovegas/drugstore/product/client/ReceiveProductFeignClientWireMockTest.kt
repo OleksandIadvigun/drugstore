@@ -32,12 +32,12 @@ class ReceiveProductFeignClientWireMockTest @Autowired constructor(
     fun `should receive product`() {
 
         // and
-        val request = listOf(1L)
+        val request = listOf("1")
 
         //and
         val responseExpected = listOf(
             ReceiveProductResponse(
-                id = 1L,
+                productNumber = "1",
                 status = ProductStatusDTO.RECEIVED
             )
         )
@@ -69,7 +69,7 @@ class ReceiveProductFeignClientWireMockTest @Autowired constructor(
         val responseActual = productClient.receiveProducts(request)
 
         //  then
-        assertThat(responseActual[0].id).isEqualTo(1L)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
         assertThat(responseActual[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
     }
 }

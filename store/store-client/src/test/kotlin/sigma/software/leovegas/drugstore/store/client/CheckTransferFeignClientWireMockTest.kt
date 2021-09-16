@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
+import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
 
 @SpringBootApplication
@@ -29,7 +30,7 @@ class CheckTransferFeignClientWireMockTest @Autowired constructor(
     fun `should check transfer of products`() {
 
         // given
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // and
         stubFor(
@@ -40,7 +41,7 @@ class CheckTransferFeignClientWireMockTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(orderNumber)
+                                .writeValueAsString(CheckStatusResponse(orderNumber))
                         )
                         .withStatus(HttpStatus.ACCEPTED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -51,6 +52,6 @@ class CheckTransferFeignClientWireMockTest @Autowired constructor(
         val responseActual = storeClient.checkTransfer(orderNumber)
 
         //  then
-        assertThat(responseActual).isEqualTo(orderNumber)
+        assertThat(responseActual.orderNumber).isEqualTo(orderNumber)
     }
 }

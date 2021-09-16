@@ -5,7 +5,7 @@ import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequ
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateRequest
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
-fun Long.validate(functor: (Long) -> Optional<TransferCertificate>): Long =
+fun String.validate(functor: (String) -> Optional<TransferCertificate>): String =
     apply {
         functor(this).ifPresent { throw ProductsAlreadyDelivered(this) }
     }
@@ -14,7 +14,7 @@ fun List<DeliverProductsQuantityRequest>.validate() =
     onEach { if (it.quantity <= 0) throw NotCorrectQuantityException() }
 
 fun TransferCertificateRequest.validate() = apply {
-    if (orderNumber < 0 || comment == "undefined" || status == TransferStatusDTO.NONE) {
+    if (orderNumber == "undefined" || comment == "undefined" || status == TransferStatusDTO.NONE) {
         throw NotCorrectRequestException()
     }
 }

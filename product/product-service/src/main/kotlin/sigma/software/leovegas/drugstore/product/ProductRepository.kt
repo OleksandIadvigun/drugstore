@@ -11,23 +11,25 @@ interface ProductRepository : JpaRepository<Product, Long> {
         @Param("id") id: Long
     ): Optional<Product>
 
-    fun findAllByIdInOrderByCreatedAtDesc(ids: List<Long>): List<Product>
+    fun findAllByProductNumberInOrderByCreatedAtDesc(productNumbers: List<String>): List<Product>
 
-    fun findAllByIdInAndStatus(ids: List<Long>, status: ProductStatus): List<Product>
+    fun findAllByProductNumberInAndStatus(productNumber: List<String>, status: ProductStatus): List<Product>
 
     fun findAllByNameContainingAndStatusAndQuantityGreaterThan(
         name: String?, status: ProductStatus, quantity: Int, pageable: Pageable?
     ): List<Product>
 
-    fun findAllByNameContainingAndIdInAndStatusAndQuantityGreaterThan(
+    fun findAllByNameContainingAndProductNumberInAndStatusAndQuantityGreaterThan(
         search: String,
-        ids: Set<Long>,
+        productNumbers: Set<String>,
         status: ProductStatus,
         quantity: Int,
         pageable: Pageable?
     ): List<Product>
 
-    fun findAllByIdInAndStatusAndQuantityGreaterThan(
-        ids: Set<Long>, status: ProductStatus, quantity: Int, pageable: Pageable?
+    fun findAllByProductNumberInAndStatusAndQuantityGreaterThan(
+        productNumbers: Set<String>, status: ProductStatus, quantity: Int, pageable: Pageable
     ): List<Product>
+
+    fun findAllByProductNumberIn(productNumbers: List<String>): List<Product>
 }

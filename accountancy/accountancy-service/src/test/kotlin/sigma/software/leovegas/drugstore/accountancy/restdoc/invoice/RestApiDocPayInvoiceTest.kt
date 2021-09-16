@@ -38,12 +38,13 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderNumber = 1L,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.CREATED,
                     productItems = setOf(
                         ProductItem(
-                            productId = 1L,
+                            productNumber = "1",
                             name = "test",
                             price = BigDecimal("30"),
                             quantity = 3
@@ -64,7 +65,7 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
             .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/pay/{id}")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderNumber", equalTo(1))
+            .assertThat().body("orderNumber", equalTo("1"))
             .assertThat().body("amount", equalTo(90.0F))
     }
 }

@@ -32,6 +32,10 @@ data class Product(
     val id: Long? = null,
 
     @NotEmpty
+    @Column(name = "product_number", nullable = false, updatable = false)
+    val productNumber: String = "undefined",
+
+    @NotEmpty
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     val status: ProductStatus = ProductStatus.CREATED,

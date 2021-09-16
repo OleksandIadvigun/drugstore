@@ -26,6 +26,7 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
+import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
@@ -47,19 +48,20 @@ class StoreResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get transfer certificates by invoice id`() {
+    fun `should get transfer certificates by order number`() {
 
         // given
         transactionTemplate.execute {
             storeRepository.deleteAllInBatch()
         }
 
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // and
         transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
+                    certificateNumber = "1",
                     orderNumber = orderNumber,
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
@@ -80,7 +82,7 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).hasSize(1)
-        assertThat(body[0].orderNumber).isEqualTo(1)
+        assertThat(body[0].orderNumber).isEqualTo("1")
     }
 
     @Test
@@ -96,12 +98,14 @@ class StoreResourceTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        orderNumber = 1,
+                        certificateNumber = "1",
+                        orderNumber = "1",
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        orderNumber = 2,
+                        certificateNumber = "2",
+                        orderNumber = "2",
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -122,8 +126,8 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).hasSize(2)
-        assertThat(body[0].orderNumber).isEqualTo(1)
-        assertThat(body[1].orderNumber).isEqualTo(2)
+        assertThat(body[0].orderNumber).isEqualTo("1")
+        assertThat(body[1].orderNumber).isEqualTo("2")
     }
 
     @Test
@@ -136,16 +140,16 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         val accountancyResponse = listOf(
-            ItemDTO(productId = 1, quantity = 2),
-            ItemDTO(productId = 2, quantity = 3),
+            ItemDTO(productNumber = "1", quantity = 2),
+            ItemDTO(productNumber = "2", quantity = 3),
         )
 
         // and
-        val orderId: Long = 1
+        val orderNumber = "1"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -160,12 +164,12 @@ class StoreResourceTest @Autowired constructor(
         //and
         val productResponse = listOf(
             DeliverProductsResponse(
-                id = 1L,
+                productNumber = "1",
                 quantity = 5,
                 updatedAt = LocalDateTime.now()
             ),
             DeliverProductsResponse(
-                id = 2,
+                productNumber = "2",
                 quantity = 10,
                 updatedAt = LocalDateTime.now()
             )
@@ -180,7 +184,7 @@ class StoreResourceTest @Autowired constructor(
                     EqualToPattern(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(listOf(1, 2))
+                            .writeValueAsString(listOf("1", "2"))
                     )
                 )
                 .willReturn(
@@ -195,7 +199,7 @@ class StoreResourceTest @Autowired constructor(
                 )
         )
 
-        val httpEntity = HttpEntity(1)
+        val httpEntity = HttpEntity("1")
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/store/receive",
@@ -208,7 +212,7 @@ class StoreResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).isNotNull
-        assertThat(body.orderNumber).isEqualTo(1)
+        assertThat(body.orderNumber).isEqualTo("1")
         assertThat(body.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }
 
@@ -222,16 +226,16 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         val accountancyResponse = listOf(
-            ItemDTO(productId = 1, quantity = 2),
-            ItemDTO(productId = 2, quantity = 3),
+            ItemDTO(productNumber = "1", quantity = 2),
+            ItemDTO(productNumber = "2", quantity = 3),
         )
 
         // and
-        val orderId: Long = 1
+        val orderNumber = "1"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -246,11 +250,11 @@ class StoreResourceTest @Autowired constructor(
         // and
         val productRequest = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 2
             ),
             DeliverProductsQuantityRequest(
-                id = 2,
+                productNumber = "2",
                 quantity = 3
             )
         )
@@ -258,12 +262,12 @@ class StoreResourceTest @Autowired constructor(
         //and
         val productResponse = listOf(
             DeliverProductsResponse(
-                id = 1L,
+                productNumber = "1",
                 quantity = 5,
                 updatedAt = LocalDateTime.now()
             ),
             DeliverProductsResponse(
-                id = 2,
+                productNumber = "2",
                 quantity = 10,
                 updatedAt = LocalDateTime.now()
             )
@@ -296,18 +300,20 @@ class StoreResourceTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 quantity = 10
             ),
             ProductDetailsResponse(
-                productNumber = 2,
+                productNumber = "2",
                 quantity = 20
             ),
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}&ids=${productDetailsResponse[1].productNumber}")
+            WireMock.get("/api/v1/products/details?" +
+                    "productNumber=${productDetailsResponse[0].productNumber}&" +
+                    "productNumber=${productDetailsResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -322,9 +328,7 @@ class StoreResourceTest @Autowired constructor(
         )
 
         // and
-        val httpEntity = HttpEntity(
-            1
-        )
+        val httpEntity = HttpEntity("1")
 
         // when
         val response = restTemplate.exchange(
@@ -339,7 +343,7 @@ class StoreResourceTest @Autowired constructor(
         val body = response.body.get("body")
         assertThat(body).isNotNull
         assertThat(body).isNotNull
-        assertThat(body.orderNumber).isEqualTo(1)
+        assertThat(body.orderNumber).isEqualTo("1")
         assertThat(body.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 
@@ -349,11 +353,11 @@ class StoreResourceTest @Autowired constructor(
         // given
         val products = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 2
             ),
             DeliverProductsQuantityRequest(
-                id = 2,
+                productNumber = "2",
                 quantity = 3
             )
         )
@@ -364,18 +368,19 @@ class StoreResourceTest @Autowired constructor(
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 quantity = 10
             ),
             ProductDetailsResponse(
-                productNumber = 2,
+                productNumber = "2",
                 quantity = 15
             )
         )
 
         //and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productResponse[0].productNumber}&ids=${productResponse[1].productNumber}")
+            WireMock.get("/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
+                    "productNumbers=${productResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -412,12 +417,12 @@ class StoreResourceTest @Autowired constructor(
         }
 
         // given
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/store/check-transfer/1",
-            HttpMethod.GET, null, respTypeRef<Long>()
+            "$baseUrl/api/v1/store/check-transfer/$orderNumber",
+            HttpMethod.GET, null, respTypeRef<CheckStatusResponse>()
         )
 
         // then
@@ -425,6 +430,6 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get()
-        assertThat(body).isEqualTo(orderNumber)
+        assertThat(body.orderNumber).isEqualTo(orderNumber)
     }
 }

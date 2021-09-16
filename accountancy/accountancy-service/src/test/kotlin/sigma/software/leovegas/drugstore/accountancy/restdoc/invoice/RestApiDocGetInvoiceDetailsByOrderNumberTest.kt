@@ -17,8 +17,8 @@ import sigma.software.leovegas.drugstore.accountancy.client.AccountancyPropertie
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.extensions.get
 
-@DisplayName("Get invoice details by order id REST API Doc test")
-class RestApiDocGetInvoiceDetailsByOrderIdTest @Autowired constructor(
+@DisplayName("Get invoice details by order number REST API Doc test")
+class RestApiDocGetInvoiceDetailsByOrderNumberTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
     val invoiceRepository: InvoiceRepository,
@@ -26,7 +26,7 @@ class RestApiDocGetInvoiceDetailsByOrderIdTest @Autowired constructor(
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
-    fun `should get invoice details by id`() {
+    fun `should get invoice details by order number`() {
 
         // given
         transactionTemplate.execute { invoiceRepository.deleteAll() }
@@ -37,11 +37,12 @@ class RestApiDocGetInvoiceDetailsByOrderIdTest @Autowired constructor(
                 Invoice(
                     status = InvoiceStatus.PAID,
                     type = InvoiceType.OUTCOME,
-                    orderNumber = 1L,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 3
                         )
                     )
@@ -49,13 +50,13 @@ class RestApiDocGetInvoiceDetailsByOrderIdTest @Autowired constructor(
             )
         }.get()
 
-        of("get-invoice-details-by-order-id").`when`()
-            .pathParam("id", savedInvoice.orderNumber)
+        of("get-invoice-details-by-order-number").`when`()
+            .pathParam("orderNumber", savedInvoice.orderNumber)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/details/order-id/{id}")
+            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/details/order-number/{orderNumber}")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("[0].productId", equalTo(1))
+            .assertThat().body("[0].productNumber", equalTo("1"))
             .assertThat().body("[0].quantity", equalTo(3))
     }
 }

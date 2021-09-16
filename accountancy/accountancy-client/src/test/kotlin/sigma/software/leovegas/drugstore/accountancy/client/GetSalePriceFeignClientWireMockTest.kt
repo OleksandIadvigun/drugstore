@@ -29,7 +29,7 @@ class GetSalePriceFeignClientWireMockTest @Autowired constructor(
     fun `should sale price`() {
 
         // given
-        val productsId = listOf(1L, 2L)
+        val productsId = listOf("1", "2")
 
         // and
         val responseExpected = mapOf(
@@ -39,7 +39,7 @@ class GetSalePriceFeignClientWireMockTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/accountancy/sale-price?ids=1&ids=2")
+            get("/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

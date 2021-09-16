@@ -1,0 +1,55 @@
+{
+  "users": [
+    {
+      "name": "drugstore",
+      "password": "admin",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "drugstore",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "parameters": [],
+  "policies": [],
+  "exchanges": [
+    {
+      "name": "drugstore_exchange",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": false,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "accountancy_queue",
+      "vhost": "/",
+      "durable": false,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "drugstore_exchange",
+      "vhost": "/",
+      "destination": "accountancy_queue",
+      "destination_type": "queue",
+      "routing_key": "accountancy_queue.#",
+      "arguments": {}
+    }
+  ]
+}

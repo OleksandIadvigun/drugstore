@@ -16,7 +16,7 @@ class StoreRepositoryTest(
 ) {
 
     @Test
-    fun `should get transfer certificate by invoice id`() {
+    fun `should get transfer certificates by order number`() {
 
         // given
         transactionalTemplate.execute {
@@ -27,7 +27,8 @@ class StoreRepositoryTest(
         val created = transactionalTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    orderNumber = 1,
+                    certificateNumber = "1",
+                    orderNumber = "1",
                     status = TransferStatus.DELIVERED,
                     comment = "Delivered"
                 )
@@ -36,10 +37,39 @@ class StoreRepositoryTest(
 
         // when
         val found = transactionalTemplate.execute {
-            storeRepository.findAllByOrderNumber(1)
+            storeRepository.findAllByOrderNumber("1")
         }.get()
 
         // then
-        assertThat(found[0].id).isEqualTo(created.id)
+        assertThat(found[0].orderNumber).isEqualTo(created.orderNumber)
+    }
+
+    @Test
+    fun `should get transfer certificate by order number`() {
+
+        // given
+        transactionalTemplate.execute {
+            storeRepository.deleteAll()
+        }
+
+        // and
+        val created = transactionalTemplate.execute {
+            storeRepository.save(
+                TransferCertificate(
+                    certificateNumber = "1",
+                    orderNumber = "1",
+                    status = TransferStatus.DELIVERED,
+                    comment = "Delivered"
+                )
+            )
+        }.get()
+
+        // when
+        val found = transactionalTemplate.execute {
+            storeRepository.getTransferCertificateByOrderNumber("1")
+        }.get()
+
+        // then
+        assertThat(found.get().orderNumber).isEqualTo(created.orderNumber)
     }
 }

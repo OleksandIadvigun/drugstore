@@ -36,6 +36,10 @@ data class Order(
     @Column(name = "id", nullable = false, updatable = false)
     val id: Long? = null,
 
+    @NotEmpty
+    @Column(name = "order_number", nullable = false, updatable = false)
+    val orderNumber: String = "undefined",
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)

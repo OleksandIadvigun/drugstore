@@ -30,10 +30,10 @@ class OrderResource(private val orderService: OrderService) {
     fun createOrder(@RequestBody createOrderRequest: CreateOrderRequest) =
         orderService.createOrder(createOrderRequest)
 
-    @GetMapping("/{id}")
+    @GetMapping("/{orderNumber}")
     @ResponseStatus(HttpStatus.OK)
-    fun getOrderById(@PathVariable("id") id: Long) =
-        orderService.getOrderById(id)
+    fun getOrderById(@PathVariable("orderNumber") orderNumber: String) =
+        orderService.getOrderByOrderNumber(orderNumber)
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/status/{status}")
@@ -42,11 +42,11 @@ class OrderResource(private val orderService: OrderService) {
 
     @GetMapping("/total-buys")
     @ResponseStatus(HttpStatus.OK)
-    fun getProductsIdToQuantity(): Map<Long, Int> = orderService.getProductsIdToQuantity()
+    fun getProductsIdToQuantity(): Map<String, Int> = orderService.getProductsNumberToQuantity()
 
-    @GetMapping("/{id}/details")
+    @GetMapping("/{orderNumber}/details")
     @ResponseStatus(HttpStatus.OK)
-    fun getOrderDetails(@PathVariable("id") id: Long) = orderService.getOrderDetails(id)
+    fun getOrderDetails(@PathVariable("orderNumber") orderNumber: String) = orderService.getOrderDetails(orderNumber)
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(path = ["", "/"])
@@ -55,15 +55,15 @@ class OrderResource(private val orderService: OrderService) {
         @RequestParam(defaultValue = "5") size: Int,
     ) = orderService.getOrders(page, size)
 
-    @PutMapping("/{id}")
+    @PutMapping("/{orderNumber}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun updateOrder(@PathVariable("id") id: Long, @RequestBody updateOrderRequest: UpdateOrderRequest) =
-        orderService.updateOrder(id, updateOrderRequest)
+    fun updateOrder(@PathVariable("orderNumber") orderNumber: String, @RequestBody updateOrderRequest: UpdateOrderRequest) =
+        orderService.updateOrder(orderNumber, updateOrderRequest)
 
     @PostMapping("/confirm")
     @ResponseStatus(HttpStatus.CREATED)
-    fun confirmOrder(@RequestBody orderId: Long) =
-        orderService.confirmOrder(orderId)
+    fun confirmOrder(@RequestBody orderNumber: String) =
+        orderService.confirmOrder(orderNumber)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

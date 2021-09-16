@@ -30,24 +30,28 @@ class ProductRepositoryTest @Autowired constructor(
             productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "aspirin",
                         price = BigDecimal("10.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "2",
                         name = "test",
                         price = BigDecimal("50.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "3",
                         name = "aspirin",
                         price = BigDecimal("40.00"),
                         quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
+                        productNumber = "4",
                         name = "aspirin",
                         price = BigDecimal("30.00"),
                         quantity = 0,
@@ -70,7 +74,7 @@ class ProductRepositoryTest @Autowired constructor(
     }
 
     @Test
-    fun `should get products by id in and status and quantity greater than`() {
+    fun `should get products by product numbers in and status and quantity greater than`() {
 
         // given
         transactionTemplate.execute {
@@ -82,24 +86,28 @@ class ProductRepositoryTest @Autowired constructor(
             productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "aspirin",
                         price = BigDecimal("10.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "2",
                         name = "test",
                         price = BigDecimal("50.00"),
                         quantity = 0,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "3",
                         name = "aspirin",
                         price = BigDecimal("40.00"),
                         quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
+                        productNumber = "4",
                         name = "aspirin",
                         price = BigDecimal("30.00"),
                         quantity = 5,
@@ -110,20 +118,20 @@ class ProductRepositoryTest @Autowired constructor(
         }.get()
 
         // when
-        val products = productRepository.findAllByIdInAndStatusAndQuantityGreaterThan(
-            setOf(saved[0].id ?: -1, saved[1].id ?: -1, saved[2].id ?: -1),
+        val products = productRepository.findAllByProductNumberInAndStatusAndQuantityGreaterThan(
+            setOf(saved[0].productNumber, saved[1].productNumber, saved[2].productNumber),
             ProductStatus.RECEIVED, 0, Pageable.unpaged()
         )
 
         // then
         assertThat(products).hasSize(1)
-        assertThat(products[0].id).isIn(saved[0].id ?: -1, saved[1].id ?: -1, saved[2].id ?: -1)
+        assertThat(products[0].productNumber).isIn(saved[0].productNumber, saved[1].productNumber, saved[2].productNumber)
         assertThat(products[0].quantity).isGreaterThan(0)
         assertThat(products[0].status).isEqualTo(ProductStatus.RECEIVED)
     }
 
     @Test
-    fun `should get products by name and id in and status and quantity greater than`() {
+    fun `should get products by name and product numbers in and status and quantity greater than`() {
 
         // given
         transactionTemplate.execute {
@@ -135,30 +143,35 @@ class ProductRepositoryTest @Autowired constructor(
             productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "aspirin",
                         price = BigDecimal("10.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "2",
                         name = "test",
                         price = BigDecimal("50.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "3",
                         name = "aspirin",
                         price = BigDecimal("40.00"),
                         quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
+                        productNumber = "4",
                         name = "aspirin",
                         price = BigDecimal("30.00"),
                         quantity = 0,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "5",
                         name = "aspirin",
                         price = BigDecimal("30.00"),
                         quantity = 0,
@@ -169,22 +182,61 @@ class ProductRepositoryTest @Autowired constructor(
         }.get()
 
         // when
-        val products = productRepository.findAllByNameContainingAndIdInAndStatusAndQuantityGreaterThan(
+        val products = productRepository.findAllByNameContainingAndProductNumberInAndStatusAndQuantityGreaterThan(
             "aspirin",
-            setOf(saved[0].id ?: -1, saved[1].id ?: -1, saved[2].id ?: -1, saved[3].id ?: -1),
+            setOf(saved[0].productNumber, saved[1].productNumber, saved[2].productNumber, saved[3].productNumber),
             ProductStatus.RECEIVED, 0, Pageable.unpaged()
         )
 
         // then
         assertThat(products).hasSize(1)
-        assertThat(products[0].id).isIn(
-            saved[0].id ?: -1,
-            saved[1].id ?: -1,
-            saved[2].id ?: -1,
-            saved[3].id ?: -1
+        assertThat(products[0].productNumber).isIn(
+            saved[0].productNumber,
+            saved[1].productNumber,
+            saved[2].productNumber,
+            saved[3].productNumber
         )
         assertThat(products[0].quantity).isGreaterThan(0)
         assertThat(products[0].name).isEqualTo("aspirin")
         assertThat(products[0].status).isEqualTo(ProductStatus.RECEIVED)
+    }
+
+    @Test
+    fun `should get products by products numbers`() {
+
+        // given
+        transactionTemplate.execute {
+            productRepository.deleteAll()
+        }
+
+        // and
+        transactionTemplate.execute {
+            productRepository.saveAll(
+                listOf(
+                    Product(
+                        productNumber = "1",
+                        name = "aspirin",
+                        price = BigDecimal("10.00"),
+                        quantity = 10,
+                        status = ProductStatus.RECEIVED
+                    ),
+                    Product(
+                        productNumber = "2",
+                        name = "test",
+                        price = BigDecimal("50.00"),
+                        quantity = 10,
+                        status = ProductStatus.RECEIVED
+                    ),
+                )
+            )
+        }.get()
+
+        // when
+        val products = productRepository.findAllByProductNumberIn(listOf("1", "2"))
+
+        // then
+        assertThat(products).hasSize(2)
+        assertThat(products[0].productNumber).isEqualTo("1")
+        assertThat(products[1].productNumber).isEqualTo("2")
     }
 }

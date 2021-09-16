@@ -46,7 +46,7 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         val transferCertificateRequest = TransferCertificateRequest(
-            orderNumber = 1,
+            orderNumber = "1",
             status = TransferStatusDTO.RECEIVED,
             comment = "RECEIVED"
         )
@@ -58,14 +58,15 @@ class StoreServiceTest @Autowired constructor(
 
         // then
         assertThat(created.certificateNumber).isNotNull
-        assertThat(created.orderNumber).isEqualTo(1)
+        assertThat(created.orderNumber).isEqualTo("1")
+        assertThat(created.certificateNumber).isNotEqualTo("undefined")
         assertThat(created.status).isEqualTo(TransferStatusDTO.RECEIVED)
         assertThat(created.comment).isEqualTo("RECEIVED")
 
     }
 
     @Test
-    fun `should get store transfer certificates by order id`() {
+    fun `should get store transfer certificates by order number`() {
 
         // given
         transactionTemplate.execute {
@@ -76,7 +77,8 @@ class StoreServiceTest @Autowired constructor(
         val created = transactionTemplate.execute {
             storeRepository.save(
                 TransferCertificate(
-                    orderNumber = 1,
+                    certificateNumber = "1",
+                    orderNumber = "1",
                     status = TransferStatus.RECEIVED,
                     comment = "RECEIVED"
                 )
@@ -85,7 +87,7 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val actual = transactionTemplate.execute {
-            storeService.getTransferCertificatesByOrderId(created.orderNumber)
+            storeService.getTransferCertificatesByOrderNumber(created.orderNumber)
         }.get()
 
         // then
@@ -105,12 +107,14 @@ class StoreServiceTest @Autowired constructor(
             storeRepository.saveAll(
                 listOf(
                     TransferCertificate(
-                        orderNumber = 1,
+                        certificateNumber = "1",
+                        orderNumber = "1",
                         status = TransferStatus.RECEIVED,
                         comment = "RECEIVED"
                     ),
                     TransferCertificate(
-                        orderNumber = 2,
+                        certificateNumber = "2",
+                        orderNumber = "2",
                         status = TransferStatus.DELIVERED,
                         comment = "DELIVERED"
                     )
@@ -126,9 +130,9 @@ class StoreServiceTest @Autowired constructor(
         // then
         assertThat(actual).hasSize(2)
         assertThat(actual[0].status).isEqualTo(TransferStatusDTO.RECEIVED)
-        assertThat(actual[0].orderNumber).isEqualTo(1)
+        assertThat(actual[0].orderNumber).isEqualTo("1")
         assertThat(actual[1].status).isEqualTo(TransferStatusDTO.DELIVERED)
-        assertThat(actual[1].orderNumber).isEqualTo(2)
+        assertThat(actual[1].orderNumber).isEqualTo("2")
     }
 
     @Test
@@ -141,16 +145,16 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         val accountancyResponse = listOf(
-            ItemDTO(productId = 1, quantity = 2),
-            ItemDTO(productId = 2, quantity = 3),
+            ItemDTO(productNumber = "1", quantity = 2),
+            ItemDTO(productNumber = "2", quantity = 3),
         )
 
         // and
-        val orderId: Long = 1
+        val orderNumber= "1"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -165,11 +169,11 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productRequest = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 2
             ),
             DeliverProductsQuantityRequest(
-                id = 2,
+                productNumber = "2",
                 quantity = 3
             )
         )
@@ -177,12 +181,12 @@ class StoreServiceTest @Autowired constructor(
         //and
         val productResponse = listOf(
             DeliverProductsResponse(
-                id = 1L,
+                productNumber = "1",
                 quantity = 5,
                 updatedAt = LocalDateTime.now()
             ),
             DeliverProductsResponse(
-                id = 2,
+                productNumber = "2",
                 quantity = 10,
                 updatedAt = LocalDateTime.now()
             )
@@ -215,18 +219,20 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 quantity = 10
             ),
             ProductDetailsResponse(
-                productNumber = 2,
+                productNumber = "2",
                 quantity = 20
             ),
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}&ids=${productDetailsResponse[1].productNumber}")
+            WireMock.get("/api/v1/products/details?" +
+                    "productNumbers=${productDetailsResponse[0].productNumber}&" +
+                    "productNumbers=${productDetailsResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -242,12 +248,12 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val transferCertificate = transactionTemplate.execute {
-            storeService.deliverProducts(orderId)
+            storeService.deliverProducts(orderNumber)
         }.get()
 
         // then
         assertThat(transferCertificate.certificateNumber).isNotNull
-        assertThat(transferCertificate.orderNumber).isEqualTo(orderId)
+        assertThat(transferCertificate.orderNumber).isEqualTo(orderNumber)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 
@@ -260,7 +266,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // given
-        val orderId: Long = 1
+        val orderId = "1"
 
         // when
         val exception = assertThrows<AccountancyServerResponseException> {
@@ -281,16 +287,16 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         val accountancyResponse = listOf(
-            ItemDTO(productId = 3, quantity = 2),
-            ItemDTO(productId = 4, quantity = 3),
+            ItemDTO(productNumber = "3", quantity = 2),
+            ItemDTO(productNumber = "4", quantity = 3),
         )
 
         // and
-        val orderId: Long = 1
+        val orderNumber = "1"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -305,18 +311,20 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 3,
+                productNumber = "3",
                 quantity = 10
             ),
             ProductDetailsResponse(
-                productNumber = 4,
+                productNumber = "4",
                 quantity = 20
             ),
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}&ids=${productDetailsResponse[1].productNumber}")
+            WireMock.get("/api/v1/products/details?" +
+                    "productNumbers=${productDetailsResponse[0].productNumber}" +
+                    "&productNumbers=${productDetailsResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -332,7 +340,7 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<ProductServerResponseException> {
-            storeService.deliverProducts(orderId)
+            storeService.deliverProducts(orderNumber)
         }
 
         // then
@@ -349,16 +357,16 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         val accountancyResponse = listOf(
-            ItemDTO(productId = 1, quantity = 2),
-            ItemDTO(productId = 2, quantity = 3),
+            ItemDTO(productNumber = "1", quantity = 2),
+            ItemDTO(productNumber = "2", quantity = 3),
         )
 
         // and
-        val orderId: Long = 1
+        val orderNumber = "1"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/${orderNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -373,12 +381,12 @@ class StoreServiceTest @Autowired constructor(
         //and
         val productResponse = listOf(
             DeliverProductsResponse(
-                id = 1L,
+                productNumber = "1",
                 quantity = 5,
                 updatedAt = LocalDateTime.now()
             ),
             DeliverProductsResponse(
-                id = 2,
+                productNumber = "2",
                 quantity = 10,
                 updatedAt = LocalDateTime.now()
             )
@@ -393,7 +401,7 @@ class StoreServiceTest @Autowired constructor(
                     EqualToPattern(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(listOf(1, 2))
+                            .writeValueAsString(listOf("1", "2"))
                     )
                 )
                 .willReturn(
@@ -410,12 +418,12 @@ class StoreServiceTest @Autowired constructor(
 
         // when
         val transferCertificate = transactionTemplate.execute {
-            storeService.receiveProduct(orderId)
+            storeService.receiveProduct(orderNumber)
         }.get()
 
         // then
         assertThat(transferCertificate.certificateNumber).isNotNull
-        assertThat(transferCertificate.orderNumber).isEqualTo(orderId)
+        assertThat(transferCertificate.orderNumber).isEqualTo(orderNumber)
         assertThat(transferCertificate.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }
 
@@ -428,7 +436,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // and
-        val orderId: Long = 3
+        val orderId = "3"
 
         // when
         val exception = assertThrows<AccountancyServerResponseException> {
@@ -449,16 +457,16 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         val accountancyResponse = listOf(
-            ItemDTO(productId = 5, quantity = 2),
-            ItemDTO(productId = 6, quantity = 3),
+            ItemDTO(productNumber = "5", quantity = 2),
+            ItemDTO(productNumber = "6", quantity = 3),
         )
 
         // and
-        val orderId: Long = 3
+        val orderNumber = "3"
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/invoice/details/order-id/${orderId}")
+            WireMock.get("/api/v1/accountancy/invoice/details/order-number/${orderNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -471,7 +479,7 @@ class StoreServiceTest @Autowired constructor(
         )
         // when
         val exception = assertThrows<ProductServerResponseException> {
-            storeService.receiveProduct(orderId)
+            storeService.receiveProduct(orderNumber)
         }
 
         // then
@@ -485,11 +493,11 @@ class StoreServiceTest @Autowired constructor(
         // given
         val products = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 2
             ),
             DeliverProductsQuantityRequest(
-                id = 2,
+                productNumber = "2",
                 quantity = 3
             )
         )
@@ -497,18 +505,18 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 quantity = 10
             ),
             ProductDetailsResponse(
-                productNumber = 2,
+                productNumber = "2",
                 quantity = 15
             )
         )
 
         //and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -536,11 +544,11 @@ class StoreServiceTest @Autowired constructor(
         // given
         val products = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 2
             ),
             DeliverProductsQuantityRequest(
-                id = 2,
+                productNumber = "2",
                 quantity = 3
             )
         )
@@ -548,18 +556,18 @@ class StoreServiceTest @Autowired constructor(
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 quantity = 0
             ),
             ProductDetailsResponse(
-                productNumber = 2,
+                productNumber = "2",
                 quantity = 0
             )
         )
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -589,13 +597,13 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // given
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // when
         val actual = storeService.checkTransfer(orderNumber)
 
         // then
-        assertThat(orderNumber).isEqualTo(actual)
+        assertThat(actual.orderNumber).isEqualTo(orderNumber)
     }
 
     @Test
@@ -607,7 +615,7 @@ class StoreServiceTest @Autowired constructor(
         }
 
         // given
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // and
         transactionTemplate.execute {

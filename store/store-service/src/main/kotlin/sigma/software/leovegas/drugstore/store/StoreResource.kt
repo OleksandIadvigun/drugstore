@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
+import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
 @RestController
 @RequestMapping("/api/v1/store")
@@ -31,16 +32,16 @@ class StoreResource(private val storeService: StoreService) {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/transfer-certificate/order/{orderNumber}")
-    fun getTransferCertificateByOrderNumber(@PathVariable("orderNumber") orderNumber: Long) =
-        storeService.getTransferCertificatesByOrderId(orderNumber)
+    fun getTransferCertificateByOrderNumber(@PathVariable("orderNumber") orderNumber: String) =
+        storeService.getTransferCertificatesByOrderNumber(orderNumber)
 
     @PutMapping("/receive")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun receiveProducts(@RequestBody orderNumber: Long) = storeService.receiveProduct(orderNumber)
+    fun receiveProducts(@RequestBody orderNumber: String) = storeService.receiveProduct(orderNumber)
 
     @PutMapping("/deliver")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    fun deliverProducts(@RequestBody orderNumber: Long) = storeService.deliverProducts(orderNumber)
+    fun deliverProducts(@RequestBody orderNumber: String) = storeService.deliverProducts(orderNumber)
 
     @PutMapping("/availability")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -49,8 +50,9 @@ class StoreResource(private val storeService: StoreService) {
 
     @GetMapping("/check-transfer/{orderNumber}")
     @ResponseStatus(HttpStatus.OK)
-    fun checkTransfer(@PathVariable orderNumber: Long) =
-        storeService.checkTransfer(orderNumber)
+    fun checkTransfer(@PathVariable orderNumber: String) :CheckStatusResponse {
+       return storeService.checkTransfer(orderNumber)
+    }
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {

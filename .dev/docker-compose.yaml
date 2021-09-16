@@ -4,7 +4,21 @@ networks:
     name: drugstore
     driver: bridge
 services:
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    environment:
+#      - RABBITMQ_CONFIG_FILE=/etc/rabbitmq/rabbitmq.conf
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log [{console,[{level,debug}]}]
+    ports:
+      - "5672:5672"
+      - "15672:15672"
   db_product:
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
     container_name: db_product
     image: mysql:8.0.26
     restart: on-failure
@@ -16,10 +30,10 @@ services:
     ports: [ '13008:3306' ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 9
-      timeout: 20s
-      interval: 5s
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      retries: 20
+      timeout: 40s
+      interval: 10s
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
   product-service:
     container_name: product
     restart: on-failure
@@ -33,6 +47,11 @@ services:
       db_product:
         condition: service_healthy
   db_order:
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
     container_name: db_order
     image: mysql:8.0.26
     restart: on-failure
@@ -44,10 +63,10 @@ services:
     ports: [ "13017:3306" ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 9
-      timeout: 20s
-      interval: 5s
-      test:  ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      retries: 20
+      timeout: 40s
+      interval: 10s
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
   order-service:
     container_name: order
     image: drugstore/order-service
@@ -61,6 +80,11 @@ services:
       db_order:
         condition: service_healthy
   db_store:
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
     container_name: db_store
     image: mysql:8.0.26
     restart: on-failure
@@ -72,10 +96,10 @@ services:
     ports: [ "13029:3306" ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 9
-      timeout: 20s
-      interval: 5s
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      retries: 20
+      timeout: 40s
+      interval: 10s
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
   store-service:
     container_name: store
     restart: on-failure
@@ -89,6 +113,11 @@ services:
       db_store:
         condition: service_healthy
   db_accountancy:
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
     container_name: db_accountancy
     image: mysql:8.0.26
     restart: on-failure
@@ -100,10 +129,10 @@ services:
     ports: [ "13020:3306" ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 9
-      timeout: 20s
-      interval: 5s
-      test:  ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      retries: 20
+      timeout: 40s
+      interval: 10s
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
   accountancy-service:
     container_name: accountancy
     restart: on-failure
@@ -114,5 +143,7 @@ services:
     ports: [ '8084:8084' ]
     networks: [ drugstore ]
     depends_on:
+      rabbitmq:
+        condition: service_started
       db_accountancy:
         condition: service_healthy

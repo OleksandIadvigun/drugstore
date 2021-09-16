@@ -30,21 +30,13 @@ include::{snippets}/receive-products/http-request.adoc[]
 .ProductResponse
 include::{snippets}/receive-products/http-response.adoc[]
 
-== Return products
-
-.ProductIds
-include::{snippets}/return-products/http-request.adoc[]
-
-.ProductResponse
-include::{snippets}/return-products/http-response.adoc[]
-
-== Get product details By Ids
+== Get product details By Product Numbers
 
 .Request
-include::{snippets}/get-products-details-by-ids/http-request.adoc[]
+include::{snippets}/get-products-details-by-product-numbers/http-request.adoc[]
 
 .ProductResponse
-include::{snippets}/get-products-details-by-ids/http-response.adoc[]
+include::{snippets}/get-products-details-by-product-numbers/http-response.adoc[]
 
 == Get products
 

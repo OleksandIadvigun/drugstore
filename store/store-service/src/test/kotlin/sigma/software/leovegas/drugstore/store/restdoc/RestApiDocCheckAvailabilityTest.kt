@@ -29,36 +29,35 @@ class RestApiDocCheckAvailabilityTest @Autowired constructor(
         // given
         val products = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 2
             ),
             DeliverProductsQuantityRequest(
-                id = 2,
+                productNumber = "2",
                 quantity = 3
             )
         )
 
         val body = objectMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(
-                products
-            )
+            .writeValueAsString(products)
 
         // and
         val productResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 quantity = 10
             ),
             ProductDetailsResponse(
-                productNumber = 2,
+                productNumber = "2",
                 quantity = 15
             )
         )
 
         //and
         stubFor(
-            get("/api/v1/products/details?ids=${productResponse[0].productNumber}&ids=${productResponse[1].productNumber}")
+            get("/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
+                    "productNumbers=${productResponse[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -80,7 +79,7 @@ class RestApiDocCheckAvailabilityTest @Autowired constructor(
             .then()
             .assertThat().statusCode(202)
             .assertThat().body("size()", `is`(2))
-            .assertThat().body("[0].id", `is`(1))
-            .assertThat().body("[1].id", `is`(2))
+            .assertThat().body("[0].productNumber", `is`("1"))
+            .assertThat().body("[1].productNumber", `is`("2"))
     }
 }

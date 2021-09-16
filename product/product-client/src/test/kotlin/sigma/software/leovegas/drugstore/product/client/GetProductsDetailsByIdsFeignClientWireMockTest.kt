@@ -31,7 +31,7 @@ class GetProductsDetailsByIdsFeignClientWireMockTest @Autowired constructor(
 
         val responseExpected = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 name = "test1",
                 quantity = 1,
                 price = BigDecimal.ONE
@@ -40,7 +40,7 @@ class GetProductsDetailsByIdsFeignClientWireMockTest @Autowired constructor(
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=1")
+            get("/api/v1/products/details?productNumbers=1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -55,11 +55,11 @@ class GetProductsDetailsByIdsFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = productClient.getProductsDetailsByIds(listOf(1L))
+        val responseActual = productClient.getProductsDetailsByProductNumbers(listOf("1"))
 
         //  then
         assertThat(responseActual.size).isEqualTo(1)
-        assertThat(responseActual[0].productNumber).isEqualTo(1)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
         assertThat(responseActual[0].name).isEqualTo("test1")
         assertThat(responseActual[0].price).isEqualTo(BigDecimal.ONE)
         assertThat(responseActual[0].quantity).isEqualTo(1)

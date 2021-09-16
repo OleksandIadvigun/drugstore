@@ -3,6 +3,7 @@ package sigma.software.leovegas.drugstore.accountancy
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
@@ -10,6 +11,7 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,6 +37,7 @@ import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
+import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
 @DisplayName("Accountancy Resource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -66,14 +69,14 @@ class AccountancyResourceTest @Autowired constructor(
         // and
         val invoiceRequest = listOf(
             ItemDTO(
-                productId = 1L,
+                productNumber = "1",
                 quantity = 2,
             )
         )
 
         val productsDetails = listOf(
             ProductDetailsResponse(
-                productNumber = 1L,
+                productNumber = "1",
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 3,
@@ -81,7 +84,7 @@ class AccountancyResourceTest @Autowired constructor(
         )
 
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=${invoiceRequest[0].productId}")
+            WireMock.get("/api/v1/products/details?productNumbers=${invoiceRequest[0].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -104,7 +107,7 @@ class AccountancyResourceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
-                                    mapOf(Pair(1, BigDecimal("40.00")))
+                                    mapOf(Pair("1", BigDecimal("40.00")))
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())
@@ -113,7 +116,7 @@ class AccountancyResourceTest @Autowired constructor(
         )
 
         val httpEntity = HttpEntity(
-            CreateOutcomeInvoiceRequest(invoiceRequest, 1L)
+            CreateOutcomeInvoiceRequest(invoiceRequest, "1")
         )
 
         // when
@@ -125,13 +128,15 @@ class AccountancyResourceTest @Autowired constructor(
         )
 
         // then
-        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
 
         // and
         val body = response.body.get("body")
         assertThat(body.amount).isEqualTo(BigDecimal("160.00"))
+        assertThat(body.orderNumber).isEqualTo("1")
     }
 
+    @Disabled
     @Test
     fun `should create income invoice`() {
 
@@ -171,13 +176,13 @@ class AccountancyResourceTest @Autowired constructor(
 
         val productsDetails = listOf(
             ProductDetailsResponse(
-                productNumber = 1L,
+                productNumber = "1",
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 1,
             ),
             ProductDetailsResponse(
-                productNumber = 2L,
+                productNumber = "2",
                 name = "test2",
                 price = BigDecimal("20.00"),
                 quantity = 2,
@@ -218,16 +223,21 @@ class AccountancyResourceTest @Autowired constructor(
         // then
         val body = response.body.get("body")
         assertThat(body.amount).isEqualTo(BigDecimal("60.00"))
+        assertThat(body.orderNumber).isNotEqualTo("undefined")
     }
 
     @Test
-    fun `should get invoice by id`() {
+    fun `should get invoice by invoice number`() {
+
+        // setup
+        transactionalTemplate.execute { invoiceRepository.deleteAll() }
 
         // given
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderNumber = 1L,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
@@ -242,7 +252,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/invoice/${savedInvoice.id}",
+            "$baseUrl/api/v1/accountancy/invoice/${savedInvoice.invoiceNumber}",
             GET,
             null,
             respTypeRef<ConfirmOrderResponse>()
@@ -258,7 +268,7 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get invoice details by order id`() {
+    fun `should get invoice details by order number`() {
 
         // given
         transactionalTemplate.execute {
@@ -269,13 +279,14 @@ class AccountancyResourceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
+                    invoiceNumber = "1",
                     status = InvoiceStatus.PAID,
                     type = InvoiceType.OUTCOME,
-                    orderNumber = 1L,
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 3
                         )
                     )
@@ -285,7 +296,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/invoice/details/order-id/${savedInvoice.orderNumber}",
+            "$baseUrl/api/v1/accountancy/invoice/details/order-number/${savedInvoice.orderNumber}",
             GET,
             null,
             respTypeRef<List<ItemDTO>>()
@@ -296,7 +307,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body[0].productId).isEqualTo(savedInvoice.productItems.iterator().next().productId)
+        assertThat(body[0].productNumber).isEqualTo(savedInvoice.productItems.iterator().next().productNumber)
         assertThat(body[0].quantity).isEqualTo(savedInvoice.productItems.iterator().next().quantity)
     }
 
@@ -312,12 +323,13 @@ class AccountancyResourceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderNumber = 1L,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
                         ProductItem(
-                            productId = 1L,
+                            productNumber = "1",
                             name = "test",
                             price = BigDecimal("30"),
                             quantity = 3
@@ -335,7 +347,7 @@ class AccountancyResourceTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(savedInvoice.orderNumber)
+                                .writeValueAsString(CheckStatusResponse(savedInvoice.orderNumber))
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
@@ -370,12 +382,13 @@ class AccountancyResourceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderNumber = 1L,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.CREATED,
                     productItems = setOf(
                         ProductItem(
-                            productId = 1L,
+                            productNumber = "1",
                             name = "test",
                             price = BigDecimal("30"),
                             quantity = 3
@@ -408,7 +421,7 @@ class AccountancyResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should cancel invoice by id`() {
+    fun `should cancel invoice by order number`() {
 
         // given
         transactionalTemplate.execute {
@@ -424,11 +437,12 @@ class AccountancyResourceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderNumber = 1L,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     productItems = setOf(
                         ProductItem(
-                            productId = 1L,
+                            productNumber = "1",
                             name = "test",
                             price = BigDecimal("30"),
                             quantity = 3
@@ -468,7 +482,7 @@ class AccountancyResourceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
-                                    mapOf(Pair(1, BigDecimal("1.23")), Pair(2, BigDecimal("1.24")))
+                                    mapOf(Pair("1", BigDecimal("1.23")), Pair("2", BigDecimal("1.24")))
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())
@@ -478,10 +492,10 @@ class AccountancyResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/accountancy/sale-price?ids=1&ids=2",
+            "$baseUrl/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2",
             GET,
             null,
-            respTypeRef<Map<Long, BigDecimal>>()
+            respTypeRef<Map<String, BigDecimal>>()
         )
 
         // then
@@ -489,7 +503,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body[1]).isEqualTo(BigDecimal("2.46"))
-        assertThat(body[2]).isEqualTo(BigDecimal("2.48"))
+        assertThat(body["1"]).isEqualTo(BigDecimal("2.46"))
+        assertThat(body["2"]).isEqualTo(BigDecimal("2.48"))
     }
 }

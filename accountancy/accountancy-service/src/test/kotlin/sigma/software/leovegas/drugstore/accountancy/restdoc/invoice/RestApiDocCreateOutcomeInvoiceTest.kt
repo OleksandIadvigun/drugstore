@@ -42,14 +42,14 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
         // and
         val invoiceRequest = listOf(
             ItemDTO(
-                productId = 1L,
+                productNumber = "1",
                 quantity = 2,
             )
         )
 
         val productsDetails = listOf(
             ProductDetailsResponse(
-                productNumber = 1L,
+                productNumber = "1",
                 name = "test1",
                 price = BigDecimal("20.00"),
                 quantity = 3,
@@ -57,7 +57,7 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
         )
 
         stubFor(
-            get("/api/v1/products/details?ids=${invoiceRequest[0].productId}")
+            get("/api/v1/products/details?productNumbers=${invoiceRequest[0].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -80,7 +80,7 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
-                                    mapOf(Pair(1, BigDecimal("40.00")))
+                                    mapOf(Pair("1", BigDecimal("40.00")))
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())
@@ -90,7 +90,7 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
 
         val body = objectMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(CreateOutcomeInvoiceRequest(invoiceRequest, 1))
+            .writeValueAsString(CreateOutcomeInvoiceRequest(invoiceRequest, "1"))
 
         of("create-outcome-invoice").`when`()
             .body(body)
@@ -99,6 +99,6 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
             .then()
             .assertThat().statusCode(201)
             .assertThat().body("amount", equalTo(160.0F))
-            .assertThat().body("orderNumber", equalTo(1))
+            .assertThat().body("orderNumber", equalTo("1"))
     }
 }

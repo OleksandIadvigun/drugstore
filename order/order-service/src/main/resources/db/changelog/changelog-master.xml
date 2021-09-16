@@ -15,6 +15,9 @@
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
+            <column name="order_number" type="VARCHAR(150)" >
+                <constraints unique="true"/>
+            </column>
             <column name="order_status" type="VARCHAR(15)"/>
             <column name="created_at" type="TIMESTAMP"/>
             <column name="updated_at" type="TIMESTAMP"/>
@@ -28,7 +31,7 @@
             <column name="order_id" type="BIGINT">
                 <constraints foreignKeyName="fk_order_id" references="orders(id)"/>
             </column>
-            <column name="product_id" type="BIGINT">
+            <column name="product_number" type="VARCHAR(150)">
             </column>
             <column name="quantity" type="INT"/>
         </createTable>

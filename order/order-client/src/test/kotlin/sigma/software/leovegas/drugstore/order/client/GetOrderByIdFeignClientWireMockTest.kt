@@ -21,7 +21,7 @@ import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.CREATED
 @SpringBootApplication
 internal class GetOrderByIdFeignClientWireMockTestApp
 
-@DisplayName("Get Order By Id Feign Client WireMock test")
+@DisplayName("Get Order By Number Feign Client WireMock test")
 @ContextConfiguration(classes = [GetOrderByIdFeignClientWireMockTestApp::class])
 class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
     val orderClient: OrderClient,
@@ -29,16 +29,16 @@ class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
 ) : WireMockTest() {
 
     @Test
-    fun `should get order by id`() {
+    fun `should get order by order number`() {
 
 
         // given
         val responseExpected = OrderResponse(
-            orderNumber = 1L,
+            orderNumber = "1",
             orderStatus = CREATED,
             orderItems = listOf(
                 OrderItemDTO(
-                    productNumber = 1,
+                    productNumber = "1",
                     quantity = 2
                 )
             ),
@@ -62,17 +62,17 @@ class GetOrderByIdFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = orderClient.getOrderById(1L)
+        val responseActual = orderClient.getOrderById("1")
 
         //  then
-        assertThat(responseActual.orderNumber).isEqualTo(1L)
+        assertThat(responseActual.orderNumber).isEqualTo("1")
         assertThat(responseActual.orderStatus).isEqualTo(CREATED)
         assertThat(responseActual.createdAt).isBefore(LocalDateTime.now())
         assertThat(responseActual.updatedAt).isBefore(LocalDateTime.now())
         assertThat(responseActual.orderItems).hasSize(1)
 
         // and
-        assertThat(responseActual.orderItems.iterator().next().productNumber).isEqualTo(1L)
+        assertThat(responseActual.orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(2)
     }
 }

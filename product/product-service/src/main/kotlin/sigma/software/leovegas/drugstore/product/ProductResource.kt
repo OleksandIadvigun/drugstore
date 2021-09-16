@@ -23,7 +23,6 @@ import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
-import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @RestController
@@ -34,7 +33,7 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(OK)
     @GetMapping("/{productNumbers}/price")
-    fun getProductPrice(@PathVariable("productNumbers") productNumbers: List<Long>): Map<Long, BigDecimal> =
+    fun getProductPrice(@PathVariable("productNumbers") productNumbers: List<String>): Map<String, BigDecimal> =
         service.getProductPrice(productNumbers)
 
     @ResponseStatus(CREATED)
@@ -65,16 +64,13 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/receive")
-    fun receiveProducts(@RequestBody ids: List<Long>) = service.receiveProducts(ids)
-
-    @ResponseStatus(ACCEPTED)
-    @PutMapping("/return")
-    fun returnProducts(@RequestBody products: List<ReturnProductQuantityRequest>) = service.returnProducts(products)
+    fun receiveProducts(@RequestBody productNumbers: List<String>) = service.receiveProducts(productNumbers)
 
     @ResponseStatus(OK)
     @GetMapping("/details")
-    fun getProductsDetailsByIds(@RequestParam("ids") ids: List<Long>): List<ProductDetailsResponse> {
-        return service.getProductsDetailsByIds(ids)
+    fun getProductsDetailsByIds(@RequestParam("productNumbers") productNumbers: List<String>)
+    : List<ProductDetailsResponse> {
+        return service.getProductsDetailsByProductNumbers(productNumbers)
     }
 
     @ExceptionHandler(Throwable::class)

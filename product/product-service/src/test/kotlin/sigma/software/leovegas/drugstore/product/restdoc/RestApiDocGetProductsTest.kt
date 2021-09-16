@@ -44,18 +44,21 @@ class RestApiDocGetProductsTest @Autowired constructor(
             productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "test",
                         price = BigDecimal("20.00"),
                         quantity = 5,
                         status = ProductStatus.RECEIVED,
                     ),
                     Product(
+                        productNumber = "2",
                         name = "test2",
                         price = BigDecimal("30.00"),
                         quantity = 3,
                         status = ProductStatus.RECEIVED,
                     ),
                     Product(
+                        productNumber = "3",
                         name = "test3",
                         price = BigDecimal("10.00"),
                         quantity = 7,
@@ -74,7 +77,9 @@ class RestApiDocGetProductsTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(mapOf(savedProducts[1].id to 5, savedProducts[0].id to 1))
+                                .writeValueAsString(mapOf(
+                                    savedProducts[1].productNumber to 5,
+                                    savedProducts[0].productNumber to 1))
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -83,7 +88,8 @@ class RestApiDocGetProductsTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=${savedProducts[0].id}&ids=${savedProducts[1].id}")
+            WireMock.get("/api/v1/accountancy/sale-price?" +
+                    "productNumbers=${savedProducts[0].productNumber}&productNumbers=${savedProducts[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -92,8 +98,8 @@ class RestApiDocGetProductsTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(savedProducts[1].id, BigDecimal("100.00")),
-                                        Pair(savedProducts[0].id, BigDecimal("20.00"))
+                                        Pair(savedProducts[1].productNumber, BigDecimal("100.00")),
+                                        Pair(savedProducts[0].productNumber, BigDecimal("20.00"))
                                     )
                                 )
                         )

@@ -19,17 +19,17 @@ interface AccountancyClient {
     fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): ConfirmOrderResponse
 
     @RequestLine("PUT /api/v1/accountancy/invoice/pay/{orderNumber}")
-    fun payInvoice(@Param orderNumber: Long, money: BigDecimal): ConfirmOrderResponse
+    fun payInvoice(@Param orderNumber: String, money: BigDecimal): ConfirmOrderResponse
 
     @RequestLine("PUT /api/v1/accountancy/invoice/cancel/{orderNumber}")
-    fun cancelInvoice(@Param orderNumber: Long): ConfirmOrderResponse
+    fun cancelInvoice(@Param orderNumber: String): ConfirmOrderResponse
 
     @RequestLine("PUT /api/v1/accountancy/invoice/refund/{orderNumber}")
-    fun refundInvoice(@Param orderNumber: Long): ConfirmOrderResponse
+    fun refundInvoice(@Param orderNumber: String): ConfirmOrderResponse
 
-    @RequestLine("GET /api/v1/accountancy/invoice/details/order-id/{orderNumber}")
-    fun getInvoiceDetailsByOrderNumber(@Param orderNumber: Long): List<ItemDTO>
+    @RequestLine("GET /api/v1/accountancy/invoice/details/order-number/{orderNumber}")
+    fun getInvoiceDetailsByOrderNumber(@Param orderNumber: String): List<ItemDTO>
 
-    @RequestLine("GET /api/v1/accountancy/sale-price?ids={ids}")
-    fun getSalePrice(@Param ids: List<Long>): Map<Long, BigDecimal>
+    @RequestLine("GET /api/v1/accountancy/sale-price?productNumbers={productNumbers}")
+    fun getSalePrice(@Param productNumbers: List<String>): Map<String, BigDecimal>
 }

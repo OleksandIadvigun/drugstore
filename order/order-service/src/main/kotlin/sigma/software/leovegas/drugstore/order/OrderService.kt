@@ -2,6 +2,7 @@ package sigma.software.leovegas.drugstore.order
 
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.UUID
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,21 +35,25 @@ class OrderService @Autowired constructor(
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(OrderService::class.java)
-
     fun createOrder(createOrderRequest: CreateOrderRequest): OrderResponse =
         createOrderRequest.validate().run {
-            val entity = toEntity().copy(orderStatus = CREATED) // NOTE: business logic must be placed in services!
+            val entity = toEntity().copy(
+                orderStatus = CREATED,
+                orderNumber = UUID.randomUUID().toString()
+            ) // NOTE: business logic must be placed in services!
             val created = orderRepository.save(entity).toOrderResponseDTO()
             logger.info("Order created $created")
             return@run created
         }
 
-    fun getOrderById(id: Long): OrderResponse = id.validate(orderRepository::findById).run {
+    fun getOrderByOrderNumber(orderNumber: String): OrderResponse =
+        orderNumber.validate(orderRepository::findByOrderNumber).run {
         logger.info("Order found $this")
         return@run this.toOrderResponseDTO()
     }
 
-    fun getOrdersByStatus(orderStatus: OrderStatusDTO): List<OrderResponse> = orderStatus.run {
+    fun getOrdersByStatus(orderStatus: OrderStatusDTO): List<OrderResponse> =
+        orderStatus.run {
         val orders = orderRepository.getAllByOrderStatus(OrderStatus.valueOf(this.name)).toOrderResponseList()
         logger.info("Orders found by status $orders")
         return@run orders
@@ -61,11 +66,11 @@ class OrderService @Autowired constructor(
         return orders.toOrderResponseList()
     }
 
-    fun updateOrder(id: Long, updateOrderRequest: UpdateOrderRequest): OrderResponse =
+    fun updateOrder(orderNumber: String, updateOrderRequest: UpdateOrderRequest): OrderResponse =
         updateOrderRequest.validate().run {
             val toUpdate = orderRepository
-                .findById(id)
-                .orElseThrow { OrderNotFoundException(id) }
+                .findByOrderNumber(orderNumber)
+                .orElseThrow { OrderNotFoundException(orderNumber) }
                 .copy(
                     orderStatus = UPDATED, // NOTE: business logic must be placed in services!
                     orderItems = orderItems.toEntities(),
@@ -75,22 +80,21 @@ class OrderService @Autowired constructor(
             updated.toOrderResponseDTO()
         }
 
-    fun changeOrderStatus(id: Long, orderStatus: OrderStatusDTO) =
-        id.validate(orderRepository::findById).run {
+    fun changeOrderStatus(orderNumber: String, orderStatus: OrderStatusDTO) =
+        orderNumber.validate(orderRepository::findByOrderNumber).run {
             val orderToUpdate = this.copy(orderStatus = OrderStatus.valueOf(orderStatus.name))
             val updatedOrder = orderRepository.saveAndFlush(orderToUpdate)
             logger.info("Order with changed status $updatedOrder")
             return@run updatedOrder.toOrderResponseDTO()
         }
 
-    fun getOrderDetails(id: Long) =
-        id.validate(orderRepository::findById).run {
-            if (this.orderStatus == OrderStatus.NONE) throw OrderNotCreatedException(id)
-
-            val orderItemsQuantity = orderItems.associate { it.productId to it.quantity }
-            val orderItemsIds = orderItems.map { it.productId }
+    fun getOrderDetails(orderNumber: String) =
+        orderNumber.validate(orderRepository::findByOrderNumber).run {
+            if (this.orderStatus == OrderStatus.NONE) throw OrderNotCreatedException(orderNumber)
+            val orderItemsQuantity = orderItems.associate { it.productNumber to it.quantity }
+            val orderItemsIds = orderItems.map { it.productNumber }
             val products = runCatching {
-                productClient.getProductsDetailsByIds(orderItemsIds)
+                productClient.getProductsDetailsByProductNumbers(orderItemsIds)
             }
                 .onFailure { error -> throw ProductServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
@@ -113,6 +117,7 @@ class OrderService @Autowired constructor(
             }
 
             val orderDetails = OrderDetailsDTO(
+                orderNumber = orderNumber,
                 orderItemDetails = orderItemDetails,
                 total = orderItemDetails.map { it.price.multiply(BigDecimal(it.quantity)) }.reduce(BigDecimal::plus)
 
@@ -121,8 +126,8 @@ class OrderService @Autowired constructor(
             return@run orderDetails
         }
 
-    fun confirmOrder(orderId: Long): ConfirmOrderResponse =
-        orderId.validate(orderRepository::findById)
+    fun confirmOrder(orderNumber: String): ConfirmOrderResponse =
+        orderNumber.validate(orderRepository::findByOrderNumber)
             .run {
                 if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
                 if ((orderStatus != CREATED).and(orderStatus != UPDATED)) {
@@ -132,11 +137,12 @@ class OrderService @Autowired constructor(
                     val createOutcomeInvoice = accountancyClient.createOutcomeInvoice(
                         CreateOutcomeInvoiceRequest(
                             orderItems.map {
-                                ItemDTO(productId = it.productId, quantity = it.quantity)
-                            }, orderId
+                                ItemDTO(productNumber = it.productNumber, quantity = it.quantity)
+                            },
+                            orderNumber
                         )
                     )
-                    changeOrderStatus(orderId, OrderStatusDTO.CONFIRMED)
+                    changeOrderStatus(orderNumber, OrderStatusDTO.CONFIRMED)
                     logger.info("Invoice was created $createOutcomeInvoice")
                     createOutcomeInvoice
                 }
@@ -144,12 +150,12 @@ class OrderService @Autowired constructor(
                     .getOrThrow()
             }
 
-    fun getProductsIdToQuantity(): Map<Long, Int> {
-        val ids = orderRepository
+    fun getProductsNumberToQuantity(): Map<String, Int> {
+        val productNumbers = orderRepository
             .getAllByOrderStatus(CONFIRMED)
-            .map { it.orderItems.map { item -> item.id ?: -1 } }
+            .map { it.orderItems.map { item -> item.productNumber } }
             .flatten()
-        logger.info("Sorted list of ids by most buys $ids")
-        return orderRepository.getIdToQuantity(ids).associate { it.priceItemId to it.quantity }
+        logger.info("Sorted list of ids by most buys $productNumbers")
+        return orderRepository.getProductNumberToQuantity(productNumbers).associate { it.productNumber to it.quantity }
     }
 }

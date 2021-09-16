@@ -21,7 +21,6 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
-import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 
 @AutoConfigureTestDatabase
 @DisplayName("Product service test")
@@ -29,7 +28,7 @@ import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityReques
 class ProductServiceTest @Autowired constructor(
     val service: ProductService,
     val transactionTemplate: TransactionTemplate,
-    val repository: ProductRepository,
+    val productRepository: ProductRepository,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
@@ -38,12 +37,12 @@ class ProductServiceTest @Autowired constructor(
 
         // setup
         transactionTemplate.execute {
-            repository.deleteAll()
+            productRepository.deleteAll()
         }
 
         // given
         val product = transactionTemplate.execute {
-            repository.save(
+            productRepository.save(
                 Product(
                     price = BigDecimal.TEN
                 )
@@ -51,28 +50,33 @@ class ProductServiceTest @Autowired constructor(
         }.get()
 
         // and
-        val ids = listOf(product.id)
+        val productNumbers = listOf(product.productNumber)
 
         // when
-        val actual = service.getProductPrice(ids as List<Long>)
+        val actual = service.getProductPrice(productNumbers)
 
         // when
         assertThat(actual).hasSize(1)
-        assertThat(actual.getValue(product.id ?: -1)).isEqualTo(BigDecimal.TEN.setScale(2))
+        assertThat(actual.getValue(product.productNumber)).isEqualTo(BigDecimal.TEN.setScale(2))
     }
 
 
     @Test
     fun `should create product`() {
 
+        // setup
+        transactionTemplate.execute { productRepository.deleteAll() }
+
         // given
         val productRequest = listOf(
             CreateProductRequest(
+                productNumber = "1",
                 name = "test1",
                 quantity = 1,
                 price = BigDecimal.ONE
             ),
             CreateProductRequest(
+                productNumber = "2",
                 name = "test2",
                 quantity = 2,
                 price = BigDecimal.TEN
@@ -99,32 +103,36 @@ class ProductServiceTest @Autowired constructor(
 
         // given
         transactionTemplate.execute {
-            repository.deleteAllInBatch()
+            productRepository.deleteAllInBatch()
         }
 
         // and
-        val ids = transactionTemplate.execute {
-            repository.saveAll(
+        val productNumbers = transactionTemplate.execute {
+            productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "aspirin",
                         quantity = 10,
                         status = ProductStatus.RECEIVED,
                         price = BigDecimal("10.00")
                     ),
                     Product(
+                        productNumber = "2",
                         name = "aspirin2",
                         quantity = 10,
                         status = ProductStatus.RECEIVED,
                         price = BigDecimal("20.00")
                     ),
                     Product(
+                        productNumber = "3",
                         name = "aspirin",
                         quantity = 10,
                         status = ProductStatus.CREATED,
                         price = BigDecimal("30.00")
                     ),
                     Product(
+                        productNumber = "4",
                         name = "some2",
                         quantity = 10,
                         status = ProductStatus.RECEIVED,
@@ -132,10 +140,10 @@ class ProductServiceTest @Autowired constructor(
                     )
                 )
             )
-        }?.map { it.id }.get()
+        }?.map { it.productNumber }.get()
 
         //and
-        val responseExpected = mapOf(ids[2] to 9, ids[1] to 5, ids[0] to 1)
+        val responseExpected = mapOf(productNumbers[2] to 9, productNumbers[1] to 5, productNumbers[0] to 1)
 
         // and
         stubFor(
@@ -155,7 +163,8 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=${ids[0]}&ids=${ids[1]}")
+            WireMock.get("/api/v1/accountancy/sale-price?" +
+                    "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -164,7 +173,8 @@ class ProductServiceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(ids[1], BigDecimal("40.00")), Pair(ids[0], BigDecimal("20.00"))
+                                        Pair(productNumbers[1], BigDecimal("40.00")),
+                                        Pair(productNumbers[0], BigDecimal("20.00"))
                                     )
                                 )
                         )
@@ -179,8 +189,8 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].productNumber).isEqualTo(ids[1])
-        assertThat(all[1].productNumber).isEqualTo(ids[0])
+        assertThat(all[0].productNumber).isEqualTo(productNumbers[1])
+        assertThat(all[1].productNumber).isEqualTo(productNumbers[0])
         assertThat(all[0].price).isEqualTo(BigDecimal("40.00"))
         assertThat(all[1].price).isEqualTo(BigDecimal("20.00"))
     }
@@ -190,33 +200,36 @@ class ProductServiceTest @Autowired constructor(
 
         // given
         transactionTemplate.execute {
-            repository.deleteAllInBatch()
+            productRepository.deleteAllInBatch()
         }
 
         // and
-
         val saved = transactionTemplate.execute {
-            repository.saveAll(
+            productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "aspirin",
                         price = BigDecimal("10.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "2",
                         name = "aspirin2",
                         price = BigDecimal("50.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "3",
                         name = "aspirin",
                         price = BigDecimal("40.00"),
                         quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
+                        productNumber = "4",
                         name = "some2",
                         price = BigDecimal("30.00"),
                         quantity = 10,
@@ -228,7 +241,8 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=${saved[1].id}&ids=${saved[0].id}")
+            WireMock.get("/api/v1/accountancy/sale-price?" +
+                    "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -237,7 +251,7 @@ class ProductServiceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(saved[0].id, BigDecimal("100.00")), Pair(saved[1].id, BigDecimal("20.00"))
+                                        Pair(saved[0].productNumber, BigDecimal("100.00")), Pair(saved[1].productNumber, BigDecimal("20.00"))
                                     )
                                 )
                         )
@@ -252,9 +266,9 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].productNumber).isEqualTo(saved[1].id)
+        assertThat(all[0].productNumber).isEqualTo(saved[1].productNumber)
         assertThat(all[0].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(all[1].productNumber).isEqualTo(saved[0].id)
+        assertThat(all[1].productNumber).isEqualTo(saved[0].productNumber)
         assertThat(all[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
@@ -263,33 +277,37 @@ class ProductServiceTest @Autowired constructor(
 
         // given
         transactionTemplate.execute {
-            repository.deleteAllInBatch()
+            productRepository.deleteAllInBatch()
         }
 
         // and
 
         val saved = transactionTemplate.execute {
-            repository.saveAll(
+            productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "aspirin",
                         price = BigDecimal("10.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "2",
                         name = "aspirin2",
                         price = BigDecimal("50.00"),
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "3",
                         name = "aspirin",
                         price = BigDecimal("5.00"),
                         quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
+                        productNumber = "4",
                         name = "some2",
                         price = BigDecimal("30.00"),
                         quantity = 10,
@@ -301,7 +319,8 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=${saved[0].id}&ids=${saved[1].id}")
+            WireMock.get("/api/v1/accountancy/sale-price?" +
+                    "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -310,7 +329,8 @@ class ProductServiceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(saved[1].id, BigDecimal("100.00")), Pair(saved[0].id, BigDecimal("20.00"))
+                                        Pair(saved[1].productNumber, BigDecimal("100.00")),
+                                        Pair(saved[0].productNumber, BigDecimal("20.00"))
                                     )
                                 )
                         )
@@ -325,9 +345,9 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].productNumber).isEqualTo(saved[0].id)
+        assertThat(all[0].productNumber).isEqualTo(saved[0].productNumber)
         assertThat(all[0].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(all[1].productNumber).isEqualTo(saved[1].id)
+        assertThat(all[1].productNumber).isEqualTo(saved[1].productNumber)
         assertThat(all[1].price).isEqualTo(BigDecimal("100.00"))
     }
 
@@ -382,30 +402,34 @@ class ProductServiceTest @Autowired constructor(
 
         // given
         transactionTemplate.execute {
-            repository.deleteAllInBatch()
+            productRepository.deleteAllInBatch()
         }
 
         // and
         val saved = transactionTemplate.execute {
-            repository.saveAll(
+            productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "aspirin",
                         quantity = 10,
                         status = ProductStatus.RECEIVED
                     ),
                     Product(
+                        productNumber = "2",
                         name = "aspirin2",
                         quantity = 10,
                         status = ProductStatus.RECEIVED
 
                     ),
                     Product(
+                        productNumber = "3",
                         name = "mostPopular",
                         quantity = 10,
                         status = ProductStatus.CREATED
                     ),
                     Product(
+                        productNumber = "4",
                         name = "some2",
                         quantity = 10,
                         status = ProductStatus.RECEIVED
@@ -415,7 +439,9 @@ class ProductServiceTest @Autowired constructor(
         }.get()
 
         //and
-        val responseExpected = mapOf(saved[2].id to 9, saved[1].id to 5, saved[0].id to 1)
+        val responseExpected = mapOf(
+            saved[2].productNumber to 9, saved[1].productNumber to 5, saved[0].productNumber to 1
+        )
 
         // and
         stubFor(
@@ -439,9 +465,9 @@ class ProductServiceTest @Autowired constructor(
         // then
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
-        assertThat(all[0].productNumber).isEqualTo(saved[1].id)
+        assertThat(all[0].productNumber).isEqualTo(saved[1].productNumber)
         assertThat(all[0].name).isEqualTo("aspirin2")
-        assertThat(all[1].productNumber).isEqualTo(saved[0].id)
+        assertThat(all[1].productNumber).isEqualTo(saved[0].productNumber)
         assertThat(all[1].name).isEqualTo("aspirin")
     }
 
@@ -450,31 +476,33 @@ class ProductServiceTest @Autowired constructor(
 
         // given
         transactionTemplate.execute {
-            repository.deleteAllInBatch()
+            productRepository.deleteAllInBatch()
         }
 
         // and
-        val ids = transactionTemplate.execute {
-            repository.saveAll(
+        val productNumbers = transactionTemplate.execute {
+            productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         status = ProductStatus.RECEIVED,
                         name = "test1",
                         price = BigDecimal("20.00"),
                         quantity = 1
                     ),
                     Product(
+                        productNumber = "2",
                         status = ProductStatus.RECEIVED,
                         name = "test2",
                         price = BigDecimal("30.00"),
                         quantity = 2
                     )
                 )
-            ).map { it.id }
-        }
+            )
+        }?.map { it.productNumber }.get()
 
         // when
-        val products = service.getProductsDetailsByIds(ids as List<Long>)
+        val products = service.getProductsDetailsByProductNumbers(productNumbers)
 
         // then
         assertThat(products).hasSize(2)
@@ -490,10 +518,14 @@ class ProductServiceTest @Autowired constructor(
     @Test
     fun `should deliver products`() {
 
+        // setup
+        transactionTemplate.execute { productRepository.deleteAll() }
+
         // given
         val saved = transactionTemplate.execute {
-            repository.save(
+            productRepository.save(
                 Product(
+                    productNumber = "1",
                     name = "test",
                     quantity = 10
                 )
@@ -502,7 +534,7 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         val updatedProductRequest = DeliverProductsQuantityRequest(
-            id = saved.id ?: -1,
+            productNumber = saved.productNumber,
             quantity = 3
         )
 
@@ -518,10 +550,14 @@ class ProductServiceTest @Autowired constructor(
     @Test
     fun `should not reduce products quantity by if not enough`() {
 
+        // setup
+        transactionTemplate.execute { productRepository.deleteAll() }
+
         // given
         val saved = transactionTemplate.execute {
-            repository.save(
+            productRepository.save(
                 Product(
+                    productNumber = "1",
                     name = "test",
                     quantity = 5
                 )
@@ -533,7 +569,7 @@ class ProductServiceTest @Autowired constructor(
             service.deliverProducts(
                 listOf(
                     DeliverProductsQuantityRequest(
-                        id = saved.id ?: -1,
+                        productNumber = saved.productNumber,
                         quantity = 7
                     )
                 )
@@ -541,7 +577,8 @@ class ProductServiceTest @Autowired constructor(
         }
 
         //then
-        assertThat(exception.message).isEqualTo("Not enough available quantity of product with id: ${saved.id}")
+        assertThat(exception.message)
+            .isEqualTo("Not enough available quantity of product with product number: ${saved.productNumber}")
     }
 
     @Test
@@ -549,8 +586,9 @@ class ProductServiceTest @Autowired constructor(
 
         // given
         val saved = transactionTemplate.execute {
-            repository.save(
+            productRepository.save(
                 Product(
+                    productNumber = "1",
                     name = "test",
                     quantity = 10,
                     status = ProductStatus.CREATED
@@ -559,38 +597,10 @@ class ProductServiceTest @Autowired constructor(
         }.get()
 
         // when
-        val actual = service.receiveProducts(listOf(saved.id ?: -1))
+        val actual = service.receiveProducts(listOf(saved.productNumber))
 
         // then
         assertThat(actual).isNotNull
         assertThat(actual[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
-    }
-
-    @Test
-    fun `should return products`() {
-
-        // given
-        val saved = transactionTemplate.execute {
-            repository.save(
-                Product(
-                    name = "test",
-                    quantity = 10
-                )
-            )
-        }.get()
-
-        // and
-        val updatedProductRequest = ReturnProductQuantityRequest(
-            id = saved.id ?: -1,
-            quantity = 3
-        )
-
-        // when
-        val actual = service.returnProducts(listOf(updatedProductRequest))
-
-        // then
-        assertThat(actual).isNotNull
-        assertThat(actual[0].quantity).isEqualTo(13)  // 10 + 3
-        assertThat(actual[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
     }
 }

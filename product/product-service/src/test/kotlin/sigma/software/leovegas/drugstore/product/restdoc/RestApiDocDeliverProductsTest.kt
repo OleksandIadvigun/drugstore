@@ -36,23 +36,25 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
         }
 
         // and
-        val ids = transactionTemplate.execute {
+        val productNumbers = transactionTemplate.execute {
             productRepository.saveAll(
                 listOf(
                     Product(
+                        productNumber = "1",
                         name = "test1",
                         price = BigDecimal("20.00"),
                         quantity = 5,
                         status = ProductStatus.RECEIVED,
                     ),
                     Product(
+                        productNumber = "2",
                         name = "test2",
                         price = BigDecimal("20.00"),
                         quantity = 3,
                         status = ProductStatus.RECEIVED,
                     )
                 )
-            ).map { it.id ?: -1 }.toList()
+            ).map { it.productNumber}.toList()
         }.get()
 
         // and
@@ -61,11 +63,11 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
             .writeValueAsString(
                 listOf(
                     DeliverProductsQuantityRequest(
-                        id = ids[0],
+                        productNumber = productNumbers[0],
                         quantity = 2
                     ),
                     DeliverProductsQuantityRequest(
-                        id = ids[1],
+                        productNumber = productNumbers[1],
                         quantity = 2
                     )
                 )

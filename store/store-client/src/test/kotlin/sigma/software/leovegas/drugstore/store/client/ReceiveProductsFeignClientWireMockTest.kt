@@ -31,18 +31,17 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
     fun `should receive products`() {
 
         // given
-        val request = 1L
+        val request = "1"
 
         //and
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // and
         val responseExpected = TransferCertificateResponse(
-            certificateNumber = 1,
+            certificateNumber = "1",
             orderNumber = orderNumber,
-            status = TransferStatusDTO.RECEIVED
+            status = TransferStatusDTO.RECEIVED,
         )
-
 
         // and
         stubFor(
@@ -71,7 +70,7 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
         val responseActual = storeClient.receiveProducts(orderNumber)
 
         //  then
-        assertThat(responseActual.certificateNumber).isEqualTo(1)
+        assertThat(responseActual.certificateNumber).isEqualTo("1")
         assertThat(responseActual.orderNumber).isEqualTo(orderNumber)
         assertThat(responseActual.status).isEqualTo(TransferStatusDTO.RECEIVED)
     }

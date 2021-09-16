@@ -20,8 +20,8 @@ data class OrderItem(
     val id: Long? = null,
 
     @NotNull
-    @Column(name = "product_id", nullable = false)
-    val productId: Long = -1L,
+    @Column(name = "product_number", nullable = false)
+    val productNumber: String = "undefined",
 
     @NotNull
     @Min(1)

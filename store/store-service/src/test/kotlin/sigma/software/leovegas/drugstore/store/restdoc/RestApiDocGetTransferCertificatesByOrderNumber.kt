@@ -13,7 +13,7 @@ import sigma.software.leovegas.drugstore.store.TransferCertificate
 import sigma.software.leovegas.drugstore.store.TransferStatus
 
 @DisplayName("Get transfer certificates by order number REST API Doc test")
-class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
+class RestApiDocGetTransferCertificatesByOrderNumber @Autowired constructor(
     @LocalServerPort val port: Int,
     val storeProperties: StoreProperties,
     val storeRepository: StoreRepository,
@@ -28,7 +28,7 @@ class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
             storeRepository.deleteAllInBatch()
         }
 
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // and
         transactionTemplate.execute {
@@ -41,10 +41,10 @@ class RestApiDocGetTransferCertificatesByOrderId @Autowired constructor(
             )
         }.get()
 
-        of("get-transfer-certificates-by-order-id").`when`()
+        of("get-transfer-certificates-by-order-number").`when`()
             .get("http://${storeProperties.host}:$port/api/v1/store/transfer-certificate/order/$orderNumber")
             .then()
             .assertThat().statusCode(200)
-            .assertThat().body("[0].orderNumber", equalTo(1))
+            .assertThat().body("[0].orderNumber", equalTo("1"))
     }
 }

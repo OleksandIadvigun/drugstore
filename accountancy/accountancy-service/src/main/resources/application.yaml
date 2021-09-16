@@ -17,6 +17,33 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5Dialect
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+  cloud:
+    stream:
+      function:
+        definition: consumer
+      binders:
+          environment:
+            spring:
+              rabbitmq:
+                host: rabbitmq
+                port: 5672
+                username: guest
+                password: guest
+      bindings:
+        consumer-in-0:
+          destination: accountancy_channel
+          content-type: application/json
+          group: ${spring.application.name}@accountancy_channel
+          consumer:
+            bind-queue: true
+            requeue-rejected: false
+            queue-name-group-only: true
+          binder: rabbit
+      rabbit:
+        bindings:
+          consumer-in-0:
+            consumer:
+              binding-routing-key: signup.completed
 product:
   host: ${PRODUCT_HOST:product}
   port: ${PRODUCT_PORT:8081}

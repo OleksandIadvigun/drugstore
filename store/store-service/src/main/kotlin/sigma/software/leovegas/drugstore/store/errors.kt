@@ -2,12 +2,12 @@ package sigma.software.leovegas.drugstore.store
 
 open class StoreServiceException(message: String) : RuntimeException(message)
 
-class InsufficientAmountOfProductException(productId: Long, available: Int) : StoreServiceException(
-    "Insufficient amount product with id = $productId. Available only $available items."
+class InsufficientAmountOfProductException(productNumber: String, available: Int) : StoreServiceException(
+    "Insufficient amount product with id = $productNumber. Available only $available items."
 )
 
-class ProductsAlreadyDelivered(orderId: Long) :
-    StoreServiceException("Products from order($orderId) already delivered.")
+class ProductsAlreadyDelivered(orderNumber: String) :
+    StoreServiceException("Products from order($orderNumber) already delivered.")
 
 class AccountancyServerResponseException(message: String) :
     StoreServiceException("Ups... some problems in accountancy service. $message.")

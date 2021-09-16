@@ -11,6 +11,9 @@
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
+            <column name="product_number" type="VARCHAR(150)">
+                <constraints unique="true"/>
+            </column>
             <column name="name" type="VARCHAR(50)"/>
             <column name="status" type="VARCHAR(15)"/>
             <column name="quantity" type="INT"/>

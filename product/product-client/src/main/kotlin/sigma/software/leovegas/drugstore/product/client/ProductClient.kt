@@ -11,8 +11,6 @@ import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
-import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.ReturnProductsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Headers("Content-Type: application/json")
@@ -36,17 +34,14 @@ interface ProductClient {
     fun getPopularProducts(@Param("page") page: Int = 0, @Param("size") size: Int = 5): List<GetProductResponse>
 
     @RequestLine("PUT /api/v1/products/receive")
-    fun receiveProducts(ids: List<Long>): List<ReceiveProductResponse>
+    fun receiveProducts(ids: List<String>): List<ReceiveProductResponse>
 
     @RequestLine("PUT /api/v1/products/deliver")
     fun deliverProducts(products: List<DeliverProductsQuantityRequest>): List<DeliverProductsResponse>
 
-    @RequestLine("GET /api/v1/products/details?ids={ids}")
-    fun getProductsDetailsByIds(@Param ids: List<Long>): List<ProductDetailsResponse>
-
-    @RequestLine("PUT /api/v1/products/return")
-    fun returnProducts(products: List<ReturnProductQuantityRequest>): List<ReturnProductsResponse>
+    @RequestLine("GET /api/v1/products/details?productNumbers={productNumbers}")
+    fun getProductsDetailsByProductNumbers(@Param productNumbers: List<String>): List<ProductDetailsResponse>
 
     @RequestLine("GET /api/v1/products/{productNumber}/price")
-    fun getProductPrice(@Param productNumber: List<Long>): Map<Long, BigDecimal>
+    fun getProductPrice(@Param productNumber: List<String>): Map<String, BigDecimal>
 }

@@ -35,17 +35,23 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
     fun `should get order details`() {
 
         // given
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
+        // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CREATED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                         OrderItem(
-                            productId = 2,
+                            productNumber = "2",
                             quantity = 2
                         )
                     )
@@ -56,13 +62,13 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         // and
         val response = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 name = "test1",
                 quantity = 3,
                 price = BigDecimal.ONE
             ),
             ProductDetailsResponse(
-                productNumber = 2,
+                productNumber = "2",
                 name = "test2",
                 quantity = 4,
                 price = BigDecimal.TEN
@@ -71,7 +77,7 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -85,7 +91,21 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?productNumbers=2&productNumbers=1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(response)
+                        )
+                )
+        )
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -94,7 +114,27 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(1, BigDecimal("40.00")), Pair(2, BigDecimal("60.00"))
+                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
+                                    )
+                                )
+                        )
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?productNumbers=2&productNumbers=1")
+                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .willReturn(
+                    aResponse()
+                        .withBody(
+                            objectMapper
+                                .writerWithDefaultPrettyPrinter()
+                                .writeValueAsString(
+                                    mapOf(
+                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
                                     )
                                 )
                         )
@@ -104,10 +144,11 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         )
 
         of("get-order-details")
-            .pathParam("id", order.id).`when`()
-            .get("http://${orderProperties.host}:$port/api/v1/orders/{id}/details")
+            .pathParam("orderNumber", order.orderNumber).`when`()
+            .get("http://${orderProperties.host}:$port/api/v1/orders/{orderNumber}/details")
             .then()
             .assertThat().statusCode(200)
+            .assertThat().body("orderNumber", equalTo("1"))
             .assertThat().body("orderItemDetails[0].name", equalTo("test1"))
             .assertThat().body("orderItemDetails[0].quantity", equalTo(1))
             .assertThat().body("orderItemDetails[0].price", equalTo(40.00F))

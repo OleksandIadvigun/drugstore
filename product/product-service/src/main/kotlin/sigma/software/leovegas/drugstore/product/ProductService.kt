@@ -13,11 +13,11 @@ import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
-import sigma.software.leovegas.drugstore.product.api.ReturnProductQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Service
 @Transactional
+//@EnableRabbit
 class ProductService(
     private val productRepository: ProductRepository,
     val orderClient: OrderClient,
@@ -38,7 +38,7 @@ class ProductService(
             logger.info("Received products quantity $productsQuantity")
 
             val products = productRepository
-                .findAllByNameContainingAndIdInAndStatusAndQuantityGreaterThan(
+                .findAllByNameContainingAndProductNumberInAndStatusAndQuantityGreaterThan(
                     search,
                     productsQuantity.keys,
                     ProductStatus.RECEIVED,
@@ -49,15 +49,15 @@ class ProductService(
             if (products.isEmpty()) return listOf()
 
             val productsPrice = runCatching {
-                accountancyClient.getSalePrice(products.map { it.id ?: -1 })
+                accountancyClient.getSalePrice(products.map { it.productNumber })
             }
                 .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products price $productsPrice")
 
-            val productForSale = products.map { it.copy(price = productsPrice[it.id] ?: BigDecimal.ZERO) }
+            val productForSale = products.map { it.copy(price = productsPrice[it.productNumber] ?: BigDecimal.ZERO) }
             val index = productsQuantity.keys.withIndex().associate { it.value to it.index }
-            return productForSale.sortedBy { index[it.id] }.toSearchProductResponseList()
+            return productForSale.sortedBy { index[it.productNumber] }.toSearchProductResponseList()
         }
         val pageable: Pageable = PageRequest.of(page, size, SortUtil.getSort(sortField, sortDirection))
         val products = productRepository.findAllByNameContainingAndStatusAndQuantityGreaterThan(
@@ -67,18 +67,17 @@ class ProductService(
         if (products.isEmpty()) return listOf()
 
         val productsPrice = runCatching {
-            accountancyClient.getSalePrice(products.map { it.id ?: -1 })
+            accountancyClient.getSalePrice(products.map { it.productNumber })
         }
             .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received products price $productsPrice")
 
-        val productForSale = products.map { it.copy(price = productsPrice[it.id] ?: BigDecimal.ZERO) }
+        val productForSale = products.map { it.copy(price = productsPrice[it.productNumber] ?: BigDecimal.ZERO) }
         return productForSale.toSearchProductResponseList()
     }
 
-    fun getPopularProducts(page: Int, size: Int):
-            List<GetProductResponse> {
+    fun getPopularProducts(page: Int, size: Int): List<GetProductResponse> {
         val pageableForPopularity: Pageable = PageRequest.of(page, size)
         val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
             .onFailure { error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
@@ -86,7 +85,7 @@ class ProductService(
         logger.info("Received products quantity $productsQuantity")
 
         val products = productRepository
-            .findAllByIdInAndStatusAndQuantityGreaterThan(
+            .findAllByProductNumberInAndStatusAndQuantityGreaterThan(
                 productsQuantity.keys, ProductStatus.RECEIVED, 0, pageableForPopularity
             )
             .map(Product::toGetProductResponse)
@@ -95,9 +94,9 @@ class ProductService(
         return products.sortedBy { index[it.productNumber] }
     }
 
-    fun getProductsDetailsByIds(ids: List<Long>) =
-        ids.run {
-            val products = productRepository.findAllByIdInAndStatus(this, ProductStatus.RECEIVED)
+    fun getProductsDetailsByProductNumbers(productNumbers: List<String>) =
+        productNumbers.run {
+            val products = productRepository.findAllByProductNumberInAndStatus(this, ProductStatus.RECEIVED)
             logger.info("Products $products")
             products.toProductDetailsResponseList()
         }
@@ -109,8 +108,18 @@ class ProductService(
             savedProducts.toCreateProductResponseList()
         }
 
-    fun receiveProducts(ids: List<Long>) = ids.run {
-        val productsToReceive = productRepository.findAllById(ids).map { it.copy(status = ProductStatus.RECEIVED) }
+//    @RabbitListener(queues = ["accountancy_queue"])
+//    fun createProductForAccountancy(productRequest: List<CreateProductRequest>) =
+//        productRequest.validate().run {
+//            val savedProducts = productRepository.saveAll(toEntityList())
+//            logger.info("Saved Products $savedProducts")
+//            savedProducts.toCreateProductResponseList()
+//        }
+
+    fun receiveProducts(productNumbers: List<String>) = productNumbers.run {
+        val productsToReceive = productRepository
+            .findAllByProductNumberIn(productNumbers)
+            .map { it.copy(status = ProductStatus.RECEIVED) }
         val productsReceived = productRepository.saveAllAndFlush(productsToReceive)
         logger.info("Received Products $productsReceived")
         productsReceived.toReceiveProductResponseList()
@@ -118,14 +127,15 @@ class ProductService(
 
     fun deliverProducts(productRequest: List<DeliverProductsQuantityRequest>) =
         productRequest.validate().run {
-            val idsToQuantity = associate { it.id to it.quantity }
+            val idsToQuantity = associate { it.productNumber to it.quantity }
             val toUpdate = productRepository
-                .findAllById(this.map { it.id })
+                .findAllByProductNumberIn(this.map { it.productNumber })
                 .map {
-                    if (it.quantity < (idsToQuantity[it.id] ?: -1)) {
-                        throw NotEnoughQuantityProductException("Not enough available quantity of product with id: ${it.id}")
+                    if (it.quantity < (idsToQuantity[it.productNumber] ?: -1)) {
+                        throw NotEnoughQuantityProductException(
+                            "Not enough available quantity of product with product number: ${it.productNumber}")
                     }
-                    it.copy(quantity = it.quantity.minus(idsToQuantity[it.id] ?: -1))
+                    it.copy(quantity = it.quantity.minus(idsToQuantity[it.productNumber] ?: -1))
                 }
 
             val productsDelivered = productRepository.saveAllAndFlush(toUpdate)
@@ -133,21 +143,10 @@ class ProductService(
             return@run productsDelivered.toReduceProductQuantityResponseList()
         }
 
-    fun returnProducts(products: List<ReturnProductQuantityRequest>) =
-        products.validate().run {
-            val idsToQuantity = associate { it.id to it.quantity }
-            val toUpdate = productRepository
-                .findAllById(this.map { it.id })
-                .map { it.copy(quantity = it.quantity.plus(idsToQuantity[it.id] ?: -1)) }
-            val productsReturned = productRepository.saveAllAndFlush(toUpdate)
-            logger.info("Returned Products $productsReturned")
-            return@run productsReturned.toReduceProductQuantityResponseList()
-        }
-
-    fun getProductPrice(productNumbers: List<Long>): Map<Long, BigDecimal> =
+    fun getProductPrice(productNumbers: List<String>): Map<String, BigDecimal> =
         productNumbers.validate().run {
-            val productsPrice = productRepository.findAllByIdInOrderByCreatedAtDesc(productNumbers)
-                .associate { (it.id to it.price) as Pair<Long, BigDecimal> }
+            val productsPrice = productRepository.findAllByProductNumberInOrderByCreatedAtDesc(productNumbers)
+                .associate { (it.productNumber to it.price) }
             logger.info("Products price $productsPrice")
             return@run productsPrice
         }

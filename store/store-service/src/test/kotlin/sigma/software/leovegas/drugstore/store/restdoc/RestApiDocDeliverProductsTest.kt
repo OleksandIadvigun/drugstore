@@ -43,15 +43,17 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
         // and
         val accountancyResponse = listOf(
             ItemDTO(
-                productId = 1,
+                productNumber = "1",
                 quantity = 2
             )
         )
 
-        val orderId: Long = 1
+        // and
+        val orderNumber = "1"
+
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -66,7 +68,7 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
         // and
         val productRequest = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 2
             )
         )
@@ -74,7 +76,7 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
         //and
         val productResponse = listOf(
             DeliverProductsResponse(
-                id = 1L,
+                productNumber = "1",
                 quantity = 5,
                 updatedAt = LocalDateTime.now()
             )
@@ -106,14 +108,14 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
         // and
         val productDetailsResponse = listOf(
             ProductDetailsResponse(
-                productNumber = 1,
+                productNumber = "1",
                 quantity = 10
             ),
         )
 
         // and
         stubFor(
-            get("/api/v1/products/details?ids=${productDetailsResponse[0].productNumber}")
+            get("/api/v1/products/details?productNumbers=${productDetailsResponse[0].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -133,6 +135,6 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
             .put("http://${storeProperties.host}:$port/api/v1/store/deliver")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderNumber", equalTo(1))
+            .assertThat().body("orderNumber", equalTo("1"))
     }
 }

@@ -45,7 +45,7 @@ class CreateIncomeInvoiceFeignClientWireMockTest @Autowired constructor(
 
         // and
         val responseExpected = ConfirmOrderResponse(
-            orderNumber = 1L,
+            orderNumber = "1",
             amount = BigDecimal("10.00"), // price * quantity
         )
 
@@ -76,7 +76,7 @@ class CreateIncomeInvoiceFeignClientWireMockTest @Autowired constructor(
         val responseActual = accountancyClient.createIncomeInvoice(request)
 
         // then
-        assertThat(responseActual.orderNumber).isEqualTo(1L)
+        assertThat(responseActual.orderNumber).isEqualTo("1")
         assertThat(responseActual.amount).isEqualTo(BigDecimal("10.00"))
     }
 }

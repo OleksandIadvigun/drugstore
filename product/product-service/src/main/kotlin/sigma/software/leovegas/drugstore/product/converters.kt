@@ -12,6 +12,7 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 // CreateProductRequest <-> Product entity
 
 fun CreateProductRequest.toEntity() = Product(
+    productNumber=productNumber,
     name = name,
     quantity = quantity,
     price = price,
@@ -21,7 +22,7 @@ fun List<CreateProductRequest>.toEntityList() = this.map(CreateProductRequest::t
 
 fun Product.toCreateProductResponse() =
     CreateProductResponse(
-        id = id ?: -1,
+        productNumber = productNumber,
         status = status.toDTO(),
         name = name,
         quantity = quantity,
@@ -35,7 +36,7 @@ fun List<Product>.toCreateProductResponseList() = this.map(Product::toCreateProd
 // Product entity -> UpdateProductRequest
 
 fun Product.toReduceProductQuantityResponse() = DeliverProductsResponse(
-    id = id ?: -1,
+    productNumber = productNumber,
     quantity = quantity,
     updatedAt = updatedAt
 )
@@ -46,7 +47,7 @@ fun List<Product>.toReduceProductQuantityResponseList() = this.map(Product::toRe
 
 fun Product.toGetProductResponse() =
     GetProductResponse(
-        productNumber = id ?: -1,
+        productNumber = productNumber,
         name = name
     )
 
@@ -56,7 +57,7 @@ fun List<Product>.toGetProductResponseList() = this.map(Product::toGetProductRes
 
 fun Product.toProductDetailsResponse() =
     ProductDetailsResponse(
-        productNumber = id ?: -1,
+        productNumber = productNumber,
         name = name,
         price = price,
         quantity = quantity
@@ -68,7 +69,7 @@ fun List<Product>.toProductDetailsResponseList() = this.map(Product::toProductDe
 
 fun Product.toSearchProductResponse() =
     SearchProductResponse(
-        productNumber = id ?: -1,
+        productNumber = productNumber,
         name = name,
         quantity = quantity,
         price = price,
@@ -82,7 +83,7 @@ fun List<Product>.toSearchProductResponseList() = this.map(Product::toSearchProd
 
 fun Product.toReceiveProductResponse() =
     ReceiveProductResponse(
-        id = id ?: -1,
+        productNumber = productNumber,
         status = status.toDTO()
     )
 

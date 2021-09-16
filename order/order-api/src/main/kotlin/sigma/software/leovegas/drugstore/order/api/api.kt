@@ -17,7 +17,7 @@ data class UpdateOrderRequest(
 // Responses
 
 data class OrderResponse(
-    val orderNumber: Long = -1,
+    val orderNumber: String = "undefined",
     val orderStatus: OrderStatusDTO = NONE,
     val orderItems: List<OrderItemDTO> = listOf(),
     val createdAt: LocalDateTime? = null,
@@ -35,17 +35,18 @@ enum class OrderStatusDTO {
 }
 
 data class OrderItemDTO(
-    val productNumber: Long = -1,
+    val productNumber: String = "undefined",
     val quantity: Int = -1,
 )
 
 data class OrderDetailsDTO(
+    val orderNumber: String = "undefined",
     val orderItemDetails: List<OrderItemDetailsDTO> = listOf(),
     val total: BigDecimal = BigDecimal("-1"),
 )
 
 data class OrderItemDetailsDTO(
-    val productNumber: Long = -1,
+    val productNumber: String = "undefined",
     val name: String = "undefined",
     val price: BigDecimal = BigDecimal("-1"),
     val quantity: Int = -1,

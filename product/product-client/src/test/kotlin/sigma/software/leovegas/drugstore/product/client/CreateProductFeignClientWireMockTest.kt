@@ -45,7 +45,7 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
         //and
         val responseExpected = listOf(
             CreateProductResponse(
-                id = 1,
+                productNumber = "1",
                 name = "test1",
                 quantity = 1,
                 price = BigDecimal.ONE,
@@ -82,7 +82,7 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
         val responseActual = productClient.createProduct(request)
 
         //  then
-        assertThat(responseActual[0].id).isEqualTo(1L)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
         assertThat(responseActual[0].name).isEqualTo("test1")
         assertThat(responseActual[0].quantity).isEqualTo(1)
         assertThat(responseActual[0].price).isEqualTo(BigDecimal.ONE)

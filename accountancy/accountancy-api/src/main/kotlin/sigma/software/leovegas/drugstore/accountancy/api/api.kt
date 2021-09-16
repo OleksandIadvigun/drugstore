@@ -10,18 +10,19 @@ data class CreateIncomeInvoiceRequest(
 
 data class CreateOutcomeInvoiceRequest(
     val productItems: List<ItemDTO>,
-    val orderNumber: Long
+    val orderNumber: String
 )
 
 // Response
 
 data class ConfirmOrderResponse(
-    val orderNumber: Long = -1,
+    val orderNumber: String = "undefined",
     val amount: BigDecimal = BigDecimal.ZERO,
 )
 
 data class InvoiceResponse(
-    val orderNumber: Long = -1,
+    val invoiceNumber:String = "undefined",
+    val orderNumber: String = "undefined",
     val amount: BigDecimal = BigDecimal.ZERO,
     val status: InvoiceStatusDTO = InvoiceStatusDTO.NONE
 )
@@ -48,14 +49,14 @@ data class ProductItemDtoRequest(
 )
 
 data class ProductItemDTO(
-    val productId: Long = -1,
+    val productNumber: String = "default",
     val name: String = "default",
     val price: BigDecimal = BigDecimal.ZERO,
     val quantity: Int = 0
 )
 
 data class ItemDTO(
-    val productId: Long = -1,
+    val productNumber: String = "default",
     val quantity: Int = 0
 )
 

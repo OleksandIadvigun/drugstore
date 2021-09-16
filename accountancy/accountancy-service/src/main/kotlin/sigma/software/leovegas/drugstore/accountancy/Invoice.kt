@@ -43,8 +43,12 @@ data class Invoice(
     val id: Long? = null,
 
     @NotNull
+    @Column(name = "invoice_number", nullable = false)
+    val invoiceNumber: String = "undefined",
+
+    @NotNull
     @Column(name = "order_number", nullable = false)
-    val orderNumber: Long = -1,
+    val orderNumber: String = "undefined",
 
     @NotNull
     @DecimalMin("0.01")

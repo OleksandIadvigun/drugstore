@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.order.OrderProperties
+import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderService
 import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
@@ -23,11 +25,15 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
     val orderProperties: OrderProperties,
+    val orderRepository: OrderRepository
 ) : RestApiDocumentationTest(orderProperties) {
 
 
     @Test
     fun `should update order`() {
+
+        // setup
+        transactionTemplate.execute { orderRepository.deleteAll() }
 
         // given
         val orderCreated = transactionTemplate.execute {
@@ -35,13 +41,13 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productNumber = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     )
                 )
             )
-        }
+        }.get()
 
         // and
         val orderJson = objectMapper
@@ -50,27 +56,25 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
                 UpdateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productNumber = 1L,
+                            productNumber = "1",
                             quantity = 4
                         )
                     )
                 )
             )
 
-        if (orderCreated != null) {
             of("update-order")
-                .pathParam("id", orderCreated.orderNumber)
+                .pathParam("orderNumber", orderCreated.orderNumber)
                 .`when`()
                 .body(orderJson)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .put("http://${orderProperties.host}:$port/api/v1/orders/{id}")
+                .put("http://${orderProperties.host}:$port/api/v1/orders/{orderNumber}")
                 .then()
                 .assertThat().statusCode(202)
                 .assertThat().body("orderStatus", equalTo("UPDATED"))
                 .assertThat().body("createdAt", not(emptyString()))
                 .assertThat().body("updatedAt", not(emptyString()))
-                .assertThat().body("orderItems[0].productNumber", equalTo(1))
+                .assertThat().body("orderItems[0].productNumber", equalTo("1"))
                 .assertThat().body("orderItems[0].quantity", equalTo(4))
-        }
     }
 }

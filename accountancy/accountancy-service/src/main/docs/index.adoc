@@ -41,18 +41,18 @@ include::{snippets}/pay-invoice/http-response.adoc[]
 == Get invoice by id
 
 .Request
-include::{snippets}/get-invoice-by-id/http-request.adoc[]
+include::{snippets}/get-invoice-by-invoice-number/http-request.adoc[]
 
 .InvoiceResponse
-include::{snippets}/get-invoice-by-id/http-response.adoc[]
+include::{snippets}/get-invoice-by-invoice-number/http-response.adoc[]
 
 == Get invoice by  order id
 
 .Request
-include::{snippets}/get-invoice-details-by-order-id/http-request.adoc[]
+include::{snippets}/get-invoice-details-by-order-number/http-request.adoc[]
 
 .InvoiceResponse
-include::{snippets}/get-invoice-details-by-order-id/http-response.adoc[]
+include::{snippets}/get-invoice-details-by-order-number/http-response.adoc[]
 
 == Refund invoice
 

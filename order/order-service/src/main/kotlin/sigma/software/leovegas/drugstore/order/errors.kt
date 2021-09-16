@@ -2,7 +2,7 @@ package sigma.software.leovegas.drugstore.order
 
 open class OrderServiceException(message: String) : RuntimeException(message)
 
-class OrderNotFoundException(id: Long?) : OrderServiceException("Order with $id was not found.")
+class OrderNotFoundException(orderNumber: String) : OrderServiceException("Order with $orderNumber was not found.")
 
 class InsufficientAmountOfOrderItemException :
     OrderServiceException("You have to add minimum one order item.")
@@ -13,7 +13,7 @@ class ProductServerException(message: String) :
 class AccountancyServerException(message: String) :
     OrderServiceException("Ups... some problems in accountancy service. $message.")
 
-class OrderNotCreatedException(id: Long) : OrderServiceException("Order($id) must be created.")
+class OrderNotCreatedException(orderNumber: String) : OrderServiceException("Order($orderNumber) must be created.")
 
 class OrderStatusException(message: String) : OrderServiceException(message)
 

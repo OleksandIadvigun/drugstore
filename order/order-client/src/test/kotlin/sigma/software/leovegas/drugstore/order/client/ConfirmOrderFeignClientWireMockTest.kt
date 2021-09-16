@@ -31,11 +31,11 @@ class ConfirmOrderFeignClientWireMockTest @Autowired constructor(
     fun `should confirm order`() {
 
         // given
-        val request: Long = 1
+        val request = "1"
 
         // and
         val responseExpected = ConfirmOrderResponse(
-            orderNumber = 1,
+            orderNumber = "1",
             amount = BigDecimal.TEN
         )
 

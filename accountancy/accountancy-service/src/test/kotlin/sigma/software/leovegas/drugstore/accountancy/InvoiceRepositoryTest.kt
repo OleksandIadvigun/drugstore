@@ -18,7 +18,7 @@ class InvoiceRepositoryTest @Autowired constructor(
 ) {
 
     @Test
-    fun `should get invoice by order id`() {
+    fun `should get invoice by order number`() {
 
         // given
         transactionTemplate.execute {
@@ -29,7 +29,8 @@ class InvoiceRepositoryTest @Autowired constructor(
         val created = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderNumber = 1,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("10.00"),
                     status = InvoiceStatus.CREATED,
                 )
@@ -40,7 +41,9 @@ class InvoiceRepositoryTest @Autowired constructor(
         val actual = invoiceRepository.getInvoiceByOrderNumber(created.orderNumber).get()
 
         // then
-        assertThat(actual.id).isEqualTo(created.id)
+        assertThat(actual.id).isNotNull
+        assertThat(actual.invoiceNumber).isEqualTo(created.invoiceNumber)
+        assertThat(actual.orderNumber).isEqualTo(created.orderNumber)
         assertThat(actual.total).isEqualTo(created.total)
         assertThat(actual.status).isEqualTo(created.status)
 
@@ -59,12 +62,14 @@ class InvoiceRepositoryTest @Autowired constructor(
             invoiceRepository.saveAll(
                 listOf(
                     Invoice(
-                        orderNumber = 1,
+                        invoiceNumber = "1",
+                        orderNumber = "1",
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.CREATED,
                     ),
                     Invoice(
-                        orderNumber = 2,
+                        invoiceNumber = "2",
+                        orderNumber = "2",
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.PAID,
                     )
@@ -80,8 +85,8 @@ class InvoiceRepositoryTest @Autowired constructor(
 
         // then
         assertThat(actual).hasSize(1)
-        assertThat(actual[0].id).isEqualTo(created[0].id)
-        assertThat(actual[0].orderNumber).isEqualTo(1)
+        assertThat(actual[0].invoiceNumber).isEqualTo(created[0].invoiceNumber)
+        assertThat(actual[0].orderNumber).isEqualTo("1")
         assertThat(actual[0].total).isEqualTo(BigDecimal("10.00"))
         assertThat(actual[0].status).isEqualTo(InvoiceStatus.CREATED)
     }
@@ -99,12 +104,14 @@ class InvoiceRepositoryTest @Autowired constructor(
             invoiceRepository.saveAll(
                 listOf(
                     Invoice(
-                        orderNumber = 1,
+                        invoiceNumber = "1",
+                        orderNumber = "1",
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.CREATED,
                     ),
                     Invoice(
-                        orderNumber = 2,
+                        invoiceNumber = "2",
+                        orderNumber = "2",
                         total = BigDecimal("10.00"),
                         status = InvoiceStatus.PAID,
                     )
@@ -117,9 +124,36 @@ class InvoiceRepositoryTest @Autowired constructor(
 
         // then
         assertThat(actual).hasSize(1)
-        assertThat(actual[0].id).isEqualTo(created[0].id)
-        assertThat(actual[0].orderNumber).isEqualTo(1)
+        assertThat(actual[0].invoiceNumber).isEqualTo(created[0].invoiceNumber)
+        assertThat(actual[0].orderNumber).isEqualTo("1")
         assertThat(actual[0].total).isEqualTo(BigDecimal("10.00"))
         assertThat(actual[0].status).isEqualTo(InvoiceStatus.CREATED)
+    }
+
+    @Test
+    fun `should get invoice by invoice number`() {
+
+        // given
+        transactionTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
+        // and
+        val created = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    invoiceNumber = "1",
+                    orderNumber = "1",
+                    total = BigDecimal("10.00"),
+                    status = InvoiceStatus.CREATED,
+                ),
+            )
+        }.get()
+
+        // when
+        val actual = invoiceRepository.getInvoiceByInvoiceNumber(created.invoiceNumber).get()
+
+        // then
+        assertThat(actual.invoiceNumber).isEqualTo(created.invoiceNumber)
     }
 }

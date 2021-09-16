@@ -6,25 +6,21 @@ import java.time.LocalDateTime
 // Request
 
 data class CreateProductRequest(
+    val productNumber: String = "undefined",
     val name: String = "undefined",
     val quantity: Int = 0,
     val price: BigDecimal = BigDecimal.ZERO,
 )
 
 data class DeliverProductsQuantityRequest(
-    val id: Long = -1,
-    val quantity: Int = 0,
-)
-
-data class ReturnProductQuantityRequest(
-    val id: Long = -1,
+    val productNumber: String = "undefined",
     val quantity: Int = 0,
 )
 
 // Response
 
 data class SearchProductResponse(
-    val productNumber: Long = -1,
+    val productNumber: String = "undefined",
     val name: String = "undefined",
     val price: BigDecimal = BigDecimal.ZERO,
     val quantity: Int = 0,
@@ -33,19 +29,19 @@ data class SearchProductResponse(
 )
 
 data class ProductDetailsResponse(
-    val productNumber: Long = -1,
+    val productNumber: String = "undefined",
     val name: String = "undefined",
     val price: BigDecimal = BigDecimal.ZERO,
     val quantity: Int = -1,
 )
 
 data class GetProductResponse(
-    val productNumber: Long = -1,
+    val productNumber: String = "undefined",
     val name: String = "undefined",
 )
 
 data class CreateProductResponse(
-    val id: Long = -1,
+    val productNumber: String = "undefined",
     val status: ProductStatusDTO = ProductStatusDTO.NONE,
     val name: String = "undefined",
     val price: BigDecimal = BigDecimal.ZERO,
@@ -55,20 +51,14 @@ data class CreateProductResponse(
 )
 
 data class DeliverProductsResponse(
-    val id: Long = -1,
+    val productNumber:String  = "undefined",
     val quantity: Int = 0,
     val updatedAt: LocalDateTime? = null
 )
 
 data class ReceiveProductResponse(
-    val id: Long = -1,
+    val productNumber: String  = "undefined",
     val status: ProductStatusDTO = ProductStatusDTO.NONE
-)
-
-data class ReturnProductsResponse(
-    val id: Long = -1,
-    val quantity: Int = 0,
-    val updatedAt: LocalDateTime? = null
 )
 
 // DTOs

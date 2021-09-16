@@ -31,15 +31,15 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
     fun `should deliver products`() {
 
         // given
-        val orderNumber: Long = 1
+        val orderNumber = "1"
 
         // given
-        val request = 1L
+        val request = "1"
 
         // and
         val responseExpected = TransferCertificateResponse(
-            certificateNumber = 1,
-            orderNumber = 1,
+            certificateNumber = "1",
+            orderNumber = "1",
             status = TransferStatusDTO.DELIVERED
         )
 

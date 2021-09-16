@@ -21,6 +21,7 @@ import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.extensions.get
+import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
 @DisplayName("Refund invoice REST API Doc test")
 class RestApiDocRefundInvoiceTest @Autowired constructor(
@@ -43,12 +44,13 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
-                    orderNumber = 1L,
+                    invoiceNumber = "1",
+                    orderNumber = "1",
                     total = BigDecimal("90.00"),
                     status = InvoiceStatus.PAID,
                     productItems = setOf(
                         ProductItem(
-                            productId = 1L,
+                            productNumber = "1",
                             name = "test",
                             price = BigDecimal("30"),
                             quantity = 3
@@ -66,7 +68,7 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(savedInvoice.orderNumber)
+                                .writeValueAsString(CheckStatusResponse(savedInvoice.orderNumber))
                         )
                         .withStatus(HttpStatus.OK.value())
                 )
@@ -78,7 +80,7 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
             .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/refund/{orderNumber}")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderNumber", equalTo(1))
+            .assertThat().body("orderNumber", equalTo("1"))
             .assertThat().body("amount", equalTo(90.0F))
     }
 }

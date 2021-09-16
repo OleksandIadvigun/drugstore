@@ -14,7 +14,7 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @DisplayName("Get order by id REST API Doc test")
-class RestApiDocGetOrderByIdTest @Autowired constructor(
+class RestApiDocGetOrderByNumberTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
@@ -22,7 +22,7 @@ class RestApiDocGetOrderByIdTest @Autowired constructor(
 ) : RestApiDocumentationTest(orderProperties) {
 
     @Test
-    fun `should get order by id`() {
+    fun `should get order by orderNumber`() {
 
         // given
         val orderCreated = transactionTemplate.execute {
@@ -30,7 +30,7 @@ class RestApiDocGetOrderByIdTest @Autowired constructor(
                 CreateOrderRequest(
                     listOf(
                         OrderItemDTO(
-                            productNumber = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     )
@@ -39,14 +39,14 @@ class RestApiDocGetOrderByIdTest @Autowired constructor(
         }
 
         if (orderCreated != null) {
-            of("get-order-by-id").pathParam("id", orderCreated.orderNumber).`when`()
-                .get("http://${orderProperties.host}:$port/api/v1/orders/{id}")
+            of("get-order-by-number").pathParam("orderNumber", orderCreated.orderNumber).`when`()
+                .get("http://${orderProperties.host}:$port/api/v1/orders/{orderNumber}")
                 .then()
                 .assertThat().statusCode(200)
                 .assertThat().body("orderStatus", equalTo("CREATED"))
                 .assertThat().body("createdAt", not(emptyString()))
                 .assertThat().body("updatedAt", not(emptyString()))
-                .assertThat().body("orderItems[0].productNumber", equalTo(1))
+                .assertThat().body("orderItems[0].productNumber", equalTo("1"))
                 .assertThat().body("orderItems[0].quantity", equalTo(3))
         }
     }

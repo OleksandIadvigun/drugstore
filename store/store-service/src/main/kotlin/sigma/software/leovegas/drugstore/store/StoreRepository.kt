@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository
 @Repository
 interface StoreRepository : JpaRepository<TransferCertificate, Long> {
 
-    fun findAllByOrderNumber(orderNumber: Long): List<TransferCertificate>
+    fun findAllByOrderNumber(orderNumber: String): List<TransferCertificate>
 
-    fun getTransferCertificateByOrderNumber(orderNumber: Long): Optional<TransferCertificate>
+    fun getTransferCertificateByOrderNumber(orderNumber: String): Optional<TransferCertificate>
 
 }

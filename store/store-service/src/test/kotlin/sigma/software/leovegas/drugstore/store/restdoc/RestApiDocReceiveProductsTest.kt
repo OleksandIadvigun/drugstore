@@ -41,16 +41,16 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
         // and
         val accountancyResponse = listOf(
             ItemDTO(
-                productId = 1,
+                productNumber = "1",
                 quantity = 2
             )
         )
 
-        val orderId: Long = 1
+        val orderNumber = "1"
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/$orderId")
+            get("/api/v1/accountancy/invoice/details/order-number/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -63,12 +63,12 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
         )
 
         // and
-        val productRequest = listOf(1)
+        val productRequest = listOf("1")
 
         // and
         val productResponse = listOf(
             ReceiveProductResponse(
-                id = 1,
+                productNumber = "1",
                 status = ProductStatusDTO.RECEIVED,
             )
         )
@@ -103,6 +103,6 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
             .put("http://${storeProperties.host}:$port/api/v1/store/receive")
             .then()
             .assertThat().statusCode(202)
-            .assertThat().body("orderNumber", equalTo(1))
+            .assertThat().body("orderNumber", equalTo("1"))
     }
 }

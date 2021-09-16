@@ -34,19 +34,21 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderNumber = "1",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                productNumber = "1",
                                 quantity = 3
                             )
                         ),
                     ),
                     Order(
+                        orderNumber = "2",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 2,
+                                productNumber = "2",
                                 quantity = 5
                             )
                         ),

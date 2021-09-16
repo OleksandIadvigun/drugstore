@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 
 @DisplayName("Order Repository test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -27,9 +28,10 @@ class OrderRepositoryTest @Autowired constructor(
         transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = " 1",
                             quantity = 3
                         )
                     ),
@@ -60,48 +62,82 @@ class OrderRepositoryTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderNumber = "1",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                productNumber = "1",
                                 quantity = 3
                             )
                         )
                     ),
                     Order(
+                        orderNumber = "2",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                productNumber = "1",
                                 quantity = 1
                             )
                         )
                     ),
                     Order(
+                        orderNumber = "3",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 2,
+                                productNumber = "2",
                                 quantity = 5
                             )
                         )
                     ),
                 )
             )
-        } ?: fail("result is expected")
+        }.get()
 
-        val ids = created.map { it.orderItems.map { item -> item.id ?: -1 } }.flatten()
+        val productNumbers = created.map { it.orderItems.map { item -> item.productNumber } }.flatten()
 
         // when
         val actual = transactionTemplate.execute {
-            orderRepository.getIdToQuantity(ids)
-        } ?: fail("result is expected")
+            orderRepository.getProductNumberToQuantity(productNumbers)
+        }.get()
 
         //then
         assertThat(actual).hasSize(2)
-        assertThat(actual[0].priceItemId).isEqualTo(2)
+        assertThat(actual[0].productNumber).isEqualTo("2")
         assertThat(actual[0].quantity).isEqualTo(5)
-        assertThat(actual[1].priceItemId).isEqualTo(1)
+        assertThat(actual[1].productNumber).isEqualTo("1")
         assertThat(actual[1].quantity).isEqualTo(4)
+    }
+
+    @Test
+    fun `should get order by order number`() {
+
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
+        // given
+        val saved = transactionTemplate.execute {
+            orderRepository.save(
+                Order(
+                    orderNumber = "1",
+                    orderStatus = OrderStatus.CONFIRMED,
+                    orderItems = setOf(
+                        OrderItem(
+                            productNumber = "1",
+                            quantity = 1
+                        )
+                    )
+                )
+            )
+        }.get()
+
+        // when
+        val actual = orderRepository.findByOrderNumber(saved.orderNumber).get()
+
+        // then
+        assertThat(actual.orderNumber).isEqualTo(saved.orderNumber)
     }
 }

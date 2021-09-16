@@ -17,7 +17,7 @@ import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
 
-@DisplayName("Get invoice  by id REST API Doc test")
+@DisplayName("Get sale price REST API Doc test")
 class RestApiDocGetSalePriceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
@@ -27,7 +27,7 @@ class RestApiDocGetSalePriceTest @Autowired constructor(
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
-    fun `should get invoice by id`() {
+    fun `should get sale price`() {
 
         // given
         stubFor(
@@ -39,7 +39,7 @@ class RestApiDocGetSalePriceTest @Autowired constructor(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
-                                    mapOf(Pair(1, BigDecimal("1.23")), Pair(2, BigDecimal("1.24")))
+                                    mapOf(Pair("1", BigDecimal("1.23")), Pair("2", BigDecimal("1.24")))
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())
@@ -49,7 +49,7 @@ class RestApiDocGetSalePriceTest @Autowired constructor(
 
         of("get-sale-price").`when`()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/sale-price?ids=1&ids=2")
+            .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", `is`(2))

@@ -25,10 +25,10 @@ include::{snippets}/update-order/http-response.adoc[]
 == Get Order By ID
 
 .Request
-include::{snippets}/get-order-by-id/http-request.adoc[]
+include::{snippets}/get-order-by-number/http-request.adoc[]
 
 .GetOrderResponse
-include::{snippets}/get-order-by-id/http-response.adoc[]
+include::{snippets}/get-order-by-number/http-response.adoc[]
 
 == Get Order By Status
 
@@ -61,14 +61,6 @@ include::{snippets}/confirm-order/http-request.adoc[]
 
 .Invoice
 include::{snippets}/confirm-order/http-response.adoc[]
-
-== Change Order Status
-
-.Request
-include::{snippets}/change-order/http-request.adoc[]
-
-.GetOrderResponse
-include::{snippets}/change-order/http-response.adoc[]
 
 == Get Product id to Quantity
 

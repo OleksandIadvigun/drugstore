@@ -33,7 +33,7 @@ class CheckQuantityFeignClientWireMockTest @Autowired constructor(
         // given
         val request = listOf(
             DeliverProductsQuantityRequest(
-                id = 1,
+                productNumber = "1",
                 quantity = 5
             )
         )
@@ -66,7 +66,7 @@ class CheckQuantityFeignClientWireMockTest @Autowired constructor(
 
         //  then
         assertThat(responseActual).hasSize(1)
-        assertThat(responseActual[0].id).isEqualTo(1)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
         assertThat(responseActual[0].quantity).isEqualTo(5)
     }
 }

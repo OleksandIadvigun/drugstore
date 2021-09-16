@@ -44,7 +44,7 @@ class OrderServiceTest @Autowired constructor(
         val order = CreateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    productNumber = 1,
+                    productNumber = "1",
                     quantity = 3
                 )
             )
@@ -56,16 +56,21 @@ class OrderServiceTest @Autowired constructor(
         }.get()
 
         // then
-        assertThat(created.orderNumber).isNotNull
+        assertThat(created.orderNumber).isNotEqualTo("undefined")
         assertThat(created.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
         assertThat(created.orderItems[0].quantity).isEqualTo(3)
-        assertThat(created.orderItems[0].productNumber).isEqualTo(1)
+        assertThat(created.orderItems[0].productNumber).isEqualTo("1")
         assertThat(created.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(created.updatedAt).isAfterOrEqualTo(created.createdAt)
     }
 
     @Test
     fun `should not create order without orderItems`() {
+
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
@@ -77,15 +82,16 @@ class OrderServiceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get order by id `() {
+    fun `should get order by order number `() {
 
         // given
         val created = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 3
                         )
                     )
@@ -94,22 +100,25 @@ class OrderServiceTest @Autowired constructor(
         }?.toOrderResponseDTO().get()
 
         // when
-        val actual = orderService.getOrderById(created.orderNumber)
+        val actual = orderService.getOrderByOrderNumber(created.orderNumber)
 
         // then
         assertThat(actual.orderNumber).isEqualTo(created.orderNumber)
-        assertThat(actual.orderItems.iterator().next().productNumber).isEqualTo(1)
+        assertThat(actual.orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(actual.orderItems.iterator().next().quantity).isEqualTo(3)
     }
 
     @Test
     fun `should not get non existing order`() {
 
+        // setup
+        transactionTemplate.execute { orderRepository.deleteAll() }
+
         // given
-        val nonExistingId = -15L
+        val nonExistingNumber = "not"
 
         // when
-        val exception = assertThrows<OrderNotFoundException> { orderService.getOrderById(nonExistingId) }
+        val exception = assertThrows<OrderNotFoundException> { orderService.getOrderByOrderNumber(nonExistingNumber) }
 
         // then
         assertThat(exception.message).contains("Order", "was not found")
@@ -127,9 +136,10 @@ class OrderServiceTest @Autowired constructor(
         val created = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 3
                         )
                     ),
@@ -143,7 +153,7 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(actual[0].orderNumber).isEqualTo(created.orderNumber)
-        assertThat(actual[0].orderItems.iterator().next().productNumber).isEqualTo(1)
+        assertThat(actual[0].orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(actual[0].orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(actual[0].orderStatus).isEqualTo(OrderStatusDTO.CREATED)
     }
@@ -161,17 +171,19 @@ class OrderServiceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderNumber = "1",
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                productNumber = "1",
                                 quantity = 2
                             ),
                         )
                     ),
                     Order(
+                        orderNumber = "2",
                         orderItems = setOf(
                             OrderItem(
-                                productId = 3,
+                                productNumber = "3",
                                 quantity = 4
                             ),
                         )
@@ -190,13 +202,19 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should update order`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val orderToChange = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     ),
@@ -208,7 +226,7 @@ class OrderServiceTest @Autowired constructor(
         val updateOrderRequest = UpdateOrderRequest(
             orderItems = listOf(
                 OrderItemDTO(
-                    productNumber = 1,
+                    productNumber = "1",
                     quantity = 4
                 )
             )
@@ -220,8 +238,9 @@ class OrderServiceTest @Autowired constructor(
         }.get()
 
         // then
+        assertThat(changedOrder.orderNumber).isEqualTo("1")
         assertThat(changedOrder.orderItems.iterator().next().quantity).isEqualTo(4)
-        assertThat(changedOrder.orderItems.iterator().next().productNumber).isEqualTo(1)
+        assertThat(changedOrder.orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(changedOrder.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
         assertThat(changedOrder.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(changedOrder.updatedAt).isAfterOrEqualTo(changedOrder.createdAt)
@@ -234,9 +253,10 @@ class OrderServiceTest @Autowired constructor(
         val orderToChange = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     ),
@@ -258,13 +278,19 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should not update order without orderItems`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val orderToUpdate = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     ),
@@ -283,14 +309,18 @@ class OrderServiceTest @Autowired constructor(
 
     @Test
     fun `should not update non existing order`() {
+
+        // setup
+        transactionTemplate.execute { orderRepository.deleteAll() }
+
         // given
-        val nonExitingId = -15L
+        val nonExitingOrderNumber = "not"
 
         // and
         val request = UpdateOrderRequest(
             listOf(
                 OrderItemDTO(
-                    productNumber = 5L,
+                    productNumber = "5",
                     quantity = 2
                 )
             )
@@ -298,7 +328,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<OrderNotFoundException> {
-            orderService.updateOrder(nonExitingId, request)
+            orderService.updateOrder(nonExitingOrderNumber, request)
         }
 
         // then
@@ -308,18 +338,24 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should get order details`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CREATED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                         OrderItem(
-                            productId = 2,
+                            productNumber = "2",
                             quantity = 2
                         )
                     )
@@ -329,7 +365,7 @@ class OrderServiceTest @Autowired constructor(
 
         // given
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -339,13 +375,13 @@ class OrderServiceTest @Autowired constructor(
                                 .writeValueAsString(
                                     listOf(
                                         ProductDetailsResponse(
-                                            productNumber = 1,
+                                            productNumber = "1",
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00")
                                         ),
                                         ProductDetailsResponse(
-                                            productNumber = 2,
+                                            productNumber = "2",
                                             name = "test2",
                                             quantity = 4,
                                             price = BigDecimal("30.00")
@@ -358,7 +394,7 @@ class OrderServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=1&ids=2")
+            WireMock.get("/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -367,7 +403,7 @@ class OrderServiceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(1, BigDecimal("40.00")), Pair(2, BigDecimal("60.00"))
+                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
                                     )
                                 )
                         )
@@ -377,11 +413,12 @@ class OrderServiceTest @Autowired constructor(
         )
 
         // when
-        val orderDetails = orderService.getOrderDetails(order.id ?: -1)
+        val orderDetails = orderService.getOrderDetails(order.orderNumber)
 
         // then
         assertThat(orderDetails.orderItemDetails).hasSize(2)
-        assertThat(orderDetails.orderItemDetails.iterator().next().productNumber).isEqualTo(1)
+        assertThat(orderDetails.orderNumber).isEqualTo("1")
+        assertThat(orderDetails.orderItemDetails.iterator().next().productNumber).isEqualTo("1")
         assertThat(orderDetails.orderItemDetails.iterator().next().name).isEqualTo("test1")
         assertThat(orderDetails.orderItemDetails.iterator().next().quantity).isEqualTo(1)
         assertThat(orderDetails.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal("40.00").setScale(2))
@@ -391,15 +428,20 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should not get order details for order with status None`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
 
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.NONE,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                     )
@@ -409,7 +451,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<OrderNotCreatedException> {
-            orderService.getOrderDetails(order.id ?: -1)
+            orderService.getOrderDetails(order.orderNumber)
         }
 
         // then
@@ -420,14 +462,20 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should confirm order`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CREATED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                     )
@@ -447,10 +495,10 @@ class OrderServiceTest @Autowired constructor(
                                 CreateOutcomeInvoiceRequest(
                                     listOf(
                                         ItemDTO(
-                                            productId = 1,
+                                            productNumber = "1",
                                             quantity = 1
                                         )
-                                    ), order.id ?: -1
+                                    ), order.orderNumber
                                 )
                             )
                     )
@@ -462,7 +510,7 @@ class OrderServiceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     ConfirmOrderResponse(
-                                        orderNumber = order.id ?: -1,
+                                        orderNumber = order.orderNumber,
                                         amount = BigDecimal("20.00"),
                                     )
                                 )
@@ -471,24 +519,30 @@ class OrderServiceTest @Autowired constructor(
         )
 
         // when
-        val invoice = orderService.confirmOrder(order.id ?: -1)
+        val invoice = orderService.confirmOrder(order.orderNumber)
 
         // then
-        assertThat(invoice.orderNumber).isEqualTo(order.id ?: -1)
+        assertThat(invoice.orderNumber).isEqualTo(order.orderNumber)
         assertThat(invoice.amount).isEqualTo(BigDecimal("20.00"))
     }
 
     @Test
     fun `should not confirm order if accountancy server is unavailable`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "100ppp",
                     orderStatus = OrderStatus.CREATED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                     )
@@ -498,7 +552,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<AccountancyServerException> {
-            orderService.confirmOrder(order.id ?: -1)
+            orderService.confirmOrder(order.orderNumber)
         }
 
         // then
@@ -508,14 +562,20 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should not confirm order if orderStatus is not CREATED or UPDATED `() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CONFIRMED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                     )
@@ -525,7 +585,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<OrderStatusException> {
-            orderService.confirmOrder(order.id ?: -1)
+            orderService.confirmOrder(order.orderNumber)
         }
 
         // then
@@ -539,6 +599,7 @@ class OrderServiceTest @Autowired constructor(
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CONFIRMED,
                 )
             )
@@ -546,7 +607,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
-            orderService.confirmOrder(order.id ?: -1)
+            orderService.confirmOrder(order.orderNumber)
         }
 
         // then
@@ -559,48 +620,52 @@ class OrderServiceTest @Autowired constructor(
         // given
         transactionTemplate.execute {
             orderRepository.deleteAll()
-        }.get()
+        }
 
         // and
         transactionTemplate.execute {
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderNumber = "1",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 3,
+                                productNumber = "3",
                                 quantity = 2
                             ),
                         )
                     ),
                     Order(
+                        orderNumber = "2",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 5,
+                                productNumber = "5",
                                 quantity = 7
                             ),
                         )
                     ),
                     Order(
+                        orderNumber = "3",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                productNumber = "1",
                                 quantity = 4
                             ),
                             OrderItem(
-                                productId = 5,
+                                productNumber = "5",
                                 quantity = 2
                             )
                         )
                     ),
                     Order(
+                        orderNumber = "4",
                         orderStatus = OrderStatus.CREATED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 2,
+                                productNumber = "2",
                                 quantity = 5
                             )
                         )
@@ -610,12 +675,12 @@ class OrderServiceTest @Autowired constructor(
         }.get()
 
         // when
-        val sortedItems = orderService.getProductsIdToQuantity()
+        val sortedItems = orderService.getProductsNumberToQuantity()
         // then
         assertThat(sortedItems).hasSize(3)
         assertThat(sortedItems.iterator().next().value).isEqualTo(9)
-        assertThat(sortedItems[1]).isEqualTo(4)
-        assertThat(sortedItems[3]).isEqualTo(2)
-        assertThat(sortedItems[5]).isEqualTo(9)
+        assertThat(sortedItems["1"]).isEqualTo(4)
+        assertThat(sortedItems["3"]).isEqualTo(2)
+        assertThat(sortedItems["5"]).isEqualTo(9)
     }
 }

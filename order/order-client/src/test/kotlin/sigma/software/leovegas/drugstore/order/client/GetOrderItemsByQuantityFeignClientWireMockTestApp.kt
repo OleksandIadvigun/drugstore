@@ -17,7 +17,7 @@ import org.springframework.test.context.ContextConfiguration
 @SpringBootApplication
 internal class GetOrderItemsByQuantityFeignClientWireMockTestApp
 
-@DisplayName("Get Order By Id Feign Client WireMock test")
+@DisplayName("Get total buys Feign Client WireMock test")
 @ContextConfiguration(classes = [GetOrderByIdFeignClientWireMockTestApp::class])
 class GetOrderItemsByQuantityFeignClientWireMockTest @Autowired constructor(
     val orderClient: OrderClient,
@@ -29,9 +29,9 @@ class GetOrderItemsByQuantityFeignClientWireMockTest @Autowired constructor(
 
         // given
         val responseExpected = mapOf(
-            1L to 7,
-            2L to 5,
-            3L to 3
+            "1" to 7,
+            "2" to 5,
+            "3" to 3
         )
 
         // and
@@ -54,8 +54,8 @@ class GetOrderItemsByQuantityFeignClientWireMockTest @Autowired constructor(
 
         //  then
         assertThat(responseActual.size).isEqualTo(3)
-        assertThat(responseActual[1]).isEqualTo(7)
-        assertThat(responseActual[2]).isEqualTo(5)
-        assertThat(responseActual[3]).isEqualTo(3)
+        assertThat(responseActual["1"]).isEqualTo(7)
+        assertThat(responseActual["2"]).isEqualTo(5)
+        assertThat(responseActual["3"]).isEqualTo(3)
     }
 }

@@ -31,14 +31,14 @@ class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
         // given
         val responseExpected = listOf(
             ItemDTO(
-                productId = 1L,
+                productNumber = "1",
                 quantity = 2
             )
         )
 
         // and
         stubFor(
-            get("/api/v1/accountancy/invoice/details/order-id/1")
+            get("/api/v1/accountancy/invoice/details/order-number/1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -53,10 +53,10 @@ class GetInvoiceByOrderIdFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = accountancyClient.getInvoiceDetailsByOrderNumber(1L)
+        val responseActual = accountancyClient.getInvoiceDetailsByOrderNumber("1")
 
         // then
-        assertThat(responseActual[0].productId).isEqualTo(1L)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
         assertThat(responseActual[0].quantity).isEqualTo(2)
     }
 }

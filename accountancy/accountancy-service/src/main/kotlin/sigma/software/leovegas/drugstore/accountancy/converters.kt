@@ -8,7 +8,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDTO
 
 // Invoice entity -> InvoiceResponse
 
-fun Invoice.toInvoiceResponse() = ConfirmOrderResponse(
+fun Invoice.toConfirmOrderResponse() = ConfirmOrderResponse(
     orderNumber = orderNumber,
     amount = total,
 )
@@ -16,12 +16,13 @@ fun Invoice.toInvoiceResponse() = ConfirmOrderResponse(
 // Invoice entity -> InvoiceResponseWithStatus
 
 fun Invoice.toInvoiceResponseWithStatus() = InvoiceResponse(
+    invoiceNumber = invoiceNumber,
     orderNumber = orderNumber,
     amount = total,
     status = status.toDTO()
 )
 
-fun List<Invoice>.toInvoiceResponseList() = this.map(Invoice::toInvoiceResponse)
+fun List<Invoice>.toInvoiceResponseList() = this.map(Invoice::toConfirmOrderResponse)
 
 // InvoiceStatus -> InvoiceStatusDTO
 
@@ -36,7 +37,7 @@ fun InvoiceType.toDTO(): InvoiceTypeDTO =
 // ProductItem entity -> ProductItemDTO
 
 fun ProductItem.toDTO() = ProductItemDTO(
-    productId = productId,
+    productNumber = productNumber,
     name = name,
     price = price,
     quantity = quantity

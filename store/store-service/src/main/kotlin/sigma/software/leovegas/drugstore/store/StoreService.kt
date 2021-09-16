@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.store
 
+import java.util.UUID
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +12,7 @@ import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.client.ProductClient
+import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateRequest
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
@@ -27,13 +29,20 @@ class StoreService @Autowired constructor(
 
     fun createTransferCertificate(transferCertificateRequest: TransferCertificateRequest) =
         transferCertificateRequest.validate().run {
-            val transferCertificate = storeRepository.save(this.toTransferCertificate())
+            val transferCertificate = storeRepository.save(
+                TransferCertificate(
+                    certificateNumber = UUID.randomUUID().toString(),
+                    status = status.toEntity(),
+                    orderNumber = orderNumber,
+                    comment = comment
+                )
+            )
             logger.info("Transfer Certificate $transferCertificate")
             transferCertificate.toTransferCertificateResponse()
         }
 
-    fun getTransferCertificatesByOrderId(id: Long) = id.run {
-        val transferCertificate = storeRepository.findAllByOrderNumber(id)
+    fun getTransferCertificatesByOrderNumber(orderNumber: String) = orderNumber.run {
+        val transferCertificate = storeRepository.findAllByOrderNumber(orderNumber)
         logger.info("Transfer Certificate $transferCertificate")
         transferCertificate.toTransferCertificateResponseList()
     }
@@ -46,7 +55,7 @@ class StoreService @Autowired constructor(
         return transferCertificateList.toTransferCertificateResponseList()
     }
 
-    fun deliverProducts(orderNumber: Long): TransferCertificateResponse =
+    fun deliverProducts(orderNumber: String): TransferCertificateResponse =
         orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
             val invoiceDetails = runCatching {
@@ -59,7 +68,7 @@ class StoreService @Autowired constructor(
                 .orEmpty()
             logger.info("Received invoice details $invoiceDetails")
             val products = invoiceDetails
-                .map { DeliverProductsQuantityRequest(id = it.productId, quantity = it.quantity) }
+                .map { DeliverProductsQuantityRequest(productNumber = it.productNumber, quantity = it.quantity) }
 
             checkAvailability(products)
             runCatching { productClient.deliverProducts(products) }
@@ -75,7 +84,7 @@ class StoreService @Autowired constructor(
             return@run transferCertificate
         }
 
-    fun receiveProduct(orderNumber: Long) =
+    fun receiveProduct(orderNumber: String) =
         orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
             val invoiceItems = runCatching { accountancyClient.getInvoiceDetailsByOrderNumber(this) }
@@ -84,9 +93,9 @@ class StoreService @Autowired constructor(
                 }
                 .getOrNull()
                 .orEmpty()
-            logger.info("Received invoice details ${invoiceItems.toString()}")
+            logger.info("Received invoice details ${invoiceItems}")
 
-            runCatching { productClient.receiveProducts(invoiceItems.map { it.productId }) }
+            runCatching { productClient.receiveProducts(invoiceItems.map { it.productNumber }) }
                 .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrNull()
                 .orEmpty()
@@ -101,21 +110,26 @@ class StoreService @Autowired constructor(
 
     fun checkAvailability(products: List<DeliverProductsQuantityRequest>) = products.validate().run {
         val productsMap = runCatching {
-            productClient.getProductsDetailsByIds(products.map { it.id }).associate { it.productNumber to it.quantity }
+            productClient.getProductsDetailsByProductNumbers(products.map { it.productNumber })
+                .associate { it.productNumber to it.quantity }
         }
             .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received product details ${productsMap.entries}")
 
         forEach {
-            if (it.quantity > (productsMap[it.id] ?: -1)) {
-                throw InsufficientAmountOfProductException(it.id, productsMap[it.id] ?: -1)
+            if (it.quantity > (productsMap[it.productNumber] ?: -1)) {
+                throw InsufficientAmountOfProductException(it.productNumber, productsMap[it.productNumber] ?: -1)
             }
         }
         logger.info("Products quantity is sufficient $products")
         return@run products
     }
 
-    fun checkTransfer(orderNumber: Long): Long =
-        orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber)
+    fun checkTransfer(orderNumber: String) = orderNumber
+            .validate(storeRepository::getTransferCertificateByOrderNumber)
+            .run {
+                logger.info("No transfer certificate was found")
+                return@run CheckStatusResponse(this,"Not delivered")
+            }
 }

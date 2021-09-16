@@ -15,7 +15,10 @@
             <column name="id" type="BIGINT" autoIncrement="true" startWith="1">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="order_number" type="BIGINT"/>
+            <column name="certificate_number" type="VARCHAR(150)">
+                <constraints unique="true"/>
+            </column>
+            <column name="order_number" type="VARCHAR(150)"/>
             <column name="store_status" type="VARCHAR(15)"/>
             <column name="comment" type="VARCHAR(200)"/>
         </createTable>

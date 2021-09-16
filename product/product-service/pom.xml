@@ -92,6 +92,14 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>kotlin-extensions</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-stream</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-stream-binder-rabbit</artifactId>-->
+<!--        </dependency>-->
     </dependencies>
     <build>
         <plugins>

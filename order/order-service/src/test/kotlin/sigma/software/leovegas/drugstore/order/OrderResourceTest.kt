@@ -62,7 +62,7 @@ class OrderResourceTest @Autowired constructor(
             CreateOrderRequest(
                 listOf(
                     OrderItemDTO(
-                        productNumber = 1L,
+                        productNumber = "1",
                         quantity = 3
                     )
                 )
@@ -77,9 +77,9 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.orderNumber).isNotNull
+        assertThat(body.orderNumber).isNotEqualTo("undefined")
         assertThat(body.orderItems).hasSize(1)
-        assertThat(body.orderItems[0].productNumber).isEqualTo(1L)
+        assertThat(body.orderItems[0].productNumber).isEqualTo("1")
         assertThat(body.orderItems[0].quantity).isEqualTo(3)
         assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
         assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
@@ -87,15 +87,21 @@ class OrderResourceTest @Autowired constructor(
     }
 
     @Test
-    fun `should get order by id`() {
+    fun `should get order by order number`() {
+
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
 
         // given
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     )
@@ -113,7 +119,7 @@ class OrderResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body.orderNumber).isEqualTo(orderCreated.orderNumber)
-        assertThat(body.orderItems.iterator().next().productNumber).isEqualTo(1)
+        assertThat(body.orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(body.updatedAt).isAfterOrEqualTo(body.createdAt)
@@ -131,9 +137,10 @@ class OrderResourceTest @Autowired constructor(
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     ),
@@ -155,7 +162,7 @@ class OrderResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body[0].orderNumber).isEqualTo(orderCreated.orderNumber)
-        assertThat(body[0].orderItems.iterator().next().productNumber).isEqualTo(1)
+        assertThat(body[0].orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(body[0].orderItems.iterator().next().quantity).isEqualTo(3)
         assertThat(body[0].orderStatus).isEqualTo(OrderStatusDTO.CREATED)
     }
@@ -170,7 +177,7 @@ class OrderResourceTest @Autowired constructor(
 
         // given
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=1&ids=2")
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -180,13 +187,13 @@ class OrderResourceTest @Autowired constructor(
                                 .writeValueAsString(
                                     listOf(
                                         SearchProductResponse(
-                                            productNumber = 1L,
+                                            productNumber = "1",
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00"),
                                         ),
                                         SearchProductResponse(
-                                            productNumber = 2L,
+                                            productNumber = "2",
                                             name = "test2",
                                             quantity = 4,
                                             price = BigDecimal("30.00")
@@ -199,7 +206,7 @@ class OrderResourceTest @Autowired constructor(
 
         // given
         stubFor(
-            WireMock.get("/api/v1/products/details?ids=2&ids=1")
+            WireMock.get("/api/v1/products/details?productNumbers=2&productNumbers=1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -209,13 +216,13 @@ class OrderResourceTest @Autowired constructor(
                                 .writeValueAsString(
                                     listOf(
                                         SearchProductResponse(
-                                            productNumber = 1L,
+                                            productNumber ="1" ,
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00"),
                                         ),
                                         SearchProductResponse(
-                                            productNumber = 2L,
+                                            productNumber = "2",
                                             name = "test2",
                                             quantity = 4,
                                             price = BigDecimal("30.00")
@@ -228,7 +235,7 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=2&ids=1")
+            WireMock.get("/api/v1/accountancy/sale-price?productNumbers=2&productNumbers=1")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -237,7 +244,7 @@ class OrderResourceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(1, BigDecimal("40.00")), Pair(2, BigDecimal("60.00"))
+                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
                                     )
                                 )
                         )
@@ -248,7 +255,7 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?ids=1&ids=2")
+            WireMock.get("/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -257,7 +264,7 @@ class OrderResourceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(1, BigDecimal("40.00")), Pair(2, BigDecimal("60.00"))
+                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
                                     )
                                 )
                         )
@@ -270,14 +277,15 @@ class OrderResourceTest @Autowired constructor(
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CREATED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productNumber = "1",
                             quantity = 1
                         ),
                         OrderItem(
-                            productId = 2L,
+                            productNumber = "2",
                             quantity = 2
                         )
                     )
@@ -287,16 +295,17 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val response = restTemplate
-            .exchange("$baseUrl/api/v1/orders/${order.id}/details", GET, null, respTypeRef<OrderDetailsDTO>())
+            .exchange("$baseUrl/api/v1/orders/${order.orderNumber}/details", GET, null, respTypeRef<OrderDetailsDTO>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
 
         // and
         val body = response.body.get("body")
+        assertThat(body.orderNumber).isEqualTo("1")
         assertThat(body.orderItemDetails).hasSize(2)
         assertThat(body.orderItemDetails.iterator().next().name).isEqualTo("test1")
-        assertThat(body.orderItemDetails.iterator().next().productNumber).isEqualTo(1)
+        assertThat(body.orderItemDetails.iterator().next().productNumber).isEqualTo("1")
         assertThat(body.orderItemDetails.iterator().next().quantity).isEqualTo(1)
         assertThat(body.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal("40.00").setScale(2))
         assertThat(body.total).isEqualTo((BigDecimal("160").setScale(2)))
@@ -305,14 +314,20 @@ class OrderResourceTest @Autowired constructor(
     @Test
     fun `should confirm order`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val order = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderStatus = OrderStatus.CREATED,
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1,
+                            productNumber = "1",
                             quantity = 1
                         ),
                     )
@@ -332,10 +347,10 @@ class OrderResourceTest @Autowired constructor(
                                 CreateOutcomeInvoiceRequest(
                                     listOf(
                                         ItemDTO(
-                                            productId = 1,
+                                            productNumber = "1",
                                             quantity = 1
                                         )
-                                    ), order.id ?: -1
+                                    ), order.orderNumber
                                 )
                             )
                     )
@@ -347,7 +362,7 @@ class OrderResourceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     ConfirmOrderResponse(
-                                        orderNumber = order.id.get(),
+                                        orderNumber = order.orderNumber,
                                         amount = BigDecimal("20.00")
                                     )
                                 )
@@ -356,14 +371,14 @@ class OrderResourceTest @Autowired constructor(
         )
 
         // and
-        val http = HttpEntity(order.id ?: -1)
+        val http = HttpEntity(order.orderNumber)
 
         // when
         val invoice = restTemplate
             .exchange("$baseUrl/api/v1/orders/confirm", POST, http, respTypeRef<ConfirmOrderResponse>())
 
         // then
-        assertThat(invoice.body?.orderNumber).isEqualTo(order.id.get())
+        assertThat(invoice.body?.orderNumber).isEqualTo(order.orderNumber)
     }
 
     @Test
@@ -379,17 +394,19 @@ class OrderResourceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderNumber = "1",
                         orderItems = setOf(
                             OrderItem(
-                                productId = 1,
+                                productNumber = "1",
                                 quantity = 2
                             ),
                         )
                     ),
                     Order(
+                        orderNumber = "2",
                         orderItems = setOf(
                             OrderItem(
-                                productId = 3,
+                                productNumber = "3",
                                 quantity = 4
                             ),
                         )
@@ -414,13 +431,17 @@ class OrderResourceTest @Autowired constructor(
     @Test
     fun `should update order`() {
 
+        // setup
+        transactionTemplate.execute { orderRepository.deleteAll() }
+
         // given
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
-                            productId = 1L,
+                            productNumber = "1",
                             quantity = 3
                         )
                     )
@@ -433,7 +454,7 @@ class OrderResourceTest @Autowired constructor(
             UpdateOrderRequest(
                 listOf(
                     OrderItemDTO(
-                        productNumber = 1L,
+                        productNumber = "1",
                         quantity = 5
                     )
                 )
@@ -455,8 +476,9 @@ class OrderResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body).isNotNull
+        assertThat(body.orderNumber).isNotEqualTo("undefined")
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(5)
-        assertThat(body.orderItems.iterator().next().productNumber).isEqualTo(1)
+        assertThat(body.orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
         assertThat(body.createdAt).isBefore(LocalDateTime.now())
         assertThat(body.updatedAt).isAfter(body.createdAt)
@@ -474,19 +496,21 @@ class OrderResourceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderNumber = "1",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 4,
+                                productNumber = "4",
                                 quantity = 3
                             )
                         ),
                     ),
                     Order(
+                        orderNumber = "2",
                         orderStatus = OrderStatus.CONFIRMED,
                         orderItems = setOf(
                             OrderItem(
-                                productId = 5,
+                                productNumber = "5",
                                 quantity = 5
                             )
                         ),

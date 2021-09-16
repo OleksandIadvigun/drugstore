@@ -2,35 +2,40 @@ package sigma.software.leovegas.drugstore.accountancy
 
 open class AccountancyServiceException(message: String) : RuntimeException(message)
 
-open class OrderAlreadyConfirmedException(orderNumber: Long) :
+open class OrderAlreadyConfirmedException(orderNumber: String) :
     AccountancyServiceException("Order($orderNumber) already has invoice.")
 
-class InvoiceAlreadyPaidException(orderNumber: Long?) :
+class InvoiceAlreadyPaidException(orderNumber: String) :
     AccountancyServiceException("Order($orderNumber) already paid. Please, first do refund.")
 
 class ProductIdCannotBeNullException
-    : AccountancyServiceException("Product id cannot be null or negative.")
+    : AccountancyServiceException("Product number cannot be null or negative.")
 
-class OrderContainsInvalidProductsException(productNumbers: List<Number> = listOf()) :
+class OrderContainsInvalidProductsException(productNumbers: List<String> = listOf()) :
     AccountancyServiceException("Order contains invalid products: ${productNumbers.joinToString(separator = ", ")}.")
 
 class InvalidStatusOfInvoice() :
     AccountancyServiceException("The invoice status should be CREATED to be paid, but status found is invalid.")
 
-class InvoiceNotFoundException(orderNumbers: Long) :
+class InvoiceNotFoundException(orderNumbers: String) :
     AccountancyServiceException("Invoice of Order($orderNumbers) not found.")
 
-class NotPaidInvoiceException(id: Long) : AccountancyServiceException("The invoice with id = $id is not paid.")
+class NotPaidInvoiceException(invoiceNumber: String)
+    : AccountancyServiceException("The invoice with invoice number = $invoiceNumber is not paid.")
 
 class ProductServiceResponseException(message: String) :
     AccountancyServiceException("Ups... some problems in product service. $message.]")
 
 class OrderServiceResponseException(message: String) :
-    AccountancyServiceException("Ups... some problems in accountancy service. $message.]")
+    AccountancyServiceException("Ups... some problems in order service. $message.]")
 
 class StoreServiceResponseException(message: String) :
-    AccountancyServiceException("Ups... some problems in accountancy service. $message.]")
+    AccountancyServiceException("Ups... some problems in store service. $message.]")
 
 class NotEnoughMoneyException() : AccountancyServiceException("Not enough money for this transaction.")
 
 class ProductsItemsAreEmptyException() : AccountancyServiceException("Products items should be not empty.")
+
+class RabbitSendException(message: String):
+    AccountancyServiceException("Ups... some problems in accountancy service with rabbit. $message.]")
+

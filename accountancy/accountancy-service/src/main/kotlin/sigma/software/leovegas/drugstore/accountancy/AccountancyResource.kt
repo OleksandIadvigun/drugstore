@@ -43,33 +43,33 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/pay/{orderNumber}")
-    fun payInvoice(@PathVariable orderNumber: Long, @RequestBody money: BigDecimal): ConfirmOrderResponse =
+    fun payInvoice(@PathVariable orderNumber: String, @RequestBody money: BigDecimal): ConfirmOrderResponse =
         service.payInvoice(orderNumber, money)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/cancel/{orderNumber}")
-    fun cancelInvoice(@PathVariable orderNumber: Long): ConfirmOrderResponse =
+    fun cancelInvoice(@PathVariable orderNumber: String): ConfirmOrderResponse =
         service.cancelInvoice(orderNumber)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/refund/{orderNumber}")
-    fun refundInvoice(@PathVariable orderNumber: Long): ConfirmOrderResponse =
+    fun refundInvoice(@PathVariable orderNumber: String): ConfirmOrderResponse =
         service.refundInvoice(orderNumber)
 
     @ResponseStatus(OK)
-    @GetMapping("/invoice/{orderNumber}")
-    fun getInvoiceById(@PathVariable orderNumber: Long): InvoiceResponse =
-        service.getInvoiceById(orderNumber)
+    @GetMapping("/invoice/{invoiceNumber}")
+    fun getInvoiceByInvoiceNumber(@PathVariable invoiceNumber: String): InvoiceResponse =
+        service.getInvoiceByInvoiceNumber(invoiceNumber)
 
     @ResponseStatus(OK)
-    @GetMapping("/invoice/details/order-id/{orderNumber}")
-    fun getInvoiceDetailsByOrderNumber(@PathVariable orderNumber: Long): List<ItemDTO> =
+    @GetMapping("/invoice/details/order-number/{orderNumber}")
+    fun getInvoiceDetailsByOrderNumber(@PathVariable orderNumber: String): List<ItemDTO> =
         service.getInvoiceDetailsByOrderNumber(orderNumber)
 
     @ResponseStatus(OK)
     @GetMapping("/sale-price")
-    fun getSalePrice(@RequestParam("ids") ids: List<Long>): Map<Long, BigDecimal> =
-        service.getSalePrice(ids)
+    fun getSalePrice(@RequestParam("productNumbers") productNumbers: List<String>): Map<String, BigDecimal> =
+        service.getSalePrice(productNumbers)
 
     @ExceptionHandler(Throwable::class)
     fun handleNotFound(e: Throwable) = run {
