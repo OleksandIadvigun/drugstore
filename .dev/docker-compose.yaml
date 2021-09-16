@@ -7,10 +7,6 @@ services:
   db_product:
     container_name: db_product
     image: mysql:8.0.26
-    security_opt:
-      - seccomp:unconfined
-#    volumes:
-#      - ./mysql:/var/lib/mysql
     restart: on-failure
     environment:
       MYSQL_ROOT_PASSWORD: admin
@@ -19,6 +15,11 @@ services:
       MYSQL_PASSWORD: admin
     ports: [ '13008:3306' ]
     networks: [ drugstore ]
+    healthcheck:
+      retries: 9
+      timeout: 20s
+      interval: 5s
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
   product-service:
     container_name: product
     restart: on-failure
@@ -28,11 +29,11 @@ services:
       dockerfile: ./Dockerfile
     ports: [ '8081:8081' ]
     networks: [ drugstore ]
-    depends_on: [ db_product ]
+    depends_on:
+      db_product:
+        condition: service_healthy
   db_order:
     container_name: db_order
-    security_opt:
-      - seccomp:unconfined
     image: mysql:8.0.26
     restart: on-failure
     environment:
@@ -42,11 +43,11 @@ services:
       MYSQL_PASSWORD: admin
     ports: [ "13017:3306" ]
     networks: [ drugstore ]
-  #    healthcheck:
-  #      retries: 9
-  #      timeout: 3s
-  #      interval: 3s
-  #      test: [ "CMD", "mysqladmin" ,"ping", "-h", "127.0.0.2" ]
+    healthcheck:
+      retries: 9
+      timeout: 20s
+      interval: 5s
+      test:  ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
   order-service:
     container_name: order
     image: drugstore/order-service
@@ -56,13 +57,11 @@ services:
       dockerfile: ./Dockerfile
     ports: [ '8082:8082' ]
     networks: [ drugstore ]
-    depends_on: [db_order]
-#      order-mysql:
-#        condition: service_healthy
+    depends_on:
+      db_order:
+        condition: service_healthy
   db_store:
     container_name: db_store
-    security_opt:
-      - seccomp:unconfined
     image: mysql:8.0.26
     restart: on-failure
     environment:
@@ -72,6 +71,11 @@ services:
       MYSQL_PASSWORD: admin
     ports: [ "13029:3306" ]
     networks: [ drugstore ]
+    healthcheck:
+      retries: 9
+      timeout: 20s
+      interval: 5s
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
   store-service:
     container_name: store
     restart: on-failure
@@ -81,11 +85,11 @@ services:
       dockerfile: ./Dockerfile
     ports: [ '8083:8083' ]
     networks: [ drugstore ]
-    depends_on: [ db_store ]
+    depends_on:
+      db_store:
+        condition: service_healthy
   db_accountancy:
     container_name: db_accountancy
-    security_opt:
-      - seccomp:unconfined
     image: mysql:8.0.26
     restart: on-failure
     environment:
@@ -95,6 +99,11 @@ services:
       MYSQL_PASSWORD: admin
     ports: [ "13020:3306" ]
     networks: [ drugstore ]
+    healthcheck:
+      retries: 9
+      timeout: 20s
+      interval: 5s
+      test:  ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
   accountancy-service:
     container_name: accountancy
     restart: on-failure
@@ -104,4 +113,6 @@ services:
       dockerfile: ./Dockerfile
     ports: [ '8084:8084' ]
     networks: [ drugstore ]
-    depends_on: [ db_accountancy ]
+    depends_on:
+      db_accountancy:
+        condition: service_healthy
