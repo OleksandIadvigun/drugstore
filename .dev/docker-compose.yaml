@@ -7,19 +7,21 @@ services:
   db_product:
     container_name: db_product
     image: mysql:8.0.26
+    security_opt:
+      - seccomp:unconfined
 #    volumes:
 #      - ./mysql:/var/lib/mysql
-    restart: always
+    restart: on-failure
     environment:
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_DATABASE: db_product
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
-    ports: [ '3308:3306' ]
+    ports: [ '13008:3306' ]
     networks: [ drugstore ]
   product-service:
     container_name: product
-    restart: always
+    restart: on-failure
     image: drugstore/product-service
     build:
       context: ../product/product-service/
@@ -29,14 +31,16 @@ services:
     depends_on: [ db_product ]
   db_order:
     container_name: db_order
+    security_opt:
+      - seccomp:unconfined
     image: mysql:8.0.26
-    restart: always
+    restart: on-failure
     environment:
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_DATABASE: db_order
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
-    ports: [ "3307:3306" ]
+    ports: [ "13017:3306" ]
     networks: [ drugstore ]
   #    healthcheck:
   #      retries: 9
@@ -46,6 +50,7 @@ services:
   order-service:
     container_name: order
     image: drugstore/order-service
+    restart: on-failure
     build:
       context: ../order/order-service/
       dockerfile: ./Dockerfile
@@ -56,17 +61,20 @@ services:
 #        condition: service_healthy
   db_store:
     container_name: db_store
+    security_opt:
+      - seccomp:unconfined
     image: mysql:8.0.26
-    restart: always
+    restart: on-failure
     environment:
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_DATABASE: db_store
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
-    ports: [ "3309:3306" ]
+    ports: [ "13029:3306" ]
     networks: [ drugstore ]
   store-service:
     container_name: store
+    restart: on-failure
     image: drugstore/store-service
     build:
       context: ../store/store-service/
@@ -76,17 +84,20 @@ services:
     depends_on: [ db_store ]
   db_accountancy:
     container_name: db_accountancy
+    security_opt:
+      - seccomp:unconfined
     image: mysql:8.0.26
-    restart: always
+    restart: on-failure
     environment:
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_DATABASE: db_accountancy
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
-    ports: [ "3309:3306" ]
+    ports: [ "13020:3306" ]
     networks: [ drugstore ]
   accountancy-service:
     container_name: accountancy
+    restart: on-failure
     image: drugstore/accountancy-service
     build:
       context: ../accountancy/accountancy-service/
