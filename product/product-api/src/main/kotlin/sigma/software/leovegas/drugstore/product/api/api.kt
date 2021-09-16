@@ -12,6 +12,10 @@ data class CreateProductRequest(
     val price: BigDecimal = BigDecimal.ZERO,
 )
 
+data class CreateProductsEvent(
+    val list: List<CreateProductRequest> = listOf()
+)
+
 data class DeliverProductsQuantityRequest(
     val productNumber: String = "undefined",
     val quantity: Int = 0,
@@ -51,13 +55,13 @@ data class CreateProductResponse(
 )
 
 data class DeliverProductsResponse(
-    val productNumber:String  = "undefined",
+    val productNumber: String = "undefined",
     val quantity: Int = 0,
     val updatedAt: LocalDateTime? = null
 )
 
 data class ReceiveProductResponse(
-    val productNumber: String  = "undefined",
+    val productNumber: String = "undefined",
     val status: ProductStatusDTO = ProductStatusDTO.NONE
 )
 

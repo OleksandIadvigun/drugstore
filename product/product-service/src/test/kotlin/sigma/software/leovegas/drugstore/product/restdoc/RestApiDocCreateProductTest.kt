@@ -14,6 +14,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.product.ProductProperties
 import sigma.software.leovegas.drugstore.product.ProductRepository
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 
 @DisplayName("Create product REST API Doc test")
 class RestApiDocCreateProductTest @Autowired constructor(
@@ -34,12 +35,14 @@ class RestApiDocCreateProductTest @Autowired constructor(
         val body = objectMapper
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(
-                listOf(
-                    CreateProductRequest(
-                        productNumber = "1",
-                        name = "test",
-                        price = BigDecimal("20.00"),
-                        quantity = 5
+                CreateProductsEvent(
+                    listOf(
+                        CreateProductRequest(
+                            productNumber = "1",
+                            name = "test",
+                            price = BigDecimal("20.00"),
+                            quantity = 5
+                        )
                     )
                 )
             )
@@ -50,7 +53,7 @@ class RestApiDocCreateProductTest @Autowired constructor(
             .post("http://${productProperties.host}:$port/api/v1/products")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("[0].productNumber",  equalTo("1"))
+            .assertThat().body("[0].productNumber", equalTo("1"))
             .assertThat().body("[0].name", equalTo("test"))
             .assertThat().body("[0].createdAt", not(emptyString()))
             .assertThat().body("[0].updatedAt", not(emptyString()))

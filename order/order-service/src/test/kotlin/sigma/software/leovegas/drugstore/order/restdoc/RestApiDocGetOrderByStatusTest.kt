@@ -12,7 +12,7 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderService
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @DisplayName("Get order by status REST API Doc test")
@@ -35,7 +35,8 @@ class RestApiDocGetOrderByStatusTest @Autowired constructor(
         // and
         val orderCreated = transactionTemplate.execute {
             orderService.createOrder(
-                CreateOrderRequest(
+                CreateOrderEvent(
+                    orderItems =
                     listOf(
                         OrderItemDTO(
                             productNumber = "1",

@@ -85,11 +85,10 @@ Content-Type: application/json; charset=UTF-8
 
 > {%
 client.test("should create order", function() {
-     client.global.set("order_number_outcome",response.body.orderNumber);
+   client.log(response.body)
+     client.global.set("order_number_outcome",response.body);
      client.assert(response.status === 201, "Response status is not 201");
-     client.assert(response.body.orderNumber !== "undefined", "Order number is not undefined");
-     client.assert(response.body.orderStatus === "CREATED", "Order status is not created");
-     client.assert(response.body.orderItems[0].quantity === 5, "Order item quantity is not 5");
+     client.assert(response.body !== "undefined", "Order number is not undefined");
 });
 %}
 
@@ -113,10 +112,7 @@ Content-Type: application/json; charset=UTF-8
 > {%
 client.test("should update order", function() {
      client.assert(response.status === 202, "Response status is not 202");
-     client.assert(response.body.orderNumber !== "undefined", "Order number is not undefined");
-     client.assert(response.body.orderStatus === "UPDATED", "Order status is not updated");
-     client.assert(response.body.orderItems[0].quantity === 3,"Order item quantity is not 3");
-     client.assert(response.body.orderItems[1].quantity === 4, "Order item quantity is not 4");
+     client.assert(response.body === "Updated", "Order is not updated");
 });
 %}
 
@@ -144,8 +140,7 @@ Content-Type: application/json; charset=UTF-8
 > {%
 client.test("should confirm order", function() {
      client.assert(response.status === 201, "Response status is not 201");
-     client.assert(response.body.orderNumber === client.global.get("order_number_outcome"), "Order number is not 1");
-     client.assert(response.body.amount === 440, "Amount is not 440");
+     client.assert(response.body === "Confirmed", "Order is not confirmed");
 });
 %}
 
@@ -207,11 +202,9 @@ Content-Type: application/json; charset=UTF-8
 
 > {%
 client.test("should create order", function() {
-     client.global.set("order_number_outcome2",response.body.orderNumber);
+     client.global.set("order_number_outcome2",response.body);
      client.assert(response.status === 201, "Response status is not 201");
-     client.assert(response.body.orderNumber !== "undefined", "Order number is not undefined");
-     client.assert(response.body.orderStatus === "CREATED", "Order status is not created");
-     client.assert(response.body.orderItems[0].quantity === 4, "Order item quantity is not 4");
+     client.assert(response.body !== "undefined", "Order number is not undefined");
 });
 %}
 
@@ -237,8 +230,8 @@ Content-Type: application/json; charset=UTF-8
 > {%
 client.test("should confirm order", function() {
      client.assert(response.status === 201, "Response status is not 201");
-     client.assert(response.body.orderNumber === client.global.get("order_number_outcome2") , "Order number is not 1");
-     client.assert(response.body.amount === 120, "Amount is not 120");
+     client.assert(response.body === "Confirmed", "Order is not confirmed");
+
 });
 %}
 

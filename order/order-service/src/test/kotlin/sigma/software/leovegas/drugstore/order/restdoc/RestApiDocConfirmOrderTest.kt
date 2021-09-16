@@ -6,6 +6,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import io.restassured.RestAssured
+import io.restassured.parsing.Parser
 import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
@@ -15,7 +17,7 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.order.Order
@@ -33,6 +35,7 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
     val objectMapper: ObjectMapper,
     val orderProperties: OrderProperties
 ) : RestApiDocumentationTest(orderProperties) {
+
 
     @Test
     fun `should confirm order`() {
@@ -59,7 +62,7 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
         }.get()
 
         // and
-        val request = CreateOutcomeInvoiceRequest(
+        val request = CreateOutcomeInvoiceEvent(
             listOf(
                 ItemDTO(
                     productNumber = "1",
@@ -95,14 +98,13 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
                         )
                 )
         )
-
+        RestAssured.registerParser("text/plain", Parser.TEXT);
         of("confirm-order").`when`()
             .body(order.orderNumber)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .post("http://${orderProperties.host}:$port/api/v1/orders/confirm")
             .then()
             .assertThat().statusCode(201)
-            .assertThat().body("orderNumber", equalTo(order.orderNumber))
-            .assertThat().body("amount", equalTo(20.0F))
+            .assertThat().body(equalTo("Confirmed"))
     }
 }

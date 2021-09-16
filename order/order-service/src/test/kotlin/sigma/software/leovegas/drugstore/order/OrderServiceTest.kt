@@ -15,21 +15,23 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
 @AutoConfigureTestDatabase
 @DisplayName("OrderService test")
+@Import(CustomTestConfig::class)
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
     val orderService: OrderService,
@@ -40,9 +42,15 @@ class OrderServiceTest @Autowired constructor(
     @Test
     fun `should create order`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
-        val order = CreateOrderRequest(
-            listOf(
+        val order = CreateOrderEvent(
+            orderNumber = "1",
+            orderItems = listOf(
                 OrderItemDTO(
                     productNumber = "1",
                     quantity = 3
@@ -74,7 +82,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
-            orderService.createOrder(CreateOrderRequest(listOf()))
+            orderService.createOrder(CreateOrderEvent(orderItems = listOf()))
         }
 
         // then
@@ -171,6 +179,7 @@ class OrderServiceTest @Autowired constructor(
             orderRepository.saveAll(
                 listOf(
                     Order(
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderNumber = "1",
                         orderItems = setOf(
                             OrderItem(
@@ -180,6 +189,7 @@ class OrderServiceTest @Autowired constructor(
                         )
                     ),
                     Order(
+                        orderStatus = OrderStatus.CONFIRMED,
                         orderNumber = "2",
                         orderItems = setOf(
                             OrderItem(
@@ -223,7 +233,8 @@ class OrderServiceTest @Autowired constructor(
         }?.toOrderResponseDTO().get()
 
         // and
-        val updateOrderRequest = UpdateOrderRequest(
+        val updateOrderEvent = UpdateOrderEvent(
+            orderNumber = orderToChange.orderNumber,
             orderItems = listOf(
                 OrderItemDTO(
                     productNumber = "1",
@@ -234,7 +245,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val changedOrder = transactionTemplate.execute {
-            orderService.updateOrder(orderToChange.orderNumber, updateOrderRequest)
+            orderService.updateOrder(updateOrderEvent)
         }.get()
 
         // then
@@ -300,7 +311,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
-            orderService.updateOrder(orderToUpdate.orderNumber, UpdateOrderRequest(listOf()))
+            orderService.updateOrder(UpdateOrderEvent(orderToUpdate.orderNumber, listOf()))
         }
 
         // then
@@ -317,7 +328,8 @@ class OrderServiceTest @Autowired constructor(
         val nonExitingOrderNumber = "not"
 
         // and
-        val request = UpdateOrderRequest(
+        val request = UpdateOrderEvent(
+            nonExitingOrderNumber,
             listOf(
                 OrderItemDTO(
                     productNumber = "5",
@@ -328,7 +340,7 @@ class OrderServiceTest @Autowired constructor(
 
         // when
         val exception = assertThrows<OrderNotFoundException> {
-            orderService.updateOrder(nonExitingOrderNumber, request)
+            orderService.updateOrder(request)
         }
 
         // then
@@ -459,6 +471,7 @@ class OrderServiceTest @Autowired constructor(
 
     }
 
+
     @Test
     fun `should confirm order`() {
 
@@ -492,7 +505,7 @@ class OrderServiceTest @Autowired constructor(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
                             .writeValueAsString(
-                                CreateOutcomeInvoiceRequest(
+                                CreateOutcomeInvoiceEvent(
                                     listOf(
                                         ItemDTO(
                                             productNumber = "1",
@@ -519,77 +532,10 @@ class OrderServiceTest @Autowired constructor(
         )
 
         // when
-        val invoice = orderService.confirmOrder(order.orderNumber)
+        val response = orderService.confirmOrder(order.orderNumber)
 
         // then
-        assertThat(invoice.orderNumber).isEqualTo(order.orderNumber)
-        assertThat(invoice.amount).isEqualTo(BigDecimal("20.00"))
-    }
-
-    @Test
-    fun `should not confirm order if accountancy server is unavailable`() {
-
-        // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
-
-        // given
-        val order = transactionTemplate.execute {
-            orderRepository.save(
-                Order(
-                    orderNumber = "100ppp",
-                    orderStatus = OrderStatus.CREATED,
-                    orderItems = setOf(
-                        OrderItem(
-                            productNumber = "1",
-                            quantity = 1
-                        ),
-                    )
-                )
-            )
-        }.get()
-
-        // when
-        val exception = assertThrows<AccountancyServerException> {
-            orderService.confirmOrder(order.orderNumber)
-        }
-
-        // then
-        assertThat(exception.message).startsWith("Ups... some problems in accountancy service.")
-    }
-
-    @Test
-    fun `should not confirm order if orderStatus is not CREATED or UPDATED `() {
-
-        // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
-
-        // given
-        val order = transactionTemplate.execute {
-            orderRepository.save(
-                Order(
-                    orderNumber = "1",
-                    orderStatus = OrderStatus.CONFIRMED,
-                    orderItems = setOf(
-                        OrderItem(
-                            productNumber = "1",
-                            quantity = 1
-                        ),
-                    )
-                )
-            )
-        }.get()
-
-        // when
-        val exception = assertThrows<OrderStatusException> {
-            orderService.confirmOrder(order.orderNumber)
-        }
-
-        // then
-        assertThat(exception.message).contains("Order is already confirmed or cancelled")
+        assertThat(response).isEqualTo("Confirmed")
     }
 
     @Test

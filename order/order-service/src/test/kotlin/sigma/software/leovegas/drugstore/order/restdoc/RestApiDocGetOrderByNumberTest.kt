@@ -10,7 +10,7 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderService
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @DisplayName("Get order by id REST API Doc test")
@@ -27,7 +27,8 @@ class RestApiDocGetOrderByNumberTest @Autowired constructor(
         // given
         val orderCreated = transactionTemplate.execute {
             orderService.createOrder(
-                CreateOrderRequest(
+                CreateOrderEvent(
+                    orderItems =
                     listOf(
                         OrderItemDTO(
                             productNumber = "1",

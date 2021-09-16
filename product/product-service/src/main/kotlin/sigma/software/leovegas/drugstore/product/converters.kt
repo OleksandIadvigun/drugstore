@@ -12,7 +12,7 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 // CreateProductRequest <-> Product entity
 
 fun CreateProductRequest.toEntity() = Product(
-    productNumber=productNumber,
+    productNumber = productNumber,
     name = name,
     quantity = quantity,
     price = price,

@@ -17,6 +17,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.HSQLDialect
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+#  rabbitmq:
+#    host: localhost
+#    port: 5672
+#    username: guest
+#    password: guest
 order:
   host: 127.0.0.2
   port: 8079
@@ -26,4 +31,4 @@ product:
 accountancy:
   host: 127.0.0.4
   port: 8079
-
+#spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration

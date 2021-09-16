@@ -4,8 +4,8 @@ import feign.Headers
 import feign.Param
 import feign.RequestLine
 import java.math.BigDecimal
-import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
@@ -17,7 +17,7 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 interface ProductClient {
 
     @RequestLine("POST /api/v1/products")
-    fun createProduct(request: List<CreateProductRequest>): List<CreateProductResponse>
+    fun createProduct(event: CreateProductsEvent): List<CreateProductResponse>
 
     @RequestLine(
         "GET /api/v1/products/search?page={page}&size={size}&search={search}&sortField={sortField}&sortDirection={sortDirection}"

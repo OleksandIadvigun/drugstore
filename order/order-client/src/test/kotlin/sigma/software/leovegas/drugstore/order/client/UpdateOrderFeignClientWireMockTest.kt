@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -16,9 +15,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
-import sigma.software.leovegas.drugstore.order.api.OrderResponse
-import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.UPDATED
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 
 @SpringBootApplication
 internal class UpdateOrderFeignClientWireMockTestApp
@@ -34,22 +31,14 @@ class UpdateOrderFeignClientWireMockTest @Autowired constructor(
     fun `should update order`() {
 
         // given
-        val request = UpdateOrderRequest(
+        val request = UpdateOrderEvent(
+            orderNumber = "1",
             listOf(
                 OrderItemDTO(
                     productNumber = "1",
                     quantity = 4
                 )
             )
-        )
-
-        // and
-        val responseExpected = OrderResponse(
-            orderNumber = "1",
-            orderStatus = UPDATED,
-            orderItems = request.orderItems,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now().plusMinutes(1),
         )
 
         // and
@@ -68,7 +57,7 @@ class UpdateOrderFeignClientWireMockTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(responseExpected)
+                                .writeValueAsString("Updated")
                         )
                         .withStatus(HttpStatus.ACCEPTED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -79,14 +68,6 @@ class UpdateOrderFeignClientWireMockTest @Autowired constructor(
         val responseActual = orderClient.updateOrder("1", request)
 
         //  then
-        assertThat(responseActual.orderNumber).isEqualTo("1")
-        assertThat(responseActual.orderStatus).isEqualTo(UPDATED)
-        assertThat(responseActual.createdAt).isBefore(LocalDateTime.now())
-        assertThat(responseActual.updatedAt).isAfter(LocalDateTime.now())
-        assertThat(responseActual.orderItems).hasSize(1)
-
-        // and
-        assertThat(responseActual.orderItems.iterator().next().productNumber).isEqualTo("1")
-        assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(4)
+        assertThat(responseActual).isEqualTo("Updated")
     }
 }

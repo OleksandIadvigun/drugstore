@@ -6,13 +6,14 @@ networks:
 services:
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:3-management
+    image: rabbitmq:3.6.6-management-alpine
     environment:
-#      - RABBITMQ_CONFIG_FILE=/etc/rabbitmq/rabbitmq.conf
-      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log [{console,[{level,debug}]}]
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks: [ drugstore ]
   db_product:
     ulimits:
       memlock:
@@ -33,7 +34,7 @@ services:
       retries: 20
       timeout: 40s
       interval: 10s
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
   product-service:
     container_name: product
     restart: on-failure
@@ -66,7 +67,7 @@ services:
       retries: 20
       timeout: 40s
       interval: 10s
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
   order-service:
     container_name: order
     image: drugstore/order-service
@@ -99,7 +100,7 @@ services:
       retries: 20
       timeout: 40s
       interval: 10s
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
   store-service:
     container_name: store
     restart: on-failure
@@ -132,7 +133,7 @@ services:
       retries: 20
       timeout: 40s
       interval: 10s
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
   accountancy-service:
     container_name: accountancy
     restart: on-failure

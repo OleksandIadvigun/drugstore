@@ -20,8 +20,8 @@ class InvalidStatusOfInvoice() :
 class InvoiceNotFoundException(orderNumbers: String) :
     AccountancyServiceException("Invoice of Order($orderNumbers) not found.")
 
-class NotPaidInvoiceException(invoiceNumber: String)
-    : AccountancyServiceException("The invoice with invoice number = $invoiceNumber is not paid.")
+class NotPaidInvoiceException(invoiceNumber: String) :
+    AccountancyServiceException("The invoice with invoice number = $invoiceNumber is not paid.")
 
 class ProductServiceResponseException(message: String) :
     AccountancyServiceException("Ups... some problems in product service. $message.]")
@@ -36,6 +36,6 @@ class NotEnoughMoneyException() : AccountancyServiceException("Not enough money 
 
 class ProductsItemsAreEmptyException() : AccountancyServiceException("Products items should be not empty.")
 
-class RabbitSendException(message: String):
+class RabbitSendException(message: String) :
     AccountancyServiceException("Ups... some problems in accountancy service with rabbit. $message.]")
 

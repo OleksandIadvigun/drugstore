@@ -3,7 +3,6 @@ package sigma.software.leovegas.drugstore.accountancy
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
@@ -11,15 +10,11 @@ import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
@@ -29,7 +24,7 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
@@ -40,8 +35,6 @@ import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
 @DisplayName("Accountancy Resource test")
-@SpringBootTest(webEnvironment = RANDOM_PORT)
-@AutoConfigureWireMock(port = 8079)
 class AccountancyResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val restTemplate: TestRestTemplate,
@@ -49,7 +42,7 @@ class AccountancyResourceTest @Autowired constructor(
     val invoiceRepository: InvoiceRepository,
     val accountancyProperties: AccountancyProperties,
     val objectMapper: ObjectMapper
-) {
+) : WireMockTest() {
 
     lateinit var baseUrl: String
 
@@ -61,12 +54,12 @@ class AccountancyResourceTest @Autowired constructor(
     @Test
     fun `should create outcome invoice`() {
 
-        // given
+        // setup
         transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val invoiceRequest = listOf(
             ItemDTO(
                 productNumber = "1",
@@ -74,6 +67,7 @@ class AccountancyResourceTest @Autowired constructor(
             )
         )
 
+        // and
         val productsDetails = listOf(
             ProductDetailsResponse(
                 productNumber = "1",
@@ -83,6 +77,7 @@ class AccountancyResourceTest @Autowired constructor(
             )
         )
 
+        // and
         stubFor(
             WireMock.get("/api/v1/products/details?productNumbers=${invoiceRequest[0].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -115,8 +110,9 @@ class AccountancyResourceTest @Autowired constructor(
                 )
         )
 
+        // and
         val httpEntity = HttpEntity(
-            CreateOutcomeInvoiceRequest(invoiceRequest, "1")
+            CreateOutcomeInvoiceEvent(invoiceRequest, "1")
         )
 
         // when
@@ -128,7 +124,7 @@ class AccountancyResourceTest @Autowired constructor(
         )
 
         // then
-         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
 
         // and
         val body = response.body.get("body")
@@ -136,14 +132,13 @@ class AccountancyResourceTest @Autowired constructor(
         assertThat(body.orderNumber).isEqualTo("1")
     }
 
-    @Disabled
     @Test
     fun `should create income invoice`() {
 
-        // given
+        // setup
         transactionalTemplate.execute { invoiceRepository.deleteAll() }
 
-        // and
+        // given
         val invoiceRequest = CreateIncomeInvoiceRequest(
             productItems = listOf(
                 ProductItemDtoRequest(
@@ -173,7 +168,7 @@ class AccountancyResourceTest @Autowired constructor(
             )
         )
 
-
+        // and
         val productsDetails = listOf(
             ProductDetailsResponse(
                 productNumber = "1",
@@ -189,6 +184,7 @@ class AccountancyResourceTest @Autowired constructor(
             )
         )
 
+        // and
         stubFor(
             post("/api/v1/products")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -210,6 +206,7 @@ class AccountancyResourceTest @Autowired constructor(
                 )
         )
 
+        // and
         val httpEntity = HttpEntity(invoiceRequest)
 
         // when
@@ -270,12 +267,12 @@ class AccountancyResourceTest @Autowired constructor(
     @Test
     fun `should get invoice details by order number`() {
 
-        // given
+        // setup
         transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -314,12 +311,12 @@ class AccountancyResourceTest @Autowired constructor(
     @Test
     fun `should refund invoice`() {
 
-        // given
+        // setup
         transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -339,6 +336,7 @@ class AccountancyResourceTest @Autowired constructor(
             )
         }.get()
 
+        // and
         stubFor(
             WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -373,12 +371,12 @@ class AccountancyResourceTest @Autowired constructor(
     @Test
     fun `should pay invoice`() {
 
-        // given
+        // setup
         transactionalTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -423,17 +421,17 @@ class AccountancyResourceTest @Autowired constructor(
     @Test
     fun `should cancel invoice by order number`() {
 
+        // setup
+        transactionalTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
+        // and
+        transactionalTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
         // given
-        transactionalTemplate.execute {
-            invoiceRepository.deleteAll()
-        }
-
-        // and
-        transactionalTemplate.execute {
-            invoiceRepository.deleteAll()
-        }
-
-        // and
         val savedInvoice = transactionalTemplate.execute {
             invoiceRepository.save(
                 Invoice(

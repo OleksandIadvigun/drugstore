@@ -20,12 +20,12 @@ class InvoiceRepositoryTest @Autowired constructor(
     @Test
     fun `should get invoice by order number`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val created = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -52,12 +52,12 @@ class InvoiceRepositoryTest @Autowired constructor(
     @Test
     fun `should get invoice by status and createdAt less than`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val created = transactionTemplate.execute {
             invoiceRepository.saveAll(
                 listOf(
@@ -94,12 +94,12 @@ class InvoiceRepositoryTest @Autowired constructor(
     @Test
     fun `should get invoice by status`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val created = transactionTemplate.execute {
             invoiceRepository.saveAll(
                 listOf(
@@ -133,12 +133,12 @@ class InvoiceRepositoryTest @Autowired constructor(
     @Test
     fun `should get invoice by invoice number`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val created = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(

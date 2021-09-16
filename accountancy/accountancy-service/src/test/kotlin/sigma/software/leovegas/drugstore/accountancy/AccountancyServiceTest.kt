@@ -9,19 +9,15 @@ import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.extensions.get
@@ -29,26 +25,23 @@ import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
-@AutoConfigureTestDatabase
-@AutoConfigureWireMock(port = 8079)
 @DisplayName("Accountancy Service test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class AccountancyServiceTest @Autowired constructor(
     val service: AccountancyService,
     val transactionTemplate: TransactionTemplate,
     val invoiceRepository: InvoiceRepository,
     val objectMapper: ObjectMapper,
-) {
+) : WireMockTest() {
 
     @Test
     fun `should create outcome invoice`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val invoiceRequest = listOf(
             ItemDTO(
                 productNumber = "1",
@@ -56,6 +49,7 @@ class AccountancyServiceTest @Autowired constructor(
             )
         )
 
+        // and
         val productsDetails = listOf(
             ProductDetailsResponse(
                 productNumber = "1",
@@ -65,6 +59,7 @@ class AccountancyServiceTest @Autowired constructor(
             )
         )
 
+        // and
         stubFor(
             WireMock.get("/api/v1/products/details?productNumbers=${invoiceRequest[0].productNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -97,10 +92,10 @@ class AccountancyServiceTest @Autowired constructor(
                 )
         )
 
-        val orderNumber: String = "1"
+        val orderNumber = "1"
 
         // when
-        val actual = service.createOutcomeInvoice(CreateOutcomeInvoiceRequest(invoiceRequest, orderNumber))
+        val actual = service.createOutcomeInvoice(CreateOutcomeInvoiceEvent(invoiceRequest, orderNumber))
 
         // then
         assertThat(actual).isNotNull
@@ -108,16 +103,15 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(actual.amount).isEqualTo(BigDecimal("160.00")) // sum of all quantity * price
     }
 
-    @Disabled
     @Test
     fun `should create income invoice`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val invoiceRequest = CreateIncomeInvoiceRequest(
             productItems = listOf(
                 ProductItemDtoRequest(
@@ -147,7 +141,7 @@ class AccountancyServiceTest @Autowired constructor(
             )
         )
 
-
+        // and
         val productsDetails = listOf(
             ProductDetailsResponse(
                 productNumber = "1",
@@ -163,6 +157,7 @@ class AccountancyServiceTest @Autowired constructor(
             )
         )
 
+        // and
         stubFor(
             post("/api/v1/products")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -279,10 +274,10 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should get invoice details by order number`() {
 
-        // given
+        // setup
         transactionTemplate.execute { invoiceRepository.deleteAll() }
 
-        // and
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -329,7 +324,7 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should refund invoice`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
@@ -354,6 +349,7 @@ class AccountancyServiceTest @Autowired constructor(
             )
         }.get()
 
+        // and
         stubFor(
             WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderNumber}")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
@@ -379,7 +375,7 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should not refund if invoice not exist`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
@@ -396,50 +392,50 @@ class AccountancyServiceTest @Autowired constructor(
         assertThat(exception.message).contains("Invoice of Order($invalidOrderNumber) not found.")
     }
 
-//    @Test
-//    fun `should not refund if store service not available`() {
-//
-//        // given
-//        transactionTemplate.execute {
-//            invoiceRepository.deleteAll()
-//        }
-//
-//        // given
-//        val savedInvoice = transactionTemplate.execute {
-//            invoiceRepository.save(
-//                Invoice(
-//                    invoiceNumber = "1",
-//                    orderNumber = "-5",
-//                    total = BigDecimal("90.00"),
-//                    status = InvoiceStatus.PAID,
-//                    productItems = setOf(
-//                        ProductItem(
-//                            productNumber = "1",
-//                            name = "test",
-//                            price = BigDecimal("30"),
-//                            quantity = 3
-//                        )
-//                    )
-//                )
-//            )
-//        }.get()
-//
-//        // when
-//        val exception = assertThrows<StoreServiceResponseException> {
-//            service.refundInvoice(savedInvoice.orderNumber.get())
-//        }
-//
-//        // then
-//        assertThat(exception.message).startsWith(
-//            "Ups... some problems in store service."
-//        )
-//    }
+    @Test
+    fun `should not refund if store service not available`() {
+
+        // setup
+        transactionTemplate.execute {
+            invoiceRepository.deleteAll()
+        }
+
+        // given
+        val savedInvoice = transactionTemplate.execute {
+            invoiceRepository.save(
+                Invoice(
+                    invoiceNumber = "1",
+                    orderNumber = "-5",
+                    total = BigDecimal("90.00"),
+                    status = InvoiceStatus.PAID,
+                    productItems = setOf(
+                        ProductItem(
+                            productNumber = "1",
+                            name = "test",
+                            price = BigDecimal("30"),
+                            quantity = 3
+                        )
+                    )
+                )
+            )
+        }.get()
+
+        // when
+        val exception = assertThrows<StoreServiceResponseException> {
+            service.refundInvoice(savedInvoice.orderNumber.get())
+        }
+
+        // then
+        assertThat(exception.message).startsWith(
+            "Ups... some problems in store service."
+        )
+    }
 
 
     @Test
     fun `should not refund non-paid invoice`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
@@ -476,12 +472,12 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should pay invoice`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -512,12 +508,12 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should not pay if invoice not exist`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val invalidOrderNumber = "invalid"
 
         // when
@@ -532,12 +528,12 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should not pay invoice if status not created`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -570,12 +566,12 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should not pay invoice if not enough money`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -607,12 +603,12 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should cancel invoice by id`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(
@@ -643,12 +639,12 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should not cancel non-existing invoice`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val invalidOrderNumber = "invalid"
 
         // when
@@ -663,12 +659,12 @@ class AccountancyServiceTest @Autowired constructor(
     @Test
     fun `should not cancel paid invoice`() {
 
-        // given
+        // setup
         transactionTemplate.execute {
             invoiceRepository.deleteAll()
         }
 
-        // and
+        // given
         val savedInvoice = transactionTemplate.execute {
             invoiceRepository.save(
                 Invoice(

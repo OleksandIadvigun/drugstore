@@ -4,21 +4,20 @@ import feign.Headers
 import feign.Param
 import feign.RequestLine
 import org.springframework.web.bind.annotation.RequestBody
-import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 
 @Headers("Content-Type: application/json")
 interface OrderClient {
 
     @RequestLine("POST /api/v1/orders")
-    fun createOrder(request: CreateOrderRequest): OrderResponse
+    fun createOrder(request: CreateOrderEvent): String
 
     @RequestLine("PUT /api/v1/orders/{orderNumber}")
-    fun updateOrder(@Param("orderNumber") orderNumber: String, request: UpdateOrderRequest): OrderResponse
+    fun updateOrder(@Param("orderNumber") orderNumber: String, request: UpdateOrderEvent): String
 
     @RequestLine("GET /api/v1/orders/{orderNumber}")
     fun getOrderById(@Param("orderNumber") orderNumber: String): OrderResponse
@@ -39,5 +38,5 @@ interface OrderClient {
     fun getProductsIdToQuantity(): Map<String, Int>
 
     @RequestLine("POST /api/v1/orders/confirm")
-    fun confirmOrder(@RequestBody orderNumber: String): ConfirmOrderResponse
+    fun confirmOrder(@RequestBody orderNumber: String): String
 }

@@ -2,28 +2,27 @@ package sigma.software.leovegas.drugstore.order
 
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.UUID
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cloud.stream.function.StreamBridge
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.order.OrderStatus.CONFIRMED
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
 import sigma.software.leovegas.drugstore.order.OrderStatus.UPDATED
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 import sigma.software.leovegas.drugstore.product.client.ProductClient
 
 @Service
@@ -32,14 +31,15 @@ class OrderService @Autowired constructor(
     val orderRepository: OrderRepository,
     val productClient: ProductClient,
     val accountancyClient: AccountancyClient,
+    val eventStream: StreamBridge,
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(OrderService::class.java)
-    fun createOrder(createOrderRequest: CreateOrderRequest): OrderResponse =
-        createOrderRequest.validate().run {
+
+    fun createOrder(createOrderEvent: CreateOrderEvent): OrderResponse =
+        createOrderEvent.validate().run {
             val entity = toEntity().copy(
                 orderStatus = CREATED,
-                orderNumber = UUID.randomUUID().toString()
             ) // NOTE: business logic must be placed in services!
             val created = orderRepository.save(entity).toOrderResponseDTO()
             logger.info("Order created $created")
@@ -48,16 +48,16 @@ class OrderService @Autowired constructor(
 
     fun getOrderByOrderNumber(orderNumber: String): OrderResponse =
         orderNumber.validate(orderRepository::findByOrderNumber).run {
-        logger.info("Order found $this")
-        return@run this.toOrderResponseDTO()
-    }
+            logger.info("Order found $this")
+            return@run this.toOrderResponseDTO()
+        }
 
     fun getOrdersByStatus(orderStatus: OrderStatusDTO): List<OrderResponse> =
         orderStatus.run {
-        val orders = orderRepository.getAllByOrderStatus(OrderStatus.valueOf(this.name)).toOrderResponseList()
-        logger.info("Orders found by status $orders")
-        return@run orders
-    }
+            val orders = orderRepository.getAllByOrderStatus(OrderStatus.valueOf(this.name)).toOrderResponseList()
+            logger.info("Orders found by status $orders")
+            return@run orders
+        }
 
     fun getOrders(page: Int, size: Int): List<OrderResponse> {
         val pageable: Pageable = PageRequest.of(page, size)
@@ -66,8 +66,8 @@ class OrderService @Autowired constructor(
         return orders.toOrderResponseList()
     }
 
-    fun updateOrder(orderNumber: String, updateOrderRequest: UpdateOrderRequest): OrderResponse =
-        updateOrderRequest.validate().run {
+    fun updateOrder(updateOrderEvent: UpdateOrderEvent): OrderResponse =
+        updateOrderEvent.validate().run {
             val toUpdate = orderRepository
                 .findByOrderNumber(orderNumber)
                 .orElseThrow { OrderNotFoundException(orderNumber) }
@@ -126,7 +126,7 @@ class OrderService @Autowired constructor(
             return@run orderDetails
         }
 
-    fun confirmOrder(orderNumber: String): ConfirmOrderResponse =
+    fun confirmOrder(orderNumber: String): String =
         orderNumber.validate(orderRepository::findByOrderNumber)
             .run {
                 if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
@@ -134,20 +134,18 @@ class OrderService @Autowired constructor(
                     throw OrderStatusException("Order is already confirmed or cancelled")
                 }
                 runCatching {
-                    val createOutcomeInvoice = accountancyClient.createOutcomeInvoice(
-                        CreateOutcomeInvoiceRequest(
-                            orderItems.map {
-                                ItemDTO(productNumber = it.productNumber, quantity = it.quantity)
-                            },
-                            orderNumber
+                    eventStream.send(
+                        "createOutcomeInvoiceEventPublisher-out-0",
+                        CreateOutcomeInvoiceEvent(
+                            orderItems.map { ItemDTO(productNumber = it.productNumber, quantity = it.quantity) },
+                            orderNumber,
                         )
                     )
-                    changeOrderStatus(orderNumber, OrderStatusDTO.CONFIRMED)
-                    logger.info("Invoice was created $createOutcomeInvoice")
-                    createOutcomeInvoice
                 }
-                    .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
+                    .onFailure { error -> throw RabbitServerNotAvailable(error.localizedMessage.messageSpliterator()) }
                     .getOrThrow()
+                changeOrderStatus(orderNumber, OrderStatusDTO.CONFIRMED)
+                return "Confirmed"
             }
 
     fun getProductsNumberToQuantity(): Map<String, Int> {

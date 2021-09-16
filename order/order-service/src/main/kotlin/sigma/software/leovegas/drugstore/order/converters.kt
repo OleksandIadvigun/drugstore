@@ -1,14 +1,17 @@
 package sigma.software.leovegas.drugstore.order
 
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
 // CreateOrderRequest <-> Order entity
 
-fun CreateOrderRequest.toEntity(): Order =
-    Order(orderItems = orderItems.toEntities())
+fun CreateOrderEvent.toEntity(): Order =
+    Order(
+        orderItems = orderItems.toEntities(),
+        orderNumber = orderNumber
+    )
 
 // OrderResponse <-> Order entity
 

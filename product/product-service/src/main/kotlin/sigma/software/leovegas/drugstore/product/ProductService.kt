@@ -10,14 +10,13 @@ import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.order.client.OrderClient
-import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Service
 @Transactional
-//@EnableRabbit
 class ProductService(
     private val productRepository: ProductRepository,
     val orderClient: OrderClient,
@@ -101,20 +100,12 @@ class ProductService(
             products.toProductDetailsResponseList()
         }
 
-    fun createProduct(productRequest: List<CreateProductRequest>) =
-        productRequest.validate().run {
+    fun createProduct(products: CreateProductsEvent) =
+        products.list.validate().run {
             val savedProducts = productRepository.saveAll(toEntityList())
             logger.info("Saved Products $savedProducts")
             savedProducts.toCreateProductResponseList()
         }
-
-//    @RabbitListener(queues = ["accountancy_queue"])
-//    fun createProductForAccountancy(productRequest: List<CreateProductRequest>) =
-//        productRequest.validate().run {
-//            val savedProducts = productRepository.saveAll(toEntityList())
-//            logger.info("Saved Products $savedProducts")
-//            savedProducts.toCreateProductResponseList()
-//        }
 
     fun receiveProducts(productNumbers: List<String>) = productNumbers.run {
         val productsToReceive = productRepository
@@ -133,7 +124,8 @@ class ProductService(
                 .map {
                     if (it.quantity < (idsToQuantity[it.productNumber] ?: -1)) {
                         throw NotEnoughQuantityProductException(
-                            "Not enough available quantity of product with product number: ${it.productNumber}")
+                            "Not enough available quantity of product with product number: ${it.productNumber}"
+                        )
                     }
                     it.copy(quantity = it.quantity.minus(idsToQuantity[it.productNumber] ?: -1))
                 }

@@ -17,6 +17,22 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5Dialect
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+  cloud:
+    stream:
+      bindings:
+        createProductEventHandler-in-0:
+          destination: create.product.event.stream.exchange
+          group: ${spring.application.name}@create.product.event.stream.exchange
+          consumer:
+            bind-queue: true
+            requeue-rejected: false
+            queue-name-group-only: true
+          binder: rabbit
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
 product:
   host: ${PRODUCT_HOST:product}
   port: ${PRODUCT_PORT:8081}
@@ -34,3 +50,5 @@ db:
   port: ${DB_PORT:3306}
 server:
   port: 8081
+
+

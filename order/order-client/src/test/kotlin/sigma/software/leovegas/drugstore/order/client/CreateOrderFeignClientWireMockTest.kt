@@ -6,7 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -15,10 +14,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
-import sigma.software.leovegas.drugstore.order.api.OrderResponse
-import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.CREATED
 
 @SpringBootApplication
 internal class CreateOrderFeignClientWireMockTestApp
@@ -34,22 +31,14 @@ class CreateOrderFeignClientWireMockTest @Autowired constructor(
     fun `should create order`() {
 
         // given
-        val request = CreateOrderRequest(
+        val request = CreateOrderEvent(
+            orderItems =
             listOf(
                 OrderItemDTO(
                     productNumber = "1",
                     quantity = 3
                 )
             )
-        )
-
-        // and
-        val responseExpected = OrderResponse(
-            orderNumber = "1",
-            orderStatus = CREATED,
-            orderItems = request.orderItems,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now(),
         )
 
         // and
@@ -68,7 +57,7 @@ class CreateOrderFeignClientWireMockTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(responseExpected)
+                                .writeValueAsString("123-312")
                         )
                         .withStatus(HttpStatus.CREATED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -79,14 +68,6 @@ class CreateOrderFeignClientWireMockTest @Autowired constructor(
         val responseActual = orderClient.createOrder(request)
 
         //  then
-        assertThat(responseActual.orderNumber).isEqualTo("1")
-        assertThat(responseActual.orderStatus).isEqualTo(CREATED)
-        assertThat(responseActual.createdAt).isBefore(LocalDateTime.now())
-        assertThat(responseActual.updatedAt).isBefore(LocalDateTime.now())
-        assertThat(responseActual.orderItems).hasSize(1)
-
-        // and
-        assertThat(responseActual.orderItems.iterator().next().productNumber).isEqualTo("1")
-        assertThat(responseActual.orderItems.iterator().next().quantity).isEqualTo(3)
+        assertThat(responseActual).isEqualTo("123-312")
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 
 @SpringBootApplication
@@ -34,11 +35,13 @@ class CreateProductFeignClientWireMockTest @Autowired constructor(
     fun `should create product`() {
 
         // given
-        val request = listOf(
-            CreateProductRequest(
-                name = "test1",
-                quantity = 1,
-                price = BigDecimal.ONE
+        val request = CreateProductsEvent(
+            listOf(
+                CreateProductRequest(
+                    name = "test1",
+                    quantity = 1,
+                    price = BigDecimal.ONE
+                )
             )
         )
 

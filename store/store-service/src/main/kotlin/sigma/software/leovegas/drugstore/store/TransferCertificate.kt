@@ -31,11 +31,11 @@ data class TransferCertificate(
 
     @NotNull
     @Column(name = "certificate_number", nullable = false)
-    val certificateNumber: String ="undefined",
+    val certificateNumber: String = "undefined",
 
     @NotNull
     @Column(name = "order_number", nullable = false)
-    val orderNumber: String ="undefined",
+    val orderNumber: String = "undefined",
 
     @NotNull
     @Enumerated(EnumType.STRING)

@@ -6,15 +6,18 @@ import io.restassured.specification.RequestSpecification
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
+import org.springframework.context.annotation.Import
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.restassured3.RestAssuredRestDocumentation
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import sigma.software.leovegas.drugstore.order.CustomTestConfig
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.WireMockTest
 
 @AutoConfigureRestDocs
+@Import(CustomTestConfig::class)
 @ExtendWith(SpringExtension::class, RestDocumentationExtension::class)
 class RestApiDocumentationTest(
     private val orderProperties: OrderProperties

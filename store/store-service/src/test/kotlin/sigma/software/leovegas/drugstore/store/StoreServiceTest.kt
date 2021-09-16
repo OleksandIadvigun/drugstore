@@ -150,7 +150,7 @@ class StoreServiceTest @Autowired constructor(
         )
 
         // and
-        val orderNumber= "1"
+        val orderNumber = "1"
 
         // and
         stubFor(
@@ -230,9 +230,11 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?" +
-                    "productNumbers=${productDetailsResponse[0].productNumber}&" +
-                    "productNumbers=${productDetailsResponse[1].productNumber}")
+            WireMock.get(
+                "/api/v1/products/details?" +
+                        "productNumbers=${productDetailsResponse[0].productNumber}&" +
+                        "productNumbers=${productDetailsResponse[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -322,9 +324,11 @@ class StoreServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?" +
-                    "productNumbers=${productDetailsResponse[0].productNumber}" +
-                    "&productNumbers=${productDetailsResponse[1].productNumber}")
+            WireMock.get(
+                "/api/v1/products/details?" +
+                        "productNumbers=${productDetailsResponse[0].productNumber}" +
+                        "&productNumbers=${productDetailsResponse[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

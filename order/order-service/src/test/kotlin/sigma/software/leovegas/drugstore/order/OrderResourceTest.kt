@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.web.server.LocalServerPort
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
@@ -25,19 +26,20 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @DisplayName("Order Resource test")
+@Import(CustomTestConfig::class)
 class OrderResourceTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val orderRepository: OrderRepository,
@@ -57,9 +59,15 @@ class OrderResourceTest @Autowired constructor(
     @Test
     fun `should create order`() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
         val httpEntity = HttpEntity(
-            CreateOrderRequest(
+            CreateOrderEvent(
+                orderItems =
                 listOf(
                     OrderItemDTO(
                         productNumber = "1",
@@ -70,20 +78,16 @@ class OrderResourceTest @Autowired constructor(
         )
 
         // when
-        val response = restTemplate.exchange("$baseUrl/api/v1/orders", POST, httpEntity, respTypeRef<OrderResponse>())
+        val response = restTemplate.exchange("$baseUrl/api/v1/orders", POST, httpEntity, respTypeRef<String>())
 
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
 
         // and
         val body = response.body ?: fail("body may not be null")
-        assertThat(body.orderNumber).isNotEqualTo("undefined")
-        assertThat(body.orderItems).hasSize(1)
-        assertThat(body.orderItems[0].productNumber).isEqualTo("1")
-        assertThat(body.orderItems[0].quantity).isEqualTo(3)
-        assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.CREATED)
-        assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
-        assertThat(body.updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(body).isNotEmpty
+        assertThat(body).isNotEqualTo("undefined")
+
     }
 
     @Test
@@ -98,6 +102,7 @@ class OrderResourceTest @Autowired constructor(
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(
+                    orderStatus = OrderStatus.CREATED,
                     orderNumber = "1",
                     orderItems = setOf(
                         OrderItem(
@@ -108,7 +113,7 @@ class OrderResourceTest @Autowired constructor(
                 )
             )
         }?.toOrderResponseDTO().get()
-
+        println(orderRepository.findAll())
         // when
         val response = restTemplate
             .exchange("$baseUrl/api/v1/orders/${orderCreated.orderNumber}", GET, null, respTypeRef<OrderResponse>())
@@ -118,6 +123,7 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
+        println(body)
         assertThat(body.orderNumber).isEqualTo(orderCreated.orderNumber)
         assertThat(body.orderItems.iterator().next().productNumber).isEqualTo("1")
         assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
@@ -171,7 +177,7 @@ class OrderResourceTest @Autowired constructor(
     fun `should get order details`() {
 
         // setup
-        transactionTemplate.execute{
+        transactionTemplate.execute {
             orderRepository.deleteAll()
         }
 
@@ -216,7 +222,7 @@ class OrderResourceTest @Autowired constructor(
                                 .writeValueAsString(
                                     listOf(
                                         SearchProductResponse(
-                                            productNumber ="1" ,
+                                            productNumber = "1",
                                             name = "test1",
                                             quantity = 3,
                                             price = BigDecimal("20.00"),
@@ -344,7 +350,7 @@ class OrderResourceTest @Autowired constructor(
                         objectMapper
                             .writerWithDefaultPrettyPrinter()
                             .writeValueAsString(
-                                CreateOutcomeInvoiceRequest(
+                                CreateOutcomeInvoiceEvent(
                                     listOf(
                                         ItemDTO(
                                             productNumber = "1",
@@ -375,10 +381,10 @@ class OrderResourceTest @Autowired constructor(
 
         // when
         val invoice = restTemplate
-            .exchange("$baseUrl/api/v1/orders/confirm", POST, http, respTypeRef<ConfirmOrderResponse>())
+            .exchange("$baseUrl/api/v1/orders/confirm", POST, http, respTypeRef<String>())
 
         // then
-        assertThat(invoice.body?.orderNumber).isEqualTo(order.orderNumber)
+        assertThat(invoice.body).isEqualTo("Confirmed")
     }
 
     @Test
@@ -451,7 +457,8 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         val httpEntity = HttpEntity(
-            UpdateOrderRequest(
+            UpdateOrderEvent(
+                orderNumber = "1",
                 listOf(
                     OrderItemDTO(
                         productNumber = "1",
@@ -467,7 +474,7 @@ class OrderResourceTest @Autowired constructor(
                 "$baseUrl/api/v1/orders/${orderCreated.orderNumber}",
                 PUT,
                 httpEntity,
-                respTypeRef<OrderResponse>()
+                respTypeRef<String>()
             )
 
         // then
@@ -475,23 +482,19 @@ class OrderResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body).isNotNull
-        assertThat(body.orderNumber).isNotEqualTo("undefined")
-        assertThat(body.orderItems.iterator().next().quantity).isEqualTo(5)
-        assertThat(body.orderItems.iterator().next().productNumber).isEqualTo("1")
-        assertThat(body.orderStatus).isEqualTo(OrderStatusDTO.UPDATED)
-        assertThat(body.createdAt).isBefore(LocalDateTime.now())
-        assertThat(body.updatedAt).isAfter(body.createdAt)
+        assertThat(body).isEqualTo("Updated")
+
     }
 
     @Test
     fun `should get productId to quantity sorted by quantity `() {
 
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
+
         // given
-        orderRepository.deleteAll()
-
-
-        // and
         transactionTemplate.execute {
             orderRepository.saveAll(
                 listOf(
@@ -518,15 +521,15 @@ class OrderResourceTest @Autowired constructor(
                 )
             )
         }.get()
-
+        println(orderRepository.findAll())
         // when
         val response = restTemplate
-            .exchange("$baseUrl/api/v1/orders/total-buys", GET, null, respTypeRef<Map<Long, Int>>())
-
+            .exchange("$baseUrl/api/v1/orders/total-buys", GET, null, respTypeRef<Map<String, Int>>())
+        println(response.body)
         // then
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body?.size).isEqualTo(2)
         assertThat(response.body?.iterator()?.next()?.value).isEqualTo(5) // first should have the biggest value
-        assertThat(response.body?.get(4)).isEqualTo(3)
+        assertThat(response.body?.getValue("4")).isEqualTo(3)
     }
 }

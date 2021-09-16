@@ -1,11 +1,10 @@
 package sigma.software.leovegas.drugstore.accountancy
 
 import java.util.Optional
-import java.util.UUID
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 
-fun CreateOutcomeInvoiceRequest.validate(functor: (String, InvoiceStatus) -> Optional<Invoice>): CreateOutcomeInvoiceRequest =
+fun CreateOutcomeInvoiceEvent.validate(functor: (String, InvoiceStatus) -> Optional<Invoice>): CreateOutcomeInvoiceEvent =
     apply {
         functor(orderNumber, InvoiceStatus.CREATED).ifPresent {
             throw OrderAlreadyConfirmedException(orderNumber)

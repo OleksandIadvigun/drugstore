@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
@@ -90,7 +90,7 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
 
         val body = objectMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(CreateOutcomeInvoiceRequest(invoiceRequest, "1"))
+            .writeValueAsString(CreateOutcomeInvoiceEvent(invoiceRequest, "1"))
 
         of("create-outcome-invoice").`when`()
             .body(body)

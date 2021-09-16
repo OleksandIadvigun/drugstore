@@ -16,6 +16,50 @@ spring:
         dialect: org.hibernate.dialect.MySQL5Dialect
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
   liquibase.change-log: classpath:/db/changelog/changelog-master.xml
+  #  datasource:
+  #    driver-class-name: org.hsqldb.jdbc.JDBCDriver
+  #    url: jdbc:hsqldb:file:./target/hsqldb/${spring.application.name};ifexists=false;hsqldb.lock_file=false
+  #    username: sa
+  #    password:
+  #    type: com.zaxxer.hikari.HikariDataSource
+  #  liquibase.change-log: classpath:/db/changelog/changelog-master.xml
+  #  jpa:
+  #    hibernate:
+  #      ddl-auto: validate
+  #    show-sql: true
+  #    properties:
+  #      hibernate:
+  #        dialect: org.hibernate.dialect.HSQLDialect
+  #        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+  cloud:
+    function:
+      routing-expression:
+        (headers['createOrder']!=null && headers['createOrder']==true) ? 'createOrderEventHandler':'updateOrderEventHandler'
+    stream:
+      function:
+        routing:
+          enabled: true
+      source: [ createOutcomeInvoiceEventPublisher,createUpdateOrderEventPublisher ]
+      bindings:
+        createUpdateOrderEventPublisher-out-0:
+          destination: create.update.order.event.stream.exchange
+          content-type: application/json
+        createOutcomeInvoiceEventPublisher-out-0:
+          destination: create.outcome.invoice.event.stream.exchange
+          content-type: application/json
+        functionRouter-in-0:
+          destination: create.update.order.event.stream.exchange
+          group: ${spring.application.name}@create.update.order.event.stream.exchange
+          consumer:
+            bind-queue: true
+            requeue-rejected: false
+            queue-name-group-only: true
+          binder: rabbit
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
 product:
   host: ${PRODUCT_HOST:product}
   port: ${PRODUCT_PORT:8081}

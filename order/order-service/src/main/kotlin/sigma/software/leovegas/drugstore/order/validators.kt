@@ -1,10 +1,10 @@
 package sigma.software.leovegas.drugstore.order
 
 import java.util.Optional
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 
-fun CreateOrderRequest.validate() = apply {
+fun CreateOrderEvent.validate() = apply {
     if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
     orderItems.forEach {
         if (it.productNumber.isBlank() || it.quantity <= 0) {
@@ -13,7 +13,7 @@ fun CreateOrderRequest.validate() = apply {
     }
 }
 
-fun UpdateOrderRequest.validate() = apply {
+fun UpdateOrderEvent.validate() = apply {
     if (orderItems.isEmpty()) throw InsufficientAmountOfOrderItemException()
     orderItems.forEach {
         if (it.productNumber.isBlank() || it.quantity <= 0) {

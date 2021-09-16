@@ -125,7 +125,11 @@ class ProductRepositoryTest @Autowired constructor(
 
         // then
         assertThat(products).hasSize(1)
-        assertThat(products[0].productNumber).isIn(saved[0].productNumber, saved[1].productNumber, saved[2].productNumber)
+        assertThat(products[0].productNumber).isIn(
+            saved[0].productNumber,
+            saved[1].productNumber,
+            saved[2].productNumber
+        )
         assertThat(products[0].quantity).isGreaterThan(0)
         assertThat(products[0].status).isEqualTo(ProductStatus.RECEIVED)
     }

@@ -311,9 +311,11 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/products/details?" +
-                    "productNumber=${productDetailsResponse[0].productNumber}&" +
-                    "productNumber=${productDetailsResponse[1].productNumber}")
+            WireMock.get(
+                "/api/v1/products/details?" +
+                        "productNumber=${productDetailsResponse[0].productNumber}&" +
+                        "productNumber=${productDetailsResponse[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -379,8 +381,10 @@ class StoreResourceTest @Autowired constructor(
 
         //and
         stubFor(
-            WireMock.get("/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
-                    "productNumbers=${productResponse[1].productNumber}")
+            WireMock.get(
+                "/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
+                        "productNumbers=${productResponse[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

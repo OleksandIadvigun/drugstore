@@ -1,9 +1,9 @@
 package sigma.software.leovegas.drugstore.order.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.hamcrest.Matchers.emptyString
+import io.restassured.RestAssured
+import io.restassured.parsing.Parser
 import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,9 +14,10 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderService
-import sigma.software.leovegas.drugstore.order.api.CreateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
-import sigma.software.leovegas.drugstore.order.api.UpdateOrderRequest
+import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
+
 
 @DisplayName("Update order REST API Doc test")
 class RestApiDocUpdateOrderTest @Autowired constructor(
@@ -28,7 +29,6 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
     val orderRepository: OrderRepository
 ) : RestApiDocumentationTest(orderProperties) {
 
-
     @Test
     fun `should update order`() {
 
@@ -38,7 +38,8 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
         // given
         val orderCreated = transactionTemplate.execute {
             orderService.createOrder(
-                CreateOrderRequest(
+                CreateOrderEvent(
+                    orderItems =
                     listOf(
                         OrderItemDTO(
                             productNumber = "1",
@@ -53,7 +54,8 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
         val orderJson = objectMapper
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(
-                UpdateOrderRequest(
+                UpdateOrderEvent(
+                    orderNumber = "1",
                     listOf(
                         OrderItemDTO(
                             productNumber = "1",
@@ -62,19 +64,15 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
                     )
                 )
             )
-
-            of("update-order")
-                .pathParam("orderNumber", orderCreated.orderNumber)
-                .`when`()
-                .body(orderJson)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .put("http://${orderProperties.host}:$port/api/v1/orders/{orderNumber}")
-                .then()
-                .assertThat().statusCode(202)
-                .assertThat().body("orderStatus", equalTo("UPDATED"))
-                .assertThat().body("createdAt", not(emptyString()))
-                .assertThat().body("updatedAt", not(emptyString()))
-                .assertThat().body("orderItems[0].productNumber", equalTo("1"))
-                .assertThat().body("orderItems[0].quantity", equalTo(4))
+        RestAssured.registerParser("text/plain", Parser.TEXT);
+        of("update-order")
+            .pathParam("orderNumber", orderCreated.orderNumber)
+            .`when`()
+            .body(orderJson)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .put("http://${orderProperties.host}:$port/api/v1/orders/{orderNumber}")
+            .then()
+            .assertThat().statusCode(202)
+            .assertThat().body(equalTo("Updated"))
     }
 }

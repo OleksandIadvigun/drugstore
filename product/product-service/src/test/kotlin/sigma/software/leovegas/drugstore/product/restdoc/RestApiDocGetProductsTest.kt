@@ -77,9 +77,12 @@ class RestApiDocGetProductsTest @Autowired constructor(
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(mapOf(
-                                    savedProducts[1].productNumber to 5,
-                                    savedProducts[0].productNumber to 1))
+                                .writeValueAsString(
+                                    mapOf(
+                                        savedProducts[1].productNumber to 5,
+                                        savedProducts[0].productNumber to 1
+                                    )
+                                )
                         )
                         .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -88,8 +91,10 @@ class RestApiDocGetProductsTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?" +
-                    "productNumbers=${savedProducts[0].productNumber}&productNumbers=${savedProducts[1].productNumber}")
+            WireMock.get(
+                "/api/v1/accountancy/sale-price?" +
+                        "productNumbers=${savedProducts[0].productNumber}&productNumbers=${savedProducts[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

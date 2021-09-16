@@ -8,7 +8,7 @@ data class CreateIncomeInvoiceRequest(
     val productItems: List<ProductItemDtoRequest>
 )
 
-data class CreateOutcomeInvoiceRequest(
+data class CreateOutcomeInvoiceEvent(
     val productItems: List<ItemDTO>,
     val orderNumber: String
 )
@@ -21,7 +21,7 @@ data class ConfirmOrderResponse(
 )
 
 data class InvoiceResponse(
-    val invoiceNumber:String = "undefined",
+    val invoiceNumber: String = "undefined",
     val orderNumber: String = "undefined",
     val amount: BigDecimal = BigDecimal.ZERO,
     val status: InvoiceStatusDTO = InvoiceStatusDTO.NONE

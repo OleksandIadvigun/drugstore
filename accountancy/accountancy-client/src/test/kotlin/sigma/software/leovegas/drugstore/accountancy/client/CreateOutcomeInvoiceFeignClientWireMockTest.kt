@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 
 @SpringBootApplication
@@ -33,7 +33,7 @@ class CreateOutcomeInvoiceFeignClientWireMockTest @Autowired constructor(
     fun `should create outcome invoice`() {
 
         // given
-        val request = CreateOutcomeInvoiceRequest(
+        val request = CreateOutcomeInvoiceEvent(
             orderNumber = "1",
             productItems = listOf(
                 ItemDTO(

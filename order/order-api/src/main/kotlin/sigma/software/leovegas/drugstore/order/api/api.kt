@@ -6,11 +6,13 @@ import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO.NONE
 
 // Requests
 
-data class CreateOrderRequest(
+data class CreateOrderEvent(
+    val orderNumber: String = "undefined",
     val orderItems: List<OrderItemDTO> = listOf()
 )
 
-data class UpdateOrderRequest(
+data class UpdateOrderEvent(
+    val orderNumber: String = "undefined",
     val orderItems: List<OrderItemDTO> = listOf()
 )
 

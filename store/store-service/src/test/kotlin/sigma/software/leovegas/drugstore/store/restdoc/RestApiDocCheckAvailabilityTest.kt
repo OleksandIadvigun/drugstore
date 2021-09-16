@@ -56,8 +56,10 @@ class RestApiDocCheckAvailabilityTest @Autowired constructor(
 
         //and
         stubFor(
-            get("/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
-                    "productNumbers=${productResponse[1].productNumber}")
+            get(
+                "/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
+                        "productNumbers=${productResponse[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

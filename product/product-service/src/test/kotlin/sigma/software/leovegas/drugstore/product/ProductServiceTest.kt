@@ -19,6 +19,7 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 
@@ -68,18 +69,20 @@ class ProductServiceTest @Autowired constructor(
         transactionTemplate.execute { productRepository.deleteAll() }
 
         // given
-        val productRequest = listOf(
-            CreateProductRequest(
-                productNumber = "1",
-                name = "test1",
-                quantity = 1,
-                price = BigDecimal.ONE
-            ),
-            CreateProductRequest(
-                productNumber = "2",
-                name = "test2",
-                quantity = 2,
-                price = BigDecimal.TEN
+        val productRequest = CreateProductsEvent(
+            listOf(
+                CreateProductRequest(
+                    productNumber = "1",
+                    name = "test1",
+                    quantity = 1,
+                    price = BigDecimal.ONE
+                ),
+                CreateProductRequest(
+                    productNumber = "2",
+                    name = "test2",
+                    quantity = 2,
+                    price = BigDecimal.TEN
+                )
             )
         )
 
@@ -163,8 +166,10 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?" +
-                    "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}")
+            WireMock.get(
+                "/api/v1/accountancy/sale-price?" +
+                        "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -241,8 +246,10 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?" +
-                    "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}")
+            WireMock.get(
+                "/api/v1/accountancy/sale-price?" +
+                        "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -251,7 +258,8 @@ class ProductServiceTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(
                                     mapOf(
-                                        Pair(saved[0].productNumber, BigDecimal("100.00")), Pair(saved[1].productNumber, BigDecimal("20.00"))
+                                        Pair(saved[0].productNumber, BigDecimal("100.00")),
+                                        Pair(saved[1].productNumber, BigDecimal("20.00"))
                                     )
                                 )
                         )
@@ -319,8 +327,10 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?" +
-                    "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}")
+            WireMock.get(
+                "/api/v1/accountancy/sale-price?" +
+                        "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

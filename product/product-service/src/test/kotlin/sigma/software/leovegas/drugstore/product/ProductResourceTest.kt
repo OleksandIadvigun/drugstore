@@ -27,6 +27,7 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
@@ -96,22 +97,23 @@ class ProductResourceTest @Autowired constructor(
 
         // given
         val httpEntity = HttpEntity(
-            listOf(
-                CreateProductRequest(
-                    productNumber = "1",
-                    name = "test1",
-                    quantity = 1,
-                    price = BigDecimal.ONE
-                ),
-                CreateProductRequest(
-                    productNumber = "2",
-                    name = "test2",
-                    quantity = 2,
-                    price = BigDecimal.TEN
+            CreateProductsEvent(
+                listOf(
+                    CreateProductRequest(
+                        productNumber = "1",
+                        name = "test1",
+                        quantity = 1,
+                        price = BigDecimal.ONE
+                    ),
+                    CreateProductRequest(
+                        productNumber = "2",
+                        name = "test2",
+                        quantity = 2,
+                        price = BigDecimal.TEN
+                    )
                 )
             )
         )
-
         // when
         val response = restTemplate
             .exchange("$baseUrl/api/v1/products", POST, httpEntity, respTypeRef<List<CreateProductResponse>>())
@@ -241,7 +243,7 @@ class ProductResourceTest @Autowired constructor(
                         name = "aspirin2",
                         status = ProductStatus.RECEIVED,
                         quantity = 10,
-                        ),
+                    ),
                     Product(
                         productNumber = "3",
                         name = "mostPopular",
@@ -347,8 +349,10 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?" +
-                    "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}")
+            WireMock.get(
+                "/api/v1/accountancy/sale-price?" +
+                        "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -435,8 +439,10 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?" +
-                    "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}")
+            WireMock.get(
+                "/api/v1/accountancy/sale-price?" +
+                        "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -538,8 +544,10 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         stubFor(
-            WireMock.get("/api/v1/accountancy/sale-price?" +
-                    "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}")
+            WireMock.get(
+                "/api/v1/accountancy/sale-price?" +
+                        "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
+            )
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()

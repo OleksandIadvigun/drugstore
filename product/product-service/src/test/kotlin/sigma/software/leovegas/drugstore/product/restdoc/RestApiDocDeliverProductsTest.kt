@@ -54,7 +54,7 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
                         status = ProductStatus.RECEIVED,
                     )
                 )
-            ).map { it.productNumber}.toList()
+            ).map { it.productNumber }.toList()
         }.get()
 
         // and

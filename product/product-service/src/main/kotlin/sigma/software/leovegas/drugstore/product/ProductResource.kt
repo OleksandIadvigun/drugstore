@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
-import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
@@ -38,7 +38,7 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(CREATED)
     @PostMapping("")
-    fun create(@RequestBody productRequest: List<CreateProductRequest>) = service.createProduct(productRequest)
+    fun create(@RequestBody productRequest: CreateProductsEvent) = service.createProduct(productRequest)
 
     @ResponseStatus(OK)
     @GetMapping("/search")
@@ -69,7 +69,7 @@ class ProductResource(private val service: ProductService) {
     @ResponseStatus(OK)
     @GetMapping("/details")
     fun getProductsDetailsByIds(@RequestParam("productNumbers") productNumbers: List<String>)
-    : List<ProductDetailsResponse> {
+            : List<ProductDetailsResponse> {
         return service.getProductsDetailsByProductNumbers(productNumbers)
     }
 

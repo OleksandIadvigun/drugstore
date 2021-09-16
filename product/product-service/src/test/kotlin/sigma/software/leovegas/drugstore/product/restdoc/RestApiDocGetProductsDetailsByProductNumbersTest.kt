@@ -54,8 +54,10 @@ class RestApiDocGetProductsDetailsByProductNumbersTest @Autowired constructor(
         }.get()
 
         of("get-products-details-by-product-numbers").`when`()
-            .get("http://${productProperties.host}:$port/api/v1/products/details?" +
-                    "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}")
+            .get(
+                "http://${productProperties.host}:$port/api/v1/products/details?" +
+                        "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
+            )
             .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", `is`(2))

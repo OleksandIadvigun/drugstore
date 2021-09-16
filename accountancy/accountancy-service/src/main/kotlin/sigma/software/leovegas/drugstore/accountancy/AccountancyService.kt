@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.accountancy
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -8,14 +7,16 @@ import javax.transaction.Transactional
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cloud.stream.function.StreamBridge
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
-import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceRequest
+import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
+import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.client.ProductClient
 import sigma.software.leovegas.drugstore.store.client.StoreClient
 
@@ -25,14 +26,13 @@ class AccountancyService @Autowired constructor(
     val invoiceRepository: InvoiceRepository,
     val storeClient: StoreClient,
     val productClient: ProductClient,
-//    @Qualifier("consumer-in-0") val channel: MessageChannel,
-    val objectMapper: ObjectMapper
+    val eventStream: StreamBridge,
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(AccountancyService::class.java)
 
-    fun createOutcomeInvoice(request: CreateOutcomeInvoiceRequest): ConfirmOrderResponse =
-        request.validate(invoiceRepository::getInvoiceByOrderNumberAndStatusLike).run {
+    fun createOutcomeInvoice(event: CreateOutcomeInvoiceEvent): ConfirmOrderResponse =
+        event.validate(invoiceRepository::getInvoiceByOrderNumberAndStatusLike).run {
 
             val productNumbers = productItems.map { it.productNumber }.distinct()
             val productQuantities = productItems.associate { it.productNumber to it.quantity }
@@ -92,20 +92,7 @@ class AccountancyService @Autowired constructor(
                 )
             }
 
-//            val res: Message<List<CreateProductRequest>> = MessageBuilder.withPayload(productsToCreate).build()
-//            val createdProducts = runCatching {
-//                channel.send(res)
-//            }
-//                .onFailure { error -> throw RabbitSendException(error.localizedMessage.messageSpliterator()) }
-//                .getOrNull()
-
-            val createdProducts = runCatching {
-                productClient.createProduct(productsToCreate)
-            }
-                .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
-                .getOrNull()
-                .orEmpty()
-            logger.info("Created products $createdProducts")
+            eventStream.send("createProductEventPublisher-out-0", CreateProductsEvent(productsToCreate))
 
             val invoice = invoiceRepository.save(
                 Invoice(
@@ -180,11 +167,13 @@ class AccountancyService @Autowired constructor(
         orderNumber.validate(invoiceRepository::getInvoiceByOrderNumber).run {
 
             if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.invoiceNumber)
-            storeClient.checkTransfer(this.orderNumber)
-//            runCatching { storeClient.checkTransfer(this.orderNumber)
-//                logger.info("checked")}
-//                .onFailure { error -> throw StoreServiceResponseException(error.localizedMessage.messageSpliterator()) }
-//            logger.info("Transfer was checked")
+
+            runCatching {
+                storeClient.checkTransfer(this.orderNumber)
+                logger.info("checked")
+            }
+                .onFailure { error -> throw StoreServiceResponseException(error.localizedMessage.messageSpliterator()) }
+            logger.info("Transfer was checked")
 
             val invoiceToSave = this.copy(status = InvoiceStatus.REFUND)
             val invoice = invoiceRepository.saveAndFlush(invoiceToSave)

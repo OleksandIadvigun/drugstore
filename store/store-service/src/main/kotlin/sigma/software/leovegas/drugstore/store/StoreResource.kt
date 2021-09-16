@@ -50,8 +50,8 @@ class StoreResource(private val storeService: StoreService) {
 
     @GetMapping("/check-transfer/{orderNumber}")
     @ResponseStatus(HttpStatus.OK)
-    fun checkTransfer(@PathVariable orderNumber: String) :CheckStatusResponse {
-       return storeService.checkTransfer(orderNumber)
+    fun checkTransfer(@PathVariable orderNumber: String): CheckStatusResponse {
+        return storeService.checkTransfer(orderNumber)
     }
 
     @ExceptionHandler(Throwable::class)

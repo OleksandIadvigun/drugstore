@@ -127,9 +127,9 @@ class StoreService @Autowired constructor(
     }
 
     fun checkTransfer(orderNumber: String) = orderNumber
-            .validate(storeRepository::getTransferCertificateByOrderNumber)
-            .run {
-                logger.info("No transfer certificate was found")
-                return@run CheckStatusResponse(this,"Not delivered")
-            }
+        .validate(storeRepository::getTransferCertificateByOrderNumber)
+        .run {
+            logger.info("No transfer certificate was found")
+            return@run CheckStatusResponse(this, "Not delivered")
+        }
 }

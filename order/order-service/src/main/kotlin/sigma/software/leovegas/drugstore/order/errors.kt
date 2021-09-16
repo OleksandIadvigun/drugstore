@@ -18,3 +18,6 @@ class OrderNotCreatedException(orderNumber: String) : OrderServiceException("Ord
 class OrderStatusException(message: String) : OrderServiceException(message)
 
 class OrderRequestException(message: String) : OrderServiceException(message)
+
+class RabbitServerNotAvailable(message: String) :
+    OrderServiceException("Ups... some problems in rabbit service. $message.")
