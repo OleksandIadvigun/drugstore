@@ -22,12 +22,14 @@ import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
 @AutoConfigureTestDatabase
 @DisplayName("OrderService test")
@@ -375,32 +377,27 @@ class OrderServiceTest @Autowired constructor(
             )
         }.get()
 
+        // and
+        val productsProto = listOf(
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test1").setProductNumber("1").setQuantity(3)
+                .setPrice(BigDecimal("20.00").toDecimalProto())
+                .build(),
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test2").setProductNumber("2").setQuantity(4)
+                .setPrice(BigDecimal("30.00").toDecimalProto())
+                .build()
+        )
+        Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+
         // given
         stubFor(
             WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    listOf(
-                                        ProductDetailsResponse(
-                                            productNumber = "1",
-                                            name = "test1",
-                                            quantity = 3,
-                                            price = BigDecimal("20.00")
-                                        ),
-                                        ProductDetailsResponse(
-                                            productNumber = "2",
-                                            name = "test2",
-                                            quantity = 4,
-                                            price = BigDecimal("30.00")
-                                        )
-                                    )
-                                )
-                        )
+                        .withProtobufResponse {
+                            Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+                        }
                 )
         )
 

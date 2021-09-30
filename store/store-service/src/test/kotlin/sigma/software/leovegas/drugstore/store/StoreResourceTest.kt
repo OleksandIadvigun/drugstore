@@ -1,11 +1,10 @@
 package sigma.software.leovegas.drugstore.store
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -16,15 +15,14 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufRequest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
@@ -35,7 +33,6 @@ class StoreResourceTest @Autowired constructor(
     val restTemplate: TestRestTemplate,
     val transactionTemplate: TransactionTemplate,
     val storeRepository: StoreRepository,
-    val objectMapper: ObjectMapper,
     val storeProperties: StoreProperties
 ) : WireMockTest() {
 
@@ -157,7 +154,7 @@ class StoreResourceTest @Autowired constructor(
         )
 
         // and
-        val productRequest = Proto.ReceiveProductRequest.newBuilder().addAllProductNumber(listOf("1", "2")).build()
+        val productRequest = Proto.ProductNumberList.newBuilder().addAllProductNumber(listOf("1", "2")).build()
 
         // and
         val productResponse = Proto.ReceiveProductResponse.newBuilder()
@@ -185,6 +182,7 @@ class StoreResourceTest @Autowired constructor(
         )
 
         val httpEntity = HttpEntity("1")
+
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/store/receive",
@@ -260,34 +258,26 @@ class StoreResourceTest @Autowired constructor(
         )
 
         // and
-        val productDetailsResponse = listOf(
-            ProductDetailsResponse(
-                productNumber = "1",
-                quantity = 10
-            ),
-            ProductDetailsResponse(
-                productNumber = "2",
-                quantity = 20
-            ),
+        val productsProto = listOf(
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test1").setProductNumber("1").setQuantity(10)
+                .setPrice(BigDecimal("20.00").toDecimalProto())
+                .build(),
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test2").setProductNumber("2").setQuantity(20)
+                .setPrice(BigDecimal("30.00").toDecimalProto())
+                .build()
         )
+        Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
 
-        // and
+        // given
         stubFor(
-            WireMock.get(
-                "/api/v1/products/details?" +
-                        "productNumber=${productDetailsResponse[0].productNumber}&" +
-                        "productNumber=${productDetailsResponse[1].productNumber}"
-            )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productDetailsResponse)
-                        )
-                        .withStatus(HttpStatus.ACCEPTED.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withProtobufResponse {
+                            Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+                        }
                 )
         )
 
@@ -330,33 +320,26 @@ class StoreResourceTest @Autowired constructor(
         val httpEntity = HttpEntity(products)
 
         // and
-        val productResponse = listOf(
-            ProductDetailsResponse(
-                productNumber = "1",
-                quantity = 10
-            ),
-            ProductDetailsResponse(
-                productNumber = "2",
-                quantity = 15
-            )
+        val productsProto = listOf(
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test1").setProductNumber("1").setQuantity(10)
+                .setPrice(BigDecimal("20.00").toDecimalProto())
+                .build(),
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test2").setProductNumber("2").setQuantity(20)
+                .setPrice(BigDecimal("30.00").toDecimalProto())
+                .build()
         )
+        Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
 
-        //and
+        // given
         stubFor(
-            WireMock.get(
-                "/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
-                        "productNumbers=${productResponse[1].productNumber}"
-            )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productResponse)
-                        )
-                        .withStatus(HttpStatus.ACCEPTED.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withProtobufResponse {
+                            Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+                        }
                 )
         )
 

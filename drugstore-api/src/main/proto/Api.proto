@@ -21,12 +21,29 @@ message ReceiveProductItemDTO{
   required ProductStatusDTO status = 2;
 }
 
-message ReceiveProductRequest{
+message ProductNumberList{
   repeated string productNumber = 1;
 }
 
 message ReceiveProductResponse{
   repeated ReceiveProductItemDTO products = 1;
+}
+
+message ProductDetailsResponse{
+  repeated ProductDetailsItem products = 1;
+}
+
+message ProductDetailsItem{
+  required string productNumber = 1;
+  required string name = 2;
+  required DecimalValue price = 3;
+  required int32 quantity = 4;
+}
+
+message DecimalValue{
+  required int32 scale = 1;
+  required int32 precision = 2;
+  required bytes value = 3;
 }
 
 enum ProductStatusDTO{

@@ -18,6 +18,7 @@ import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.client.ProductClient
+import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
 import sigma.software.leovegas.drugstore.store.client.StoreClient
 
 @Service
@@ -26,6 +27,7 @@ class AccountancyService @Autowired constructor(
     val invoiceRepository: InvoiceRepository,
     val storeClient: StoreClient,
     val productClient: ProductClient,
+    val productClientProto: ProductClientProto,
     val eventStream: StreamBridge,
 ) {
 
@@ -38,10 +40,11 @@ class AccountancyService @Autowired constructor(
             val productQuantities = productItems.associate { it.productNumber to it.quantity }
             val productPrice = getSalePrice(productNumbers)
 
-            val list = runCatching { productClient.getProductsDetailsByProductNumbers(productNumbers) }
-                .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
-                .getOrNull()
-                .orEmpty()
+            val list =
+                runCatching { productClientProto.getProductsDetailsByProductNumbers(productNumbers).productsList }
+                    .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
+                    .getOrNull()
+                    .orEmpty()
             if (list.isEmpty()) throw OrderContainsInvalidProductsException(productNumbers)
             logger.info("Received products details $list")
 

@@ -28,7 +28,7 @@ class ReceiveProductFeignClientWireMockTest @Autowired constructor(
     fun `should receive product`() {
 
         // and
-        val request = Proto.ReceiveProductRequest.newBuilder().addProductNumber("1").build()
+        val request = Proto.ProductNumberList.newBuilder().addProductNumber("1").build()
 
         //and
         val responseExpected = Proto.ReceiveProductResponse.newBuilder().addProducts(

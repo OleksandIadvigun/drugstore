@@ -20,7 +20,10 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequ
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.extensions.get
+import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
@@ -50,27 +53,22 @@ class AccountancyServiceTest @Autowired constructor(
         )
 
         // and
-        val productsDetails = listOf(
-            ProductDetailsResponse(
-                productNumber = "1",
-                name = "test1",
-                price = BigDecimal("20.00"),
-                quantity = 3,
-            )
-        )
+        val productsProto = listOf(
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test1").setProductNumber("1").setQuantity(3)
+                .setPrice(BigDecimal("20.00").toDecimalProto())
+                .build(),
 
-        // and
+            )
+
+        // given
         stubFor(
-            WireMock.get("/api/v1/products/details?productNumbers=${invoiceRequest[0].productNumber}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/products/details?productNumbers=1")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productsDetails)
-                        )
-                        .withStatus(HttpStatus.OK.value())
+                        .withProtobufResponse {
+                            Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+                        }
                 )
         )
 

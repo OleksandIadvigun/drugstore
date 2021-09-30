@@ -1,19 +1,20 @@
 package sigma.software.leovegas.drugstore.store.restdoc
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.store.StoreProperties
 
 @DisplayName("Check availability REST API Doc test")
@@ -43,33 +44,26 @@ class RestApiDocCheckAvailabilityTest @Autowired constructor(
             .writeValueAsString(products)
 
         // and
-        val productResponse = listOf(
-            ProductDetailsResponse(
-                productNumber = "1",
-                quantity = 10
-            ),
-            ProductDetailsResponse(
-                productNumber = "2",
-                quantity = 15
-            )
+        val productsProto = listOf(
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test1").setProductNumber("1").setQuantity(10)
+                .setPrice(BigDecimal("20.00").toDecimalProto())
+                .build(),
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test2").setProductNumber("2").setQuantity(20)
+                .setPrice(BigDecimal("30.00").toDecimalProto())
+                .build()
         )
+        Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
 
-        //and
+        // given
         stubFor(
-            get(
-                "/api/v1/products/details?productNumbers=${productResponse[0].productNumber}&" +
-                        "productNumbers=${productResponse[1].productNumber}"
-            )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productResponse)
-                        )
-                        .withStatus(HttpStatus.ACCEPTED.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withProtobufResponse {
+                            Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+                        }
                 )
         )
 

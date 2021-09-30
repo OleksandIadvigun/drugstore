@@ -14,7 +14,10 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.order.Order
 import sigma.software.leovegas.drugstore.order.OrderItem
 import sigma.software.leovegas.drugstore.order.OrderProperties
@@ -76,30 +79,26 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         )
 
         // and
+        val productsProto = listOf(
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test1").setProductNumber("1").setQuantity(3)
+                .setPrice(BigDecimal("20.00").toDecimalProto())
+                .build(),
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test2").setProductNumber("2").setQuantity(4)
+                .setPrice(BigDecimal("30.00").toDecimalProto())
+                .build()
+        )
+        Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+
+        // given
         stubFor(
             WireMock.get("/api/v1/products/details?productNumbers=1&productNumbers=2")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(response)
-                        )
-                )
-        )
-
-        // and
-        stubFor(
-            WireMock.get("/api/v1/products/details?productNumbers=2&productNumbers=1")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .willReturn(
-                    aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(response)
-                        )
+                        .withProtobufResponse {
+                            Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+                        }
                 )
         )
 

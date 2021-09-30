@@ -3,7 +3,6 @@ package sigma.software.leovegas.drugstore.accountancy.restdoc.invoice
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
@@ -20,7 +19,9 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
+import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
 
 @DisplayName("Create outcome invoice REST API Doc test")
 class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
@@ -47,26 +48,23 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
             )
         )
 
-        val productsDetails = listOf(
-            ProductDetailsResponse(
-                productNumber = "1",
-                name = "test1",
-                price = BigDecimal("20.00"),
-                quantity = 3,
-            )
-        )
+        // and
+        val productsProto = listOf(
+            Proto.ProductDetailsItem.newBuilder()
+                .setName("test1").setProductNumber("1").setQuantity(3)
+                .setPrice(BigDecimal("20.00").toDecimalProto())
+                .build(),
 
+            )
+
+        // given
         stubFor(
-            get("/api/v1/products/details?productNumbers=${invoiceRequest[0].productNumber}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+            WireMock.get("/api/v1/products/details?productNumbers=1")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productsDetails)
-                        )
-                        .withStatus(HttpStatus.OK.value())
+                        .withProtobufResponse {
+                            Proto.ProductDetailsResponse.newBuilder().addAllProducts(productsProto).build()
+                        }
                 )
         )
 

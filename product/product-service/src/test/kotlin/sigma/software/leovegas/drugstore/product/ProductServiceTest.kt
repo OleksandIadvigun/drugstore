@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
@@ -515,13 +516,13 @@ class ProductServiceTest @Autowired constructor(
         val products = service.getProductsDetailsByProductNumbers(productNumbers)
 
         // then
-        assertThat(products).hasSize(2)
-        assertThat(products[0].name).isEqualTo("test1")
-        assertThat(products[0].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(products[0].quantity).isEqualTo(1)
-        assertThat(products[1].name).isEqualTo("test2")
-        assertThat(products[1].price).isEqualTo(BigDecimal("30.00"))
-        assertThat(products[1].quantity).isEqualTo(2)
+        assertThat(products.productsList).hasSize(2)
+        assertThat(products.getProducts(0).name).isEqualTo("test1")
+        assertThat(products.getProducts(0).price).isEqualTo(BigDecimal("20.00").toDecimalProto())
+        assertThat(products.getProducts(0).quantity).isEqualTo(1)
+        assertThat(products.getProducts(1).name).isEqualTo("test2")
+        assertThat(products.getProducts(1).price).isEqualTo(BigDecimal("30.00").toDecimalProto())
+        assertThat(products.getProducts(1).quantity).isEqualTo(2)
     }
 
 
@@ -607,7 +608,7 @@ class ProductServiceTest @Autowired constructor(
 
         // and
         val productNumbers =
-            Proto.ReceiveProductRequest.newBuilder().addAllProductNumber(listOf(saved.productNumber)).build()
+            Proto.ProductNumberList.newBuilder().addAllProductNumber(listOf(saved.productNumber)).build()
 
         // when
         val actual = service.receiveProducts(productNumbers)

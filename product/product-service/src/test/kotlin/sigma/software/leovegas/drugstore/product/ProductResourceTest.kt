@@ -24,13 +24,13 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
@@ -145,7 +145,7 @@ class ProductResourceTest @Autowired constructor(
         }.get()
 
         val httpEntity = HttpEntity(
-            Proto.ReceiveProductRequest.newBuilder().addAllProductNumber(listOf(saved.productNumber)).build()
+            Proto.ProductNumberList.newBuilder().addAllProductNumber(listOf(saved.productNumber)).build()
         )
 
         // when
@@ -204,7 +204,7 @@ class ProductResourceTest @Autowired constructor(
                         "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}",
                 GET,
                 null,
-                respTypeRef<List<ProductDetailsResponse>>()
+                respTypeRef<Proto.ProductDetailsResponse>()
             )
 
         // then
@@ -212,13 +212,13 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body).hasSize(2)
-        assertThat(body[0].name).isEqualTo("test1")
-        assertThat(body[0].quantity).isEqualTo(1)
-        assertThat(body[0].price).isEqualTo(BigDecimal("20.00"))
-        assertThat(body[1].name).isEqualTo("test2")
-        assertThat(body[1].quantity).isEqualTo(2)
-        assertThat(body[1].price).isEqualTo(BigDecimal("30.00"))
+        assertThat(body.productsList).hasSize(2)
+        assertThat(body.getProducts(0).name).isEqualTo("test1")
+        assertThat(body.getProducts(0).quantity).isEqualTo(1)
+        assertThat(body.getProducts(0).price).isEqualTo(BigDecimal("20.00").toDecimalProto())
+        assertThat(body.getProducts(1).name).isEqualTo("test2")
+        assertThat(body.getProducts(1).quantity).isEqualTo(2)
+        assertThat(body.getProducts(1).price).isEqualTo(BigDecimal("30.00").toDecimalProto())
     }
 
     @Test

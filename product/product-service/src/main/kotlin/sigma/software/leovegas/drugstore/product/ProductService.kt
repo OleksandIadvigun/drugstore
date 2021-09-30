@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
@@ -97,7 +98,15 @@ class ProductService(
         productNumbers.run {
             val products = productRepository.findAllByProductNumberInAndStatus(this, ProductStatus.RECEIVED)
             logger.info("Products $products")
-            products.toProductDetailsResponseList()
+            val productProto = products.map {
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber(it.productNumber)
+                    .setQuantity(it.quantity)
+                    .setPrice(it.price.toDecimalProto())
+                    .setName(it.name)
+                    .build()
+            }
+            return@run Proto.ProductDetailsResponse.newBuilder().addAllProducts(productProto).build()
         }
 
     fun createProduct(products: CreateProductsEvent) =
@@ -107,7 +116,7 @@ class ProductService(
             savedProducts.toCreateProductResponseList()
         }
 
-    fun receiveProducts(request: Proto.ReceiveProductRequest) = request.productNumberList.run {
+    fun receiveProducts(request: Proto.ProductNumberList) = request.productNumberList.run {
         val productsToReceive = productRepository
             .findAllByProductNumberIn(this)
             .map { it.copy(status = ProductStatus.RECEIVED) }

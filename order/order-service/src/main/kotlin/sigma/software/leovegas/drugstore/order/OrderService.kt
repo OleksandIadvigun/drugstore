@@ -23,13 +23,13 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDetailsDTO
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
-import sigma.software.leovegas.drugstore.product.client.ProductClient
+import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
 
 @Service
 @Transactional
 class OrderService @Autowired constructor(
     val orderRepository: OrderRepository,
-    val productClient: ProductClient,
+    val productClientProto: ProductClientProto,
     val accountancyClient: AccountancyClient,
     val eventStream: StreamBridge,
 ) {
@@ -94,7 +94,7 @@ class OrderService @Autowired constructor(
             val orderItemsQuantity = orderItems.associate { it.productNumber to it.quantity }
             val orderItemsIds = orderItems.map { it.productNumber }
             val products = runCatching {
-                productClient.getProductsDetailsByProductNumbers(orderItemsIds)
+                productClientProto.getProductsDetailsByProductNumbers(orderItemsIds)
             }
                 .onFailure { error -> throw ProductServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
@@ -107,7 +107,7 @@ class OrderService @Autowired constructor(
                 .getOrThrow()
             logger.info("Received products prices $price")
 
-            val orderItemDetails = products.map {
+            val orderItemDetails = products.productsList.map {
                 OrderItemDetailsDTO(
                     productNumber = it.productNumber,
                     name = it.name,

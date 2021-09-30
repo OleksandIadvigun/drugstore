@@ -3,6 +3,7 @@ package sigma.software.leovegas.drugstore.product.restdoc
 import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.equalTo
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +23,7 @@ class RestApiDocGetProductsDetailsByProductNumbersTest @Autowired constructor(
     val productProperties: ProductProperties,
 ) : RestApiDocumentationTest(productProperties) {
 
-
+    @Disabled
     @Test
     fun `should get products details by product numbers`() {
 

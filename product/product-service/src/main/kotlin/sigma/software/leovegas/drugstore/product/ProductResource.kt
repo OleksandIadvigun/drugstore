@@ -22,7 +22,6 @@ import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @RestController
@@ -64,13 +63,13 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/receive")
-    fun receiveProducts(@RequestBody productNumbers: Proto.ReceiveProductRequest) =
+    fun receiveProducts(@RequestBody productNumbers: Proto.ProductNumberList) =
         service.receiveProducts(productNumbers)
 
     @ResponseStatus(OK)
     @GetMapping("/details")
     fun getProductsDetailsByIds(@RequestParam("productNumbers") productNumbers: List<String>)
-            : List<ProductDetailsResponse> {
+            : Proto.ProductDetailsResponse {
         return service.getProductsDetailsByProductNumbers(productNumbers)
     }
 

@@ -12,7 +12,6 @@ import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyCli
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.product.client.ProductClient
 import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateRequest
@@ -24,7 +23,6 @@ import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 class StoreService @Autowired constructor(
     val storeRepository: StoreRepository,
     val accountancyClientProto: AccountancyClientProto,
-    val productClient: ProductClient,
     val productClientProto: ProductClientProto,
 ) {
 
@@ -103,7 +101,7 @@ class StoreService @Autowired constructor(
 
             runCatching {
                 productClientProto.receiveProducts(
-                    Proto.ReceiveProductRequest.newBuilder()
+                    Proto.ProductNumberList.newBuilder()
                         .addAllProductNumber(invoiceDetails.itemsList.map { it.productNumber }).build()
                 )
             }
@@ -120,7 +118,7 @@ class StoreService @Autowired constructor(
 
     fun checkAvailability(products: List<DeliverProductsQuantityRequest>) = products.validate().run {
         val productsMap = runCatching {
-            productClient.getProductsDetailsByProductNumbers(products.map { it.productNumber })
+            productClientProto.getProductsDetailsByProductNumbers(products.map { it.productNumber }).productsList
                 .associate { it.productNumber to it.quantity }
         }
             .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }

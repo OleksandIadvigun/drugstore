@@ -55,7 +55,7 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
         )
 
         // and
-        val productRequest = Proto.ReceiveProductRequest.newBuilder().addAllProductNumber(listOf("1")).build()
+        val productRequest = Proto.ProductNumberList.newBuilder().addAllProductNumber(listOf("1")).build()
 
         // and
         val productResponse = Proto.ReceiveProductResponse.newBuilder()
@@ -64,7 +64,8 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
                     Proto.ReceiveProductItemDTO.newBuilder()
                         .setProductNumber("1")
                         .setStatus(Proto.ProductStatusDTO.RECEIVED).build()
-            ))
+                )
+            )
             .build()
 
         //and
