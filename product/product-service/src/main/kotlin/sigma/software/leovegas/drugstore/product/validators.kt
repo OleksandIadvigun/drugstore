@@ -7,6 +7,7 @@ fun Long.validate(functor: (Long) -> Optional<Product>): Product =
         functor(this).orElseThrow { ResourceNotFoundException(this) }
     }
 
+
 fun <T> List<T>.validate() = apply {
     if (isEmpty()) throw NotCorrectRequestException("Should not be empty request list")
 }

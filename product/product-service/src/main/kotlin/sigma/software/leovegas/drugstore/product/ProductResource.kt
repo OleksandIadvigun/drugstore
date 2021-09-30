@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
@@ -59,12 +59,13 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/deliver")
-    fun deliverProducts(@RequestBody products: List<DeliverProductsQuantityRequest>) =
+    fun deliverProducts(@RequestBody products: Proto.DeliverProductsDTO) =
         service.deliverProducts(products)
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/receive")
-    fun receiveProducts(@RequestBody productNumbers: List<String>) = service.receiveProducts(productNumbers)
+    fun receiveProducts(@RequestBody productNumbers: Proto.ReceiveProductRequest) =
+        service.receiveProducts(productNumbers)
 
     @ResponseStatus(OK)
     @GetMapping("/details")

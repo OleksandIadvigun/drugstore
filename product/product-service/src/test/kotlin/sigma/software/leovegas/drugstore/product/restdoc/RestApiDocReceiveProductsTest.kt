@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import java.math.BigDecimal
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.equalTo
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +25,7 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
     val objectMapper: ObjectMapper,
 ) : RestApiDocumentationTest(productProperties) {
 
-
+    @Disabled
     @Test
     fun `should receive products`() {
 

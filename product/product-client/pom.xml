@@ -20,6 +20,10 @@
             <artifactId>product-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>sigma.software.leovegas.drugstore.api</groupId>
+            <artifactId>drugstore-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>

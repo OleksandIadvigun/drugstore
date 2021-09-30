@@ -14,7 +14,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequ
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.api.messageSpliterator
-import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.client.ProductClient
@@ -129,7 +129,7 @@ class AccountancyService @Autowired constructor(
             this.toInvoiceResponseWithStatus()
         }
 
-    fun getInvoiceDetailsByOrderNumber(orderNumber: String): AccountancyProto.InvoiceDetails =
+    fun getInvoiceDetailsByOrderNumber(orderNumber: String): Proto.InvoiceDetails =
         orderNumber.validate {
             invoiceRepository.getInvoiceByOrderNumberAndStatusNotLike(
                 orderNumber,
@@ -140,13 +140,13 @@ class AccountancyService @Autowired constructor(
                 logger.info("Invoice found $this")
                 if (status != InvoiceStatus.PAID) throw NotPaidInvoiceException(orderNumber)
                 val invoiceItems = productItems.map {
-                    AccountancyProto.Item.newBuilder()
+                    Proto.Item.newBuilder()
                         .setProductNumber(it.productNumber)
                         .setQuantity(it.quantity)
                         .build()
                 }
                 logger.info("Invoice details $productItems")
-                return@run AccountancyProto.InvoiceDetails.newBuilder().addAllItems(invoiceItems).build()
+                return@run Proto.InvoiceDetails.newBuilder().addAllItems(invoiceItems).build()
             }
 
     fun payInvoice(orderNumber: String, money: BigDecimal): ConfirmOrderResponse =

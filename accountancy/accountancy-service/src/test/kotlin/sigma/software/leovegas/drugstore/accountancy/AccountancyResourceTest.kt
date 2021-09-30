@@ -28,7 +28,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
-import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
@@ -297,7 +297,7 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/invoice/details/order-number/${savedInvoice.orderNumber}",
             GET,
             null,
-            respTypeRef<AccountancyProto.InvoiceDetails>()
+            respTypeRef<Proto.InvoiceDetails>()
         )
 
         // then

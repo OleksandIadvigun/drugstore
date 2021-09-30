@@ -2,14 +2,12 @@ package sigma.software.leovegas.drugstore.accountancy.restdoc.invoice
 
 import io.restassured.RestAssured
 import java.math.BigDecimal
-import javax.swing.text.html.parser.Parser
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.Invoice
 import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
@@ -54,7 +52,10 @@ class RestApiDocGetInvoiceDetailsByOrderNumberTest @Autowired constructor(
             )
         }.get()
 
-        RestAssured.registerParser("application/x-protobuf", io.restassured.parsing.Parser.fromContentType("x-protobuf"))
+        RestAssured.registerParser(
+            "application/x-protobuf",
+            io.restassured.parsing.Parser.fromContentType("x-protobuf")
+        )
         of("get-invoice-details-by-order-number").`when`()
             .pathParam("orderNumber", savedInvoice.orderNumber)
             .contentType("application/x-protobuf")

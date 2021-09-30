@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
-import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 
 @SpringBootApplication
 internal class GetInvoiceByOrderIdProtoFeignClientWireMockTestApp
@@ -29,9 +29,9 @@ class GetInvoiceByOrderIdProtoFeignClientWireMockTest @Autowired constructor(
 
         // given
         val responseExpected =
-            AccountancyProto.InvoiceDetails.newBuilder()
+            Proto.InvoiceDetails.newBuilder()
                 .addItems(
-                    AccountancyProto.Item
+                    Proto.Item
                         .newBuilder()
                         .setProductNumber("123")
                         .setQuantity(2).build()

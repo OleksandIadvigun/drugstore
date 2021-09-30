@@ -24,7 +24,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequ
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.api.ApiError
-import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 
 
 @RestController
@@ -72,7 +72,7 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(OK)
     @GetMapping("/invoice/details/order-number/{orderNumber}", produces = ["application/x-protobuf"])
-    fun getInvoiceDetailsByOrderNumberProto(@PathVariable orderNumber: String): AccountancyProto.InvoiceDetails =
+    fun getInvoiceDetailsByOrderNumberProto(@PathVariable orderNumber: String): Proto.InvoiceDetails =
         service.getInvoiceDetailsByOrderNumber(orderNumber)
 
     @ExceptionHandler(Throwable::class)

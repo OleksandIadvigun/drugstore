@@ -9,9 +9,9 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.api.messageSpliterator
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
@@ -107,17 +107,21 @@ class ProductService(
             savedProducts.toCreateProductResponseList()
         }
 
-    fun receiveProducts(productNumbers: List<String>) = productNumbers.run {
+    fun receiveProducts(request: Proto.ReceiveProductRequest) = request.productNumberList.run {
         val productsToReceive = productRepository
-            .findAllByProductNumberIn(productNumbers)
+            .findAllByProductNumberIn(this)
             .map { it.copy(status = ProductStatus.RECEIVED) }
         val productsReceived = productRepository.saveAllAndFlush(productsToReceive)
         logger.info("Received Products $productsReceived")
-        productsReceived.toReceiveProductResponseList()
+        val productsProto = productsReceived.map {
+            Proto.ReceiveProductItemDTO.newBuilder().setProductNumber(it.productNumber)
+                .setStatus(Proto.ProductStatusDTO.valueOf(it.status.name)).build()
+        }
+        return@run Proto.ReceiveProductResponse.newBuilder().addAllProducts(productsProto).build()
     }
 
-    fun deliverProducts(productRequest: List<DeliverProductsQuantityRequest>) =
-        productRequest.validate().run {
+    fun deliverProducts(request: Proto.DeliverProductsDTO) =
+        request.itemsList.validate().run {
             val idsToQuantity = associate { it.productNumber to it.quantity }
             val toUpdate = productRepository
                 .findAllByProductNumberIn(this.map { it.productNumber })
@@ -132,7 +136,10 @@ class ProductService(
 
             val productsDelivered = productRepository.saveAllAndFlush(toUpdate)
             logger.info("Delivered Products $productsDelivered")
-            return@run productsDelivered.toReduceProductQuantityResponseList()
+            val productProto = productsDelivered.map {
+                Proto.Item.newBuilder().setProductNumber(it.productNumber).setQuantity(it.quantity).build()
+            }
+            return@run Proto.DeliverProductsDTO.newBuilder().addAllItems(productProto).build()
         }
 
     fun getProductPrice(productNumbers: List<String>): Map<String, BigDecimal> =

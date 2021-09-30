@@ -17,10 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 
 @AutoConfigureTestDatabase
@@ -543,18 +543,17 @@ class ProductServiceTest @Autowired constructor(
         }.get()
 
         // and
-        val updatedProductRequest = DeliverProductsQuantityRequest(
-            productNumber = saved.productNumber,
-            quantity = 3
+        val items = listOf(
+            Proto.Item.newBuilder().setProductNumber(saved.productNumber).setQuantity(3).build()
         )
 
         // when
-        val actual = service.deliverProducts(listOf(updatedProductRequest))
+        val actual = service.deliverProducts(Proto.DeliverProductsDTO.newBuilder().addAllItems(items).build())
 
         // then
         assertThat(actual).isNotNull
-        assertThat(actual[0].quantity).isEqualTo(7)  // 10 - 3
-        assertThat(actual[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(actual.getItems(0).productNumber).isEqualTo(saved.productNumber)
+        assertThat(actual.getItems(0).quantity).isEqualTo(7)  // 10 - 3
     }
 
     @Test
@@ -574,15 +573,15 @@ class ProductServiceTest @Autowired constructor(
             )
         }.get()
 
+        // and
+        val items = listOf(
+            Proto.Item.newBuilder().setProductNumber(saved.productNumber).setQuantity(7).build()
+        )
+
         // when
         val exception = assertThrows<NotEnoughQuantityProductException> {
             service.deliverProducts(
-                listOf(
-                    DeliverProductsQuantityRequest(
-                        productNumber = saved.productNumber,
-                        quantity = 7
-                    )
-                )
+                Proto.DeliverProductsDTO.newBuilder().addAllItems(items).build()
             )
         }
 
@@ -606,11 +605,16 @@ class ProductServiceTest @Autowired constructor(
             )
         }.get()
 
+        // and
+        val productNumbers =
+            Proto.ReceiveProductRequest.newBuilder().addAllProductNumber(listOf(saved.productNumber)).build()
+
         // when
-        val actual = service.receiveProducts(listOf(saved.productNumber))
+        val actual = service.receiveProducts(productNumbers)
 
         // then
         assertThat(actual).isNotNull
-        assertThat(actual[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
+        assertThat(actual.getProducts(0).productNumber).isEqualTo(saved.productNumber)
+        assertThat(actual.getProducts(0).status).isEqualTo(Proto.ProductStatusDTO.RECEIVED)
     }
 }

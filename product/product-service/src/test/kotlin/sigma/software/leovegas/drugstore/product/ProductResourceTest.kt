@@ -23,17 +23,15 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
-import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 
@@ -146,7 +144,9 @@ class ProductResourceTest @Autowired constructor(
             )
         }.get()
 
-        val httpEntity = HttpEntity(listOf(saved.productNumber))
+        val httpEntity = HttpEntity(
+            Proto.ReceiveProductRequest.newBuilder().addAllProductNumber(listOf(saved.productNumber)).build()
+        )
 
         // when
         val response = restTemplate
@@ -154,7 +154,7 @@ class ProductResourceTest @Autowired constructor(
                 "$baseUrl/api/v1/products/receive",
                 PUT,
                 httpEntity,
-                respTypeRef<List<ReceiveProductResponse>>()
+                respTypeRef<Proto.ReceiveProductResponse>()
             )
 
         // then
@@ -162,8 +162,9 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get()
-        assertThat(body).hasSize(1)
-        assertThat(body[0].status).isEqualTo(ProductStatusDTO.RECEIVED)
+        assertThat(body.productsList).hasSize(1)
+        assertThat(body.getProducts(0).productNumber).isEqualTo(saved.productNumber)
+        assertThat(body.getProducts(0).status).isEqualTo(Proto.ProductStatusDTO.RECEIVED)
     }
 
     @Test
@@ -606,14 +607,12 @@ class ProductResourceTest @Autowired constructor(
         }.get()
 
         // and
-        val httpEntity = HttpEntity(
-            listOf(
-                DeliverProductsQuantityRequest(
-                    productNumber = saved.productNumber,
-                    quantity = 3
-                )
-            )
+        val items = listOf(
+            Proto.Item.newBuilder().setProductNumber(saved.productNumber).setQuantity(3).build()
         )
+
+        // and
+        val httpEntity = HttpEntity(Proto.DeliverProductsDTO.newBuilder().addAllItems(items).build())
 
         // when
         val response = restTemplate
@@ -621,7 +620,7 @@ class ProductResourceTest @Autowired constructor(
                 "$baseUrl/api/v1/products/deliver",
                 PUT,
                 httpEntity,
-                respTypeRef<List<DeliverProductsResponse>>()
+                respTypeRef<Proto.DeliverProductsDTO>()
             )
 
         // then
@@ -629,8 +628,8 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body).hasSize(1)
-        assertThat(body[0].quantity).isEqualTo(7)  // 10 - 3
-        assertThat(body[0].updatedAt).isBeforeOrEqualTo(LocalDateTime.now())
+        assertThat(body.itemsList).hasSize(1)
+        assertThat(body.getItems(0).productNumber).isEqualTo(saved.productNumber)
+        assertThat(body.getItems(0).quantity).isEqualTo(7)  // 10 - 3
     }
 }

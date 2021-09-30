@@ -8,12 +8,12 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
-import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.client.ProductClient
+import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateRequest
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
@@ -23,9 +23,9 @@ import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 @Transactional
 class StoreService @Autowired constructor(
     val storeRepository: StoreRepository,
-    val accountancyClient: AccountancyClient,
     val accountancyClientProto: AccountancyClientProto,
     val productClient: ProductClient,
+    val productClientProto: ProductClientProto,
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(StoreService::class.java)
@@ -61,7 +61,7 @@ class StoreService @Autowired constructor(
     fun deliverProducts(orderNumber: String): TransferCertificateResponse =
         orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
-            val invoiceDetails: AccountancyProto.InvoiceDetails = runCatching {
+            val invoiceDetails: Proto.InvoiceDetails = runCatching {
                 accountancyClientProto.getInvoiceDetailsByOrderNumber(this)
             }.onFailure { error ->
                 throw AccountancyServerResponseException(error.localizedMessage.messageSpliterator())
@@ -73,10 +73,14 @@ class StoreService @Autowired constructor(
                 .map { DeliverProductsQuantityRequest(productNumber = it.productNumber, quantity = it.quantity) }
 
             checkAvailability(products)
-            runCatching { productClient.deliverProducts(products) }
+
+            runCatching {
+                productClientProto.deliverProducts(
+                    Proto.DeliverProductsDTO.newBuilder().addAllItems(invoiceDetails.itemsList).build()
+                )
+            }
                 .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
-                .getOrNull()
-                .orEmpty()
+                .getOrThrow()
             logger.info("Products are delivered")
 
             val transferCertificate = createTransferCertificate(
@@ -89,7 +93,7 @@ class StoreService @Autowired constructor(
     fun receiveProduct(orderNumber: String) =
         orderNumber.validate(storeRepository::getTransferCertificateByOrderNumber).run {
 
-            val invoiceDetails: AccountancyProto.InvoiceDetails = runCatching {
+            val invoiceDetails: Proto.InvoiceDetails = runCatching {
                 accountancyClientProto.getInvoiceDetailsByOrderNumber(this)
             }.onFailure { error ->
                 throw AccountancyServerResponseException(error.localizedMessage.messageSpliterator())
@@ -97,10 +101,14 @@ class StoreService @Autowired constructor(
                 .getOrThrow()
             logger.info("Received invoice details ${invoiceDetails.itemsList}")
 
-            runCatching { productClient.receiveProducts(invoiceDetails.itemsList.map { it.productNumber }) }
+            runCatching {
+                productClientProto.receiveProducts(
+                    Proto.ReceiveProductRequest.newBuilder()
+                        .addAllProductNumber(invoiceDetails.itemsList.map { it.productNumber }).build()
+                )
+            }
                 .onFailure { error -> throw ProductServerResponseException(error.localizedMessage.messageSpliterator()) }
-                .getOrNull()
-                .orEmpty()
+                .getOrThrow()
             logger.info("Products is received")
 
             val transferCertificate = createTransferCertificate(

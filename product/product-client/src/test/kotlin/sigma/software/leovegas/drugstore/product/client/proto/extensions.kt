@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.infrastructure.extensions
+package sigma.software.leovegas.drugstore.product.client.proto
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
@@ -14,5 +14,3 @@ fun MappingBuilder.withProtobufRequest(f: () -> MessageLite): MappingBuilder =
 fun ResponseDefinitionBuilder.withProtobufResponse(f: () -> MessageLite): ResponseDefinitionBuilder =
     withHeader("Content-Type", "application/x-protobuf")
         .withBody(f.invoke().toByteArray())
-
-

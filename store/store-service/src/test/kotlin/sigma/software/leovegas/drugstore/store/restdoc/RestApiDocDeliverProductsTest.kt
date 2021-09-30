@@ -7,8 +7,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.time.LocalDateTime
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -17,11 +15,9 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
-import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufRequest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.store.StoreProperties
 import sigma.software.leovegas.drugstore.store.StoreRepository
@@ -45,9 +41,9 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
 
         // and
         val itemsList = listOf(
-            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
+            Proto.Item.newBuilder().setProductNumber("1").setQuantity(2).build(),
         )
-        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
+        val invoiceDetailsProto = Proto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
@@ -63,42 +59,31 @@ class RestApiDocDeliverProductsTest @Autowired constructor(
 
 
         // and
-        val productRequest = listOf(
-            DeliverProductsQuantityRequest(
-                productNumber = "1",
-                quantity = 2
+        val productRequest = Proto.DeliverProductsDTO.newBuilder()
+            .addAllItems(
+                listOf(
+                    Proto.Item.newBuilder().setProductNumber("1").setQuantity(2).build(),
+                )
             )
-        )
+            .build()
 
-        //and
-        val productResponse = listOf(
-            DeliverProductsResponse(
-                productNumber = "1",
-                quantity = 5,
-                updatedAt = LocalDateTime.now()
+        // and
+        val productResponse = Proto.DeliverProductsDTO.newBuilder()
+            .addAllItems(
+                listOf(
+                    Proto.Item.newBuilder().setProductNumber("1").setQuantity(5).build(),
+                )
             )
-        )
+            .build()
 
-        //and
+        // and
         stubFor(
             put("/api/v1/products/deliver")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(productRequest)
-                    )
-                )
+                .withProtobufRequest { productRequest }
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productResponse)
-                        )
+                        .withProtobufResponse { productResponse }
                         .withStatus(HttpStatus.ACCEPTED.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 

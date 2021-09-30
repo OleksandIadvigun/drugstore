@@ -6,8 +6,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
-import com.github.tomakehurst.wiremock.matching.EqualToPattern
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -20,13 +18,12 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
-import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
-import sigma.software.leovegas.drugstore.api.protobuf.AccountancyProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufRequest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
@@ -142,10 +139,10 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         val itemsList = listOf(
-            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
-            AccountancyProto.Item.newBuilder().setProductNumber( "2").setQuantity(3).build(),
+            Proto.Item.newBuilder().setProductNumber("1").setQuantity(2).build(),
+            Proto.Item.newBuilder().setProductNumber("2").setQuantity(3).build(),
         )
-        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
+        val invoiceDetailsProto = Proto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
@@ -159,41 +156,31 @@ class StoreResourceTest @Autowired constructor(
                 )
         )
 
-        //and
-        val productResponse = listOf(
-            DeliverProductsResponse(
-                productNumber = "1",
-                quantity = 5,
-                updatedAt = LocalDateTime.now()
-            ),
-            DeliverProductsResponse(
-                productNumber = "2",
-                quantity = 10,
-                updatedAt = LocalDateTime.now()
-            )
+        // and
+        val productRequest = Proto.ReceiveProductRequest.newBuilder().addAllProductNumber(listOf("1", "2")).build()
 
-        )
+        // and
+        val productResponse = Proto.ReceiveProductResponse.newBuilder()
+            .addAllProducts(
+                listOf(
+                    Proto.ReceiveProductItemDTO.newBuilder()
+                        .setProductNumber("1")
+                        .setStatus(Proto.ProductStatusDTO.RECEIVED).build(),
+                    Proto.ReceiveProductItemDTO.newBuilder()
+                        .setProductNumber("2")
+                        .setStatus(Proto.ProductStatusDTO.RECEIVED).build()
+                )
+            )
+            .build()
 
         //and
         stubFor(
             put("/api/v1/products/receive")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(listOf("1", "2"))
-                    )
-                )
+                .withProtobufRequest { productRequest }
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productResponse)
-                        )
+                        .withProtobufResponse { productResponse }
                         .withStatus(HttpStatus.ACCEPTED.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -224,10 +211,10 @@ class StoreResourceTest @Autowired constructor(
 
         // and
         val itemsList = listOf(
-            AccountancyProto.Item.newBuilder().setProductNumber( "1").setQuantity(2).build(),
-            AccountancyProto.Item.newBuilder().setProductNumber( "2").setQuantity(3).build(),
+            Proto.Item.newBuilder().setProductNumber("1").setQuantity(2).build(),
+            Proto.Item.newBuilder().setProductNumber("2").setQuantity(3).build(),
         )
-        val invoiceDetailsProto = AccountancyProto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
+        val invoiceDetailsProto = Proto.InvoiceDetails.newBuilder().addAllItems(itemsList).build()
 
         // and
         val orderNumber = "1"
@@ -242,52 +229,33 @@ class StoreResourceTest @Autowired constructor(
         )
 
         // and
-        val productRequest = listOf(
-            DeliverProductsQuantityRequest(
-                productNumber = "1",
-                quantity = 2
-            ),
-            DeliverProductsQuantityRequest(
-                productNumber = "2",
-                quantity = 3
+        val productRequest = Proto.DeliverProductsDTO.newBuilder()
+            .addAllItems(
+                listOf(
+                    Proto.Item.newBuilder().setProductNumber("1").setQuantity(2).build(),
+                    Proto.Item.newBuilder().setProductNumber("2").setQuantity(3).build()
+                )
             )
-        )
+            .build()
 
-        //and
-        val productResponse = listOf(
-            DeliverProductsResponse(
-                productNumber = "1",
-                quantity = 5,
-                updatedAt = LocalDateTime.now()
-            ),
-            DeliverProductsResponse(
-                productNumber = "2",
-                quantity = 10,
-                updatedAt = LocalDateTime.now()
+        // and
+        val productResponse = Proto.DeliverProductsDTO.newBuilder()
+            .addAllItems(
+                listOf(
+                    Proto.Item.newBuilder().setProductNumber("1").setQuantity(5).build(),
+                    Proto.Item.newBuilder().setProductNumber("2").setQuantity(10).build()
+                )
             )
+            .build()
 
-        )
-
-        //and
+        // and
         stubFor(
             put("/api/v1/products/deliver")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
-                .withRequestBody(
-                    EqualToPattern(
-                        objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(productRequest)
-                    )
-                )
+                .withProtobufRequest { productRequest }
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(productResponse)
-                        )
+                        .withProtobufResponse { productResponse }
                         .withStatus(HttpStatus.ACCEPTED.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 

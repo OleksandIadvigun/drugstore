@@ -2,7 +2,7 @@ syntax = "proto2";
 package sigma.software.leovegas.drugstore.api;
 
 option java_package = "sigma.software.leovegas.drugstore.api.protobuf";
-option java_outer_classname = "AccountancyProto";
+option java_outer_classname = "Proto";
 
 message InvoiceDetails {
   repeated Item items = 1;
@@ -10,4 +10,27 @@ message InvoiceDetails {
 message Item{
   required string productNumber = 1;
   required int32 quantity = 2;
+}
+
+message DeliverProductsDTO{
+  repeated Item items = 1;
+}
+
+message ReceiveProductItemDTO{
+  required string productNumber = 1;
+  required ProductStatusDTO status = 2;
+}
+
+message ReceiveProductRequest{
+  repeated string productNumber = 1;
+}
+
+message ReceiveProductResponse{
+  repeated ReceiveProductItemDTO products = 1;
+}
+
+enum ProductStatusDTO{
+  CREATED = 0;
+  RECEIVED = 1;
+  NONE = 2;
 }
