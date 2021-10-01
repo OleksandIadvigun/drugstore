@@ -84,9 +84,9 @@ class OrderResource @Autowired constructor(
         return "Updated"
     }
 
-    @PostMapping("/confirm")
+    @PostMapping("/confirm/{orderNumber}")
     @ResponseStatus(HttpStatus.CREATED)
-    fun confirmOrder(@RequestBody orderNumber: String) =
+    fun confirmOrder(@PathVariable("orderNumber") orderNumber: String) =
         orderService.confirmOrder(orderNumber)
 
     @ExceptionHandler(Throwable::class)

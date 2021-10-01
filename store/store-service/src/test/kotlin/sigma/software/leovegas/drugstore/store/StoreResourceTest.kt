@@ -181,12 +181,10 @@ class StoreResourceTest @Autowired constructor(
                 )
         )
 
-        val httpEntity = HttpEntity("1")
-
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/store/receive",
-            HttpMethod.PUT, httpEntity, respTypeRef<TransferCertificateResponse>()
+            "$baseUrl/api/v1/store/receive/$orderNumber",
+            HttpMethod.PUT, null, respTypeRef<TransferCertificateResponse>()
         )
 
         // then
@@ -281,13 +279,11 @@ class StoreResourceTest @Autowired constructor(
                 )
         )
 
-        // and
-        val httpEntity = HttpEntity("1")
 
         // when
         val response = restTemplate.exchange(
-            "$baseUrl/api/v1/store/deliver",
-            HttpMethod.PUT, httpEntity, respTypeRef<TransferCertificateResponse>()
+            "$baseUrl/api/v1/store/deliver/$orderNumber",
+            HttpMethod.PUT, null, respTypeRef<TransferCertificateResponse>()
         )
 
         // then

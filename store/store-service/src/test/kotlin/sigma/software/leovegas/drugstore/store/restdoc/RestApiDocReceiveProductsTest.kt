@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.store.restdoc
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.put
@@ -21,7 +20,6 @@ import sigma.software.leovegas.drugstore.store.StoreRepository
 
 @DisplayName("Receive products REST API Doc test")
 class RestApiDocReceiveProductsTest @Autowired constructor(
-    val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
     val storeProperties: StoreProperties,
     val storeRepository: StoreRepository,
@@ -83,7 +81,7 @@ class RestApiDocReceiveProductsTest @Autowired constructor(
             .`when`()
             .body(1)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .put("http://${storeProperties.host}:$port/api/v1/store/receive")
+            .put("http://${storeProperties.host}:$port/api/v1/store/receive/$orderNumber")
             .then()
             .assertThat().statusCode(202)
             .assertThat().body("orderNumber", equalTo("1"))

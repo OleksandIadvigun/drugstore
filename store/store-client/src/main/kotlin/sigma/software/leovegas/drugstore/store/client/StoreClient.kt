@@ -19,11 +19,11 @@ interface StoreClient {
     @RequestLine("GET /api/v1/store/transfer-certificate/order/{orderNumber}")
     fun getTransferCertificatesByOrderNumber(@Param orderNumber: String): TransferCertificateResponse
 
-    @RequestLine("PUT /api/v1/store/receive")
-    fun receiveProducts(orderNumber: String): TransferCertificateResponse
+    @RequestLine("PUT /api/v1/store/receive/{orderNumber}")
+    fun receiveProducts(@Param orderNumber: String): TransferCertificateResponse
 
-    @RequestLine("PUT /api/v1/store/deliver")
-    fun deliverProducts(orderNumber: String): TransferCertificateResponse
+    @RequestLine("PUT /api/v1/store/deliver/{orderNumber}")
+    fun deliverProducts(@Param orderNumber: String): TransferCertificateResponse
 
     @RequestLine("PUT /api/v1/store/availability")
     fun checkAvailability(products: List<DeliverProductsQuantityRequest>): List<DeliverProductsQuantityRequest>

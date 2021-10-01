@@ -164,6 +164,7 @@ public final class Proto {
     getDescriptor() {
         return descriptor;
     }
+
     /**
      * Protobuf enum {@code sigma.software.leovegas.drugstore.api.ProductStatusDTO}
      */
@@ -265,6 +266,7 @@ public final class Proto {
 
         // @@protoc_insertion_point(enum_scope:sigma.software.leovegas.drugstore.api.ProductStatusDTO)
     }
+
     public interface InvoiceDetailsOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.InvoiceDetails)
             com.google.protobuf.MessageOrBuilder {
@@ -297,6 +299,7 @@ public final class Proto {
         sigma.software.leovegas.drugstore.api.protobuf.Proto.ItemOrBuilder getItemsOrBuilder(
                 int index);
     }
+
     public interface ItemOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.Item)
             com.google.protobuf.MessageOrBuilder {
@@ -327,6 +330,7 @@ public final class Proto {
          */
         int getQuantity();
     }
+
     public interface DeliverProductsDTOOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.DeliverProductsDTO)
             com.google.protobuf.MessageOrBuilder {
@@ -359,6 +363,7 @@ public final class Proto {
         sigma.software.leovegas.drugstore.api.protobuf.Proto.ItemOrBuilder getItemsOrBuilder(
                 int index);
     }
+
     public interface ReceiveProductItemDTOOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.ReceiveProductItemDTO)
             com.google.protobuf.MessageOrBuilder {
@@ -389,6 +394,7 @@ public final class Proto {
          */
         sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductStatusDTO getStatus();
     }
+
     public interface ProductNumberListOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.ProductNumberList)
             com.google.protobuf.MessageOrBuilder {
@@ -415,6 +421,7 @@ public final class Proto {
         com.google.protobuf.ByteString
         getProductNumberBytes(int index);
     }
+
     public interface ReceiveProductResponseOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.ReceiveProductResponse)
             com.google.protobuf.MessageOrBuilder {
@@ -447,6 +454,7 @@ public final class Proto {
         sigma.software.leovegas.drugstore.api.protobuf.Proto.ReceiveProductItemDTOOrBuilder getProductsOrBuilder(
                 int index);
     }
+
     public interface ProductDetailsResponseOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.ProductDetailsResponse)
             com.google.protobuf.MessageOrBuilder {
@@ -479,6 +487,7 @@ public final class Proto {
         sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductDetailsItemOrBuilder getProductsOrBuilder(
                 int index);
     }
+
     public interface ProductDetailsItemOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.ProductDetailsItem)
             com.google.protobuf.MessageOrBuilder {
@@ -540,6 +549,7 @@ public final class Proto {
          */
         int getQuantity();
     }
+
     public interface DecimalValueOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.DecimalValue)
             com.google.protobuf.MessageOrBuilder {
@@ -609,6 +619,7 @@ public final class Proto {
         private InvoiceDetails(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
         }
+
         private InvoiceDetails() {
             items_ = java.util.Collections.emptyList();
         }
@@ -2126,6 +2137,7 @@ public final class Proto {
         private DeliverProductsDTO(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
         }
+
         private DeliverProductsDTO() {
             items_ = java.util.Collections.emptyList();
         }
@@ -3657,6 +3669,7 @@ public final class Proto {
         private ProductNumberList(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
         }
+
         private ProductNumberList() {
             productNumber_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         }
@@ -4280,6 +4293,7 @@ public final class Proto {
         private ReceiveProductResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
         }
+
         private ReceiveProductResponse() {
             products_ = java.util.Collections.emptyList();
         }
@@ -5098,6 +5112,7 @@ public final class Proto {
         private ProductDetailsResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
         }
+
         private ProductDetailsResponse() {
             products_ = java.util.Collections.emptyList();
         }
@@ -5918,6 +5933,7 @@ public final class Proto {
         private sigma.software.leovegas.drugstore.api.protobuf.Proto.DecimalValue price_;
         private int quantity_;
         private byte memoizedIsInitialized = -1;
+
         // Use ProductDetailsItem.newBuilder() to construct.
         private ProductDetailsItem(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
@@ -6994,6 +7010,7 @@ public final class Proto {
         private DecimalValue(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
         }
+
         private DecimalValue() {
             value_ = com.google.protobuf.ByteString.EMPTY;
         }

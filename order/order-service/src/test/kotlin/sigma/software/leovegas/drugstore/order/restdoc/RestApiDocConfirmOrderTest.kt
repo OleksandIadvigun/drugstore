@@ -100,9 +100,8 @@ class RestApiDocConfirmOrderTest @Autowired constructor(
         )
         RestAssured.registerParser("text/plain", Parser.TEXT);
         of("confirm-order").`when`()
-            .body(order.orderNumber)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .post("http://${orderProperties.host}:$port/api/v1/orders/confirm")
+            .post("http://${orderProperties.host}:$port/api/v1/orders/confirm/${order.orderNumber}")
             .then()
             .assertThat().statusCode(201)
             .assertThat().body(equalTo("Confirmed"))

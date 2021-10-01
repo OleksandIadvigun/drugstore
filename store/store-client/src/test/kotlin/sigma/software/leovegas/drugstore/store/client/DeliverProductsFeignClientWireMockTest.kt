@@ -1,8 +1,8 @@
-package sigma.software.leovegas.drugstore.order.client
+package sigma.software.leovegas.drugstore.store.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import org.assertj.core.api.Assertions.assertThat
@@ -13,43 +13,53 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
+import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
+import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
 @SpringBootApplication
-internal class ConfirmOrderFeignClientWireMockTestApp
+internal class DeliverProductsFeignClientWireMockTestApp
 
-@DisplayName("Confirm Order Feign Client WireMock test")
-@ContextConfiguration(classes = [ConfirmOrderFeignClientWireMockTestApp::class])
-class ConfirmOrderFeignClientWireMockTest @Autowired constructor(
-    val orderClient: OrderClient,
+@DisplayName("Deliver Products Feign Client WireMock test")
+@ContextConfiguration(classes = [DeliverProductsFeignClientWireMockTestApp::class])
+class DeliverProductsFeignClientWireMockTest @Autowired constructor(
+    val storeClient: StoreClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should confirm order`() {
+    fun `should deliver products`() {
 
         // given
         val orderNumber = "1"
 
         // and
+        val responseExpected = TransferCertificateResponse(
+            certificateNumber = "1",
+            orderNumber = "1",
+            status = TransferStatusDTO.DELIVERED
+        )
+
+        // and
         stubFor(
-            post("/api/v1/orders/confirm/$orderNumber")
+            put("/api/v1/store/deliver/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString("Confirmed")
+                                .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.CREATED.value())
+                        .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = orderClient.confirmOrder(orderNumber)
+        val responseActual = storeClient.deliverProducts(orderNumber)
 
         //  then
-        assertThat(responseActual).isEqualTo("Confirmed")
+        assertThat(responseActual.certificateNumber).isEqualTo(orderNumber)
+        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 }

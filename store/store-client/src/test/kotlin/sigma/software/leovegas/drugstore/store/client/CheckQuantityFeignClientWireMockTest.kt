@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.github.tomakehurst.wiremock.matching.EqualToPattern
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -13,42 +14,47 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
-import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
+import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
+
 
 @SpringBootApplication
-internal class ReceiveProductsFeignClientWireMockTestApp
+internal class CheckQuantityFeignClientWireMockTestApp
 
-@DisplayName("Receive Products Feign Client WireMock test")
-@ContextConfiguration(classes = [ReceiveProductsFeignClientWireMockTestApp::class])
-class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Check Store Item Quantity Feign Client WireMock test")
+@ContextConfiguration(classes = [CheckQuantityFeignClientWireMockTestApp::class])
+class CheckQuantityFeignClientWireMockTest @Autowired constructor(
     val storeClient: StoreClient,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
     @Test
-    fun `should receive products`() {
+    fun `should check store items quantity`() {
 
         // given
-        val orderNumber = "1"
-
-        // and
-        val responseExpected = TransferCertificateResponse(
-            certificateNumber = "1",
-            orderNumber = orderNumber,
-            status = TransferStatusDTO.RECEIVED,
+        val request = listOf(
+            DeliverProductsQuantityRequest(
+                productNumber = "1",
+                quantity = 5
+            )
         )
 
         // and
         stubFor(
-            put("/api/v1/store/receive/$orderNumber")
+            put("/api/v1/store/availability")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
+                .withRequestBody(
+                    EqualToPattern(
+                        objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(request)
+                    )
+                )
                 .willReturn(
                     aResponse()
                         .withBody(
                             objectMapper
                                 .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(responseExpected)
+                                .writeValueAsString(request)
                         )
                         .withStatus(HttpStatus.ACCEPTED.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -56,11 +62,11 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = storeClient.receiveProducts(orderNumber)
+        val responseActual = storeClient.checkAvailability(request)
 
         //  then
-        assertThat(responseActual.certificateNumber).isEqualTo("1")
-        assertThat(responseActual.orderNumber).isEqualTo(orderNumber)
-        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.RECEIVED)
+        assertThat(responseActual).hasSize(1)
+        assertThat(responseActual[0].productNumber).isEqualTo("1")
+        assertThat(responseActual[0].quantity).isEqualTo(5)
     }
 }
