@@ -36,20 +36,7 @@ enum class InvoiceStatusDTO {
     REFUND
 }
 
-enum class InvoiceTypeDTO {
-    NONE,
-    INCOME,
-    OUTCOME
-}
-
 data class ProductItemDtoRequest(
-    val name: String = "default",
-    val price: BigDecimal = BigDecimal.ZERO,
-    val quantity: Int = 0
-)
-
-data class ProductItemDTO(
-    val productNumber: String = "default",
     val name: String = "default",
     val price: BigDecimal = BigDecimal.ZERO,
     val quantity: Int = 0

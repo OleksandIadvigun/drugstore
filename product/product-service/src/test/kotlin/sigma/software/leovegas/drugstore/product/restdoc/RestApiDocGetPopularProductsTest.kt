@@ -1,10 +1,8 @@
 package sigma.software.leovegas.drugstore.product.restdoc
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
@@ -13,9 +11,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.Product
 import sigma.software.leovegas.drugstore.product.ProductProperties
 import sigma.software.leovegas.drugstore.product.ProductRepository
@@ -26,7 +25,6 @@ class RestApiDocGetPopularProductsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
-    val objectMapper: ObjectMapper,
     val productProperties: ProductProperties
 ) : RestApiDocumentationTest(productProperties) {
 
@@ -69,24 +67,19 @@ class RestApiDocGetPopularProductsTest @Autowired constructor(
         }.get()
 
         // and
+        val responseExpected = Proto.ProductQuantityMap.newBuilder()
+            .putProductQuantityItem(savedProducts[2].productNumber, 8)
+            .putProductQuantityItem(savedProducts[0].productNumber, 5)
+            .putProductQuantityItem(savedProducts[1].productNumber, 2)
+            .build()
+
+        // and
         stubFor(
             WireMock.get("/api/v1/orders/total-buys")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        savedProducts[2].productNumber to 8,
-                                        savedProducts[0].productNumber to 5,
-                                        savedProducts[1].productNumber to 2
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 

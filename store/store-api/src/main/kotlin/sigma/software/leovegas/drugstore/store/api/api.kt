@@ -17,11 +17,6 @@ data class TransferCertificateResponse(
     val comment: String = "undefined"
 )
 
-data class CheckStatusResponse(
-    val orderNumber: String = "undefined",
-    val comment: String = "undefined"
-)
-
 // DTOs
 
 enum class TransferStatusDTO {

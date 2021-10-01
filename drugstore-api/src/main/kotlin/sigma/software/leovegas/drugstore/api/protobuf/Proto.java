@@ -54,6 +54,16 @@ public final class Proto {
     private static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_sigma_software_leovegas_drugstore_api_CheckTransferResponse_fieldAccessorTable;
+    private static final com.google.protobuf.Descriptors.Descriptor
+            internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_descriptor;
+    private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_fieldAccessorTable;
+    private static final com.google.protobuf.Descriptors.Descriptor
+            internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_ProductQuantityItemEntry_descriptor;
+    private static final
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_ProductQuantityItemEntry_fieldAccessorTable;
     private static com.google.protobuf.Descriptors.FileDescriptor
             descriptor;
 
@@ -81,10 +91,15 @@ public final class Proto {
                         "e\022\020\n\010quantity\030\004 \002(\005\"?\n\014DecimalValue\022\r\n\005s" +
                         "cale\030\001 \002(\005\022\021\n\tprecision\030\002 \002(\005\022\r\n\005value\030\003" +
                         " \002(\014\"=\n\025CheckTransferResponse\022\023\n\013orderNu" +
-                        "mber\030\001 \002(\t\022\017\n\007comment\030\002 \002(\t*7\n\020ProductSt" +
-                        "atusDTO\022\013\n\007CREATED\020\000\022\014\n\010RECEIVED\020\001\022\010\n\004NO" +
-                        "NE\020\002B7\n.sigma.software.leovegas.drugstor" +
-                        "e.api.protobufB\005Proto"
+                        "mber\030\001 \002(\t\022\017\n\007comment\030\002 \002(\t\"\301\001\n\022ProductQ" +
+                        "uantityMap\022o\n\023productQuantityItem\030\001 \003(\0132" +
+                        "R.sigma.software.leovegas.drugstore.api." +
+                        "ProductQuantityMap.ProductQuantityItemEn" +
+                        "try\032:\n\030ProductQuantityItemEntry\022\013\n\003key\030\001" +
+                        " \001(\t\022\r\n\005value\030\002 \001(\005:\0028\001*7\n\020ProductStatus" +
+                        "DTO\022\013\n\007CREATED\020\000\022\014\n\010RECEIVED\020\001\022\010\n\004NONE\020\002" +
+                        "B7\n.sigma.software.leovegas.drugstore.ap" +
+                        "i.protobufB\005Proto"
         };
         com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
                 new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -158,6 +173,18 @@ public final class Proto {
                 com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
                 internal_static_sigma_software_leovegas_drugstore_api_CheckTransferResponse_descriptor,
                 new java.lang.String[]{"OrderNumber", "Comment",});
+        internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_descriptor =
+                getDescriptor().getMessageTypes().get(10);
+        internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_fieldAccessorTable = new
+                com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+                internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_descriptor,
+                new java.lang.String[]{"ProductQuantityItem",});
+        internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_ProductQuantityItemEntry_descriptor =
+                internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_descriptor.getNestedTypes().get(0);
+        internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_ProductQuantityItemEntry_fieldAccessorTable = new
+                com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+                internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_ProductQuantityItemEntry_descriptor,
+                new java.lang.String[]{"Key", "Value",});
     }
 
     private Proto() {
@@ -633,6 +660,50 @@ public final class Proto {
          */
         com.google.protobuf.ByteString
         getCommentBytes();
+    }
+
+    public interface ProductQuantityMapOrBuilder extends
+            // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.ProductQuantityMap)
+            com.google.protobuf.MessageOrBuilder {
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+        int getProductQuantityItemCount();
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+        boolean containsProductQuantityItem(
+                java.lang.String key);
+
+        /**
+         * Use {@link #getProductQuantityItemMap()} instead.
+         */
+        @java.lang.Deprecated
+        java.util.Map<java.lang.String, java.lang.Integer>
+        getProductQuantityItem();
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+        java.util.Map<java.lang.String, java.lang.Integer>
+        getProductQuantityItemMap();
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+
+        int getProductQuantityItemOrDefault(
+                java.lang.String key,
+                int defaultValue);
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+
+        int getProductQuantityItemOrThrow(
+                java.lang.String key);
     }
 
     /**
@@ -8507,6 +8578,758 @@ public final class Proto {
 
 
             // @@protoc_insertion_point(builder_scope:sigma.software.leovegas.drugstore.api.CheckTransferResponse)
+        }
+
+    }
+
+    /**
+     * Protobuf type {@code sigma.software.leovegas.drugstore.api.ProductQuantityMap}
+     */
+    public static final class ProductQuantityMap extends
+            com.google.protobuf.GeneratedMessageV3 implements
+            // @@protoc_insertion_point(message_implements:sigma.software.leovegas.drugstore.api.ProductQuantityMap)
+            ProductQuantityMapOrBuilder {
+        public static final int PRODUCTQUANTITYITEM_FIELD_NUMBER = 1;
+        @java.lang.Deprecated
+        public static final com.google.protobuf.Parser<ProductQuantityMap>
+                PARSER = new com.google.protobuf.AbstractParser<ProductQuantityMap>() {
+            @java.lang.Override
+            public ProductQuantityMap parsePartialFrom(
+                    com.google.protobuf.CodedInputStream input,
+                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                    throws com.google.protobuf.InvalidProtocolBufferException {
+                return new ProductQuantityMap(input, extensionRegistry);
+            }
+        };
+        private static final long serialVersionUID = 0L;
+        // @@protoc_insertion_point(class_scope:sigma.software.leovegas.drugstore.api.ProductQuantityMap)
+        private static final sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap DEFAULT_INSTANCE;
+
+        static {
+            DEFAULT_INSTANCE = new sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap();
+        }
+
+        private com.google.protobuf.MapField<
+                java.lang.String, java.lang.Integer> productQuantityItem_;
+        private byte memoizedIsInitialized = -1;
+
+        // Use ProductQuantityMap.newBuilder() to construct.
+        private ProductQuantityMap(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+            super(builder);
+        }
+
+        private ProductQuantityMap() {
+        }
+
+        private ProductQuantityMap(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+            this();
+            if (extensionRegistry == null) {
+                throw new java.lang.NullPointerException();
+            }
+            int mutable_bitField0_ = 0;
+            com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+                    com.google.protobuf.UnknownFieldSet.newBuilder();
+            try {
+                boolean done = false;
+                while (!done) {
+                    int tag = input.readTag();
+                    switch (tag) {
+                        case 0:
+                            done = true;
+                            break;
+                        case 10: {
+                            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                                productQuantityItem_ = com.google.protobuf.MapField.newMapField(
+                                        ProductQuantityItemDefaultEntryHolder.defaultEntry);
+                                mutable_bitField0_ |= 0x00000001;
+                            }
+                            com.google.protobuf.MapEntry<java.lang.String, java.lang.Integer>
+                                    productQuantityItem__ = input.readMessage(
+                                    ProductQuantityItemDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+                            productQuantityItem_.getMutableMap().put(
+                                    productQuantityItem__.getKey(), productQuantityItem__.getValue());
+                            break;
+                        }
+                        default: {
+                            if (!parseUnknownField(
+                                    input, unknownFields, extensionRegistry, tag)) {
+                                done = true;
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+                throw e.setUnfinishedMessage(this);
+            } catch (java.io.IOException e) {
+                throw new com.google.protobuf.InvalidProtocolBufferException(
+                        e).setUnfinishedMessage(this);
+            } finally {
+                this.unknownFields = unknownFields.build();
+                makeExtensionsImmutable();
+            }
+        }
+
+        public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+            return sigma.software.leovegas.drugstore.api.protobuf.Proto.internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_descriptor;
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                java.nio.ByteBuffer data)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                java.nio.ByteBuffer data,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data, extensionRegistry);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                com.google.protobuf.ByteString data)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                com.google.protobuf.ByteString data,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data, extensionRegistry);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(byte[] data)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                byte[] data,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException {
+            return PARSER.parseFrom(data, extensionRegistry);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(java.io.InputStream input)
+                throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                    .parseWithIOException(PARSER, input);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                java.io.InputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                    .parseWithIOException(PARSER, input, extensionRegistry);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseDelimitedFrom(java.io.InputStream input)
+                throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                    .parseDelimitedWithIOException(PARSER, input);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseDelimitedFrom(
+                java.io.InputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                    .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                com.google.protobuf.CodedInputStream input)
+                throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                    .parseWithIOException(PARSER, input);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parseFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws java.io.IOException {
+            return com.google.protobuf.GeneratedMessageV3
+                    .parseWithIOException(PARSER, input, extensionRegistry);
+        }
+
+        public static Builder newBuilder() {
+            return DEFAULT_INSTANCE.toBuilder();
+        }
+
+        public static Builder newBuilder(sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap prototype) {
+            return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+        }
+
+        public static sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap getDefaultInstance() {
+            return DEFAULT_INSTANCE;
+        }
+
+        public static com.google.protobuf.Parser<ProductQuantityMap> parser() {
+            return PARSER;
+        }
+
+        @java.lang.Override
+        public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+            return this.unknownFields;
+        }
+
+        @SuppressWarnings({"rawtypes"})
+        @java.lang.Override
+        protected com.google.protobuf.MapField internalGetMapField(
+                int number) {
+            switch (number) {
+                case 1:
+                    return internalGetProductQuantityItem();
+                default:
+                    throw new RuntimeException(
+                            "Invalid map field number: " + number);
+            }
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+            return sigma.software.leovegas.drugstore.api.protobuf.Proto.internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_fieldAccessorTable
+                    .ensureFieldAccessorsInitialized(
+                            sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap.class, sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap.Builder.class);
+        }
+
+        private com.google.protobuf.MapField<java.lang.String, java.lang.Integer>
+        internalGetProductQuantityItem() {
+            if (productQuantityItem_ == null) {
+                return com.google.protobuf.MapField.emptyMapField(
+                        ProductQuantityItemDefaultEntryHolder.defaultEntry);
+            }
+            return productQuantityItem_;
+        }
+
+        public int getProductQuantityItemCount() {
+            return internalGetProductQuantityItem().getMap().size();
+        }
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+
+        public boolean containsProductQuantityItem(
+                java.lang.String key) {
+            if (key == null) {
+                throw new java.lang.NullPointerException();
+            }
+            return internalGetProductQuantityItem().getMap().containsKey(key);
+        }
+
+        /**
+         * Use {@link #getProductQuantityItemMap()} instead.
+         */
+        @java.lang.Deprecated
+        public java.util.Map<java.lang.String, java.lang.Integer> getProductQuantityItem() {
+            return getProductQuantityItemMap();
+        }
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+
+        public java.util.Map<java.lang.String, java.lang.Integer> getProductQuantityItemMap() {
+            return internalGetProductQuantityItem().getMap();
+        }
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+
+        public int getProductQuantityItemOrDefault(
+                java.lang.String key,
+                int defaultValue) {
+            if (key == null) {
+                throw new java.lang.NullPointerException();
+            }
+            java.util.Map<java.lang.String, java.lang.Integer> map =
+                    internalGetProductQuantityItem().getMap();
+            return map.containsKey(key) ? map.get(key) : defaultValue;
+        }
+
+        /**
+         * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+         */
+
+        public int getProductQuantityItemOrThrow(
+                java.lang.String key) {
+            if (key == null) {
+                throw new java.lang.NullPointerException();
+            }
+            java.util.Map<java.lang.String, java.lang.Integer> map =
+                    internalGetProductQuantityItem().getMap();
+            if (!map.containsKey(key)) {
+                throw new java.lang.IllegalArgumentException();
+            }
+            return map.get(key);
+        }
+
+        @java.lang.Override
+        public final boolean isInitialized() {
+            byte isInitialized = memoizedIsInitialized;
+            if (isInitialized == 1) return true;
+            if (isInitialized == 0) return false;
+
+            memoizedIsInitialized = 1;
+            return true;
+        }
+
+        @java.lang.Override
+        public void writeTo(com.google.protobuf.CodedOutputStream output)
+                throws java.io.IOException {
+            com.google.protobuf.GeneratedMessageV3
+                    .serializeStringMapTo(
+                            output,
+                            internalGetProductQuantityItem(),
+                            ProductQuantityItemDefaultEntryHolder.defaultEntry,
+                            1);
+            unknownFields.writeTo(output);
+        }
+
+        @java.lang.Override
+        public int getSerializedSize() {
+            int size = memoizedSize;
+            if (size != -1) return size;
+
+            size = 0;
+            for (java.util.Map.Entry<java.lang.String, java.lang.Integer> entry
+                    : internalGetProductQuantityItem().getMap().entrySet()) {
+                com.google.protobuf.MapEntry<java.lang.String, java.lang.Integer>
+                        productQuantityItem__ = ProductQuantityItemDefaultEntryHolder.defaultEntry.newBuilderForType()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue())
+                        .build();
+                size += com.google.protobuf.CodedOutputStream
+                        .computeMessageSize(1, productQuantityItem__);
+            }
+            size += unknownFields.getSerializedSize();
+            memoizedSize = size;
+            return size;
+        }
+
+        @java.lang.Override
+        public boolean equals(final java.lang.Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap)) {
+                return super.equals(obj);
+            }
+            sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap other = (sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap) obj;
+
+            if (!internalGetProductQuantityItem().equals(
+                    other.internalGetProductQuantityItem())) return false;
+            if (!unknownFields.equals(other.unknownFields)) return false;
+            return true;
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            if (memoizedHashCode != 0) {
+                return memoizedHashCode;
+            }
+            int hash = 41;
+            hash = (19 * hash) + getDescriptor().hashCode();
+            if (!internalGetProductQuantityItem().getMap().isEmpty()) {
+                hash = (37 * hash) + PRODUCTQUANTITYITEM_FIELD_NUMBER;
+                hash = (53 * hash) + internalGetProductQuantityItem().hashCode();
+            }
+            hash = (29 * hash) + unknownFields.hashCode();
+            memoizedHashCode = hash;
+            return hash;
+        }
+
+        @java.lang.Override
+        public Builder newBuilderForType() {
+            return newBuilder();
+        }
+
+        @java.lang.Override
+        public Builder toBuilder() {
+            return this == DEFAULT_INSTANCE
+                    ? new Builder() : new Builder().mergeFrom(this);
+        }
+
+        @java.lang.Override
+        protected Builder newBuilderForType(
+                com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+            Builder builder = new Builder(parent);
+            return builder;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Parser<ProductQuantityMap> getParserForType() {
+            return PARSER;
+        }
+
+        @java.lang.Override
+        public sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap getDefaultInstanceForType() {
+            return DEFAULT_INSTANCE;
+        }
+
+        private static final class ProductQuantityItemDefaultEntryHolder {
+            static final com.google.protobuf.MapEntry<
+                    java.lang.String, java.lang.Integer> defaultEntry =
+                    com.google.protobuf.MapEntry
+                            .<java.lang.String, java.lang.Integer>newDefaultInstance(
+                                    sigma.software.leovegas.drugstore.api.protobuf.Proto.internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_ProductQuantityItemEntry_descriptor,
+                                    com.google.protobuf.WireFormat.FieldType.STRING,
+                                    "",
+                                    com.google.protobuf.WireFormat.FieldType.INT32,
+                                    0);
+        }
+
+        /**
+         * Protobuf type {@code sigma.software.leovegas.drugstore.api.ProductQuantityMap}
+         */
+        public static final class Builder extends
+                com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+                // @@protoc_insertion_point(builder_implements:sigma.software.leovegas.drugstore.api.ProductQuantityMap)
+                sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMapOrBuilder {
+            private int bitField0_;
+            private com.google.protobuf.MapField<
+                    java.lang.String, java.lang.Integer> productQuantityItem_;
+
+            // Construct using sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap.newBuilder()
+            private Builder() {
+                maybeForceBuilderInitialization();
+            }
+
+            private Builder(
+                    com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+                super(parent);
+                maybeForceBuilderInitialization();
+            }
+
+            public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+                return sigma.software.leovegas.drugstore.api.protobuf.Proto.internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_descriptor;
+            }
+
+            @SuppressWarnings({"rawtypes"})
+            protected com.google.protobuf.MapField internalGetMapField(
+                    int number) {
+                switch (number) {
+                    case 1:
+                        return internalGetProductQuantityItem();
+                    default:
+                        throw new RuntimeException(
+                                "Invalid map field number: " + number);
+                }
+            }
+
+            @SuppressWarnings({"rawtypes"})
+            protected com.google.protobuf.MapField internalGetMutableMapField(
+                    int number) {
+                switch (number) {
+                    case 1:
+                        return internalGetMutableProductQuantityItem();
+                    default:
+                        throw new RuntimeException(
+                                "Invalid map field number: " + number);
+                }
+            }
+
+            @java.lang.Override
+            protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+                return sigma.software.leovegas.drugstore.api.protobuf.Proto.internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_fieldAccessorTable
+                        .ensureFieldAccessorsInitialized(
+                                sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap.class, sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap.Builder.class);
+            }
+
+            private void maybeForceBuilderInitialization() {
+                if (com.google.protobuf.GeneratedMessageV3
+                        .alwaysUseFieldBuilders) {
+                }
+            }
+
+            @java.lang.Override
+            public Builder clear() {
+                super.clear();
+                internalGetMutableProductQuantityItem().clear();
+                return this;
+            }
+
+            @java.lang.Override
+            public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+                return sigma.software.leovegas.drugstore.api.protobuf.Proto.internal_static_sigma_software_leovegas_drugstore_api_ProductQuantityMap_descriptor;
+            }
+
+            @java.lang.Override
+            public sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap getDefaultInstanceForType() {
+                return sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap.getDefaultInstance();
+            }
+
+            @java.lang.Override
+            public sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap build() {
+                sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap result = buildPartial();
+                if (!result.isInitialized()) {
+                    throw newUninitializedMessageException(result);
+                }
+                return result;
+            }
+
+            @java.lang.Override
+            public sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap buildPartial() {
+                sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap result = new sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap(this);
+                int from_bitField0_ = bitField0_;
+                result.productQuantityItem_ = internalGetProductQuantityItem();
+                result.productQuantityItem_.makeImmutable();
+                onBuilt();
+                return result;
+            }
+
+            @java.lang.Override
+            public Builder clone() {
+                return super.clone();
+            }
+
+            @java.lang.Override
+            public Builder setField(
+                    com.google.protobuf.Descriptors.FieldDescriptor field,
+                    java.lang.Object value) {
+                return super.setField(field, value);
+            }
+
+            @java.lang.Override
+            public Builder clearField(
+                    com.google.protobuf.Descriptors.FieldDescriptor field) {
+                return super.clearField(field);
+            }
+
+            @java.lang.Override
+            public Builder clearOneof(
+                    com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+                return super.clearOneof(oneof);
+            }
+
+            @java.lang.Override
+            public Builder setRepeatedField(
+                    com.google.protobuf.Descriptors.FieldDescriptor field,
+                    int index, java.lang.Object value) {
+                return super.setRepeatedField(field, index, value);
+            }
+
+            @java.lang.Override
+            public Builder addRepeatedField(
+                    com.google.protobuf.Descriptors.FieldDescriptor field,
+                    java.lang.Object value) {
+                return super.addRepeatedField(field, value);
+            }
+
+            @java.lang.Override
+            public Builder mergeFrom(com.google.protobuf.Message other) {
+                if (other instanceof sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap) {
+                    return mergeFrom((sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap) other);
+                } else {
+                    super.mergeFrom(other);
+                    return this;
+                }
+            }
+
+            public Builder mergeFrom(sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap other) {
+                if (other == sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap.getDefaultInstance())
+                    return this;
+                internalGetMutableProductQuantityItem().mergeFrom(
+                        other.internalGetProductQuantityItem());
+                this.mergeUnknownFields(other.unknownFields);
+                onChanged();
+                return this;
+            }
+
+            @java.lang.Override
+            public final boolean isInitialized() {
+                return true;
+            }
+
+            @java.lang.Override
+            public Builder mergeFrom(
+                    com.google.protobuf.CodedInputStream input,
+                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                    throws java.io.IOException {
+                sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap parsedMessage = null;
+                try {
+                    parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+                } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+                    parsedMessage = (sigma.software.leovegas.drugstore.api.protobuf.Proto.ProductQuantityMap) e.getUnfinishedMessage();
+                    throw e.unwrapIOException();
+                } finally {
+                    if (parsedMessage != null) {
+                        mergeFrom(parsedMessage);
+                    }
+                }
+                return this;
+            }
+
+            private com.google.protobuf.MapField<java.lang.String, java.lang.Integer>
+            internalGetProductQuantityItem() {
+                if (productQuantityItem_ == null) {
+                    return com.google.protobuf.MapField.emptyMapField(
+                            ProductQuantityItemDefaultEntryHolder.defaultEntry);
+                }
+                return productQuantityItem_;
+            }
+
+            private com.google.protobuf.MapField<java.lang.String, java.lang.Integer>
+            internalGetMutableProductQuantityItem() {
+                onChanged();
+                ;
+                if (productQuantityItem_ == null) {
+                    productQuantityItem_ = com.google.protobuf.MapField.newMapField(
+                            ProductQuantityItemDefaultEntryHolder.defaultEntry);
+                }
+                if (!productQuantityItem_.isMutable()) {
+                    productQuantityItem_ = productQuantityItem_.copy();
+                }
+                return productQuantityItem_;
+            }
+
+            public int getProductQuantityItemCount() {
+                return internalGetProductQuantityItem().getMap().size();
+            }
+
+            /**
+             * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+             */
+
+            public boolean containsProductQuantityItem(
+                    java.lang.String key) {
+                if (key == null) {
+                    throw new java.lang.NullPointerException();
+                }
+                return internalGetProductQuantityItem().getMap().containsKey(key);
+            }
+
+            /**
+             * Use {@link #getProductQuantityItemMap()} instead.
+             */
+            @java.lang.Deprecated
+            public java.util.Map<java.lang.String, java.lang.Integer> getProductQuantityItem() {
+                return getProductQuantityItemMap();
+            }
+
+            /**
+             * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+             */
+
+            public java.util.Map<java.lang.String, java.lang.Integer> getProductQuantityItemMap() {
+                return internalGetProductQuantityItem().getMap();
+            }
+
+            /**
+             * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+             */
+
+            public int getProductQuantityItemOrDefault(
+                    java.lang.String key,
+                    int defaultValue) {
+                if (key == null) {
+                    throw new java.lang.NullPointerException();
+                }
+                java.util.Map<java.lang.String, java.lang.Integer> map =
+                        internalGetProductQuantityItem().getMap();
+                return map.containsKey(key) ? map.get(key) : defaultValue;
+            }
+
+            /**
+             * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+             */
+
+            public int getProductQuantityItemOrThrow(
+                    java.lang.String key) {
+                if (key == null) {
+                    throw new java.lang.NullPointerException();
+                }
+                java.util.Map<java.lang.String, java.lang.Integer> map =
+                        internalGetProductQuantityItem().getMap();
+                if (!map.containsKey(key)) {
+                    throw new java.lang.IllegalArgumentException();
+                }
+                return map.get(key);
+            }
+
+            public Builder clearProductQuantityItem() {
+                internalGetMutableProductQuantityItem().getMutableMap()
+                        .clear();
+                return this;
+            }
+
+            /**
+             * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+             */
+
+            public Builder removeProductQuantityItem(
+                    java.lang.String key) {
+                if (key == null) {
+                    throw new java.lang.NullPointerException();
+                }
+                internalGetMutableProductQuantityItem().getMutableMap()
+                        .remove(key);
+                return this;
+            }
+
+            /**
+             * Use alternate mutation accessors instead.
+             */
+            @java.lang.Deprecated
+            public java.util.Map<java.lang.String, java.lang.Integer>
+            getMutableProductQuantityItem() {
+                return internalGetMutableProductQuantityItem().getMutableMap();
+            }
+
+            /**
+             * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+             */
+            public Builder putProductQuantityItem(
+                    java.lang.String key,
+                    int value) {
+                if (key == null) {
+                    throw new java.lang.NullPointerException();
+                }
+
+                internalGetMutableProductQuantityItem().getMutableMap()
+                        .put(key, value);
+                return this;
+            }
+
+            /**
+             * <code>map&lt;string, int32&gt; productQuantityItem = 1;</code>
+             */
+
+            public Builder putAllProductQuantityItem(
+                    java.util.Map<java.lang.String, java.lang.Integer> values) {
+                internalGetMutableProductQuantityItem().getMutableMap()
+                        .putAll(values);
+                return this;
+            }
+
+            @java.lang.Override
+            public final Builder setUnknownFields(
+                    final com.google.protobuf.UnknownFieldSet unknownFields) {
+                return super.setUnknownFields(unknownFields);
+            }
+
+            @java.lang.Override
+            public final Builder mergeUnknownFields(
+                    final com.google.protobuf.UnknownFieldSet unknownFields) {
+                return super.mergeUnknownFields(unknownFields);
+            }
+
+
+            // @@protoc_insertion_point(builder_scope:sigma.software.leovegas.drugstore.api.ProductQuantityMap)
         }
 
     }

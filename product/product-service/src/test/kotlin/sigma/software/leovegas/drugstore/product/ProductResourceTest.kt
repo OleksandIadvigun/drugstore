@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -22,7 +21,6 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
@@ -264,24 +262,20 @@ class ProductResourceTest @Autowired constructor(
             )
         }.get()
 
-        //and
-        val responseExpected = mapOf(
-            saved[2].productNumber to 9, saved[1].productNumber to 5, saved[0].productNumber to 1
-        )
+        // and
+        val responseExpected = Proto.ProductQuantityMap.newBuilder()
+            .putProductQuantityItem(saved[2].productNumber, 9)
+            .putProductQuantityItem(saved[1].productNumber, 5)
+            .putProductQuantityItem(saved[0].productNumber, 1)
+            .build()
 
         // and
         stubFor(
             WireMock.get("/api/v1/orders/total-buys")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(responseExpected)
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -542,21 +536,20 @@ class ProductResourceTest @Autowired constructor(
         }?.map { it.productNumber }.get()
 
         //and
-        val responseExpected = mapOf(productNumbers[2] to 9, productNumbers[1] to 5, productNumbers[0] to 1)
+        val responseExpected = Proto.ProductQuantityMap.newBuilder()
+            .putProductQuantityItem(productNumbers[2], 9)
+            .putProductQuantityItem(productNumbers[1], 5)
+            .putProductQuantityItem(productNumbers[0], 1)
+            .build()
 
         // and
         stubFor(
             WireMock.get("/api/v1/orders/total-buys")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(responseExpected)
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+
                 )
         )
 

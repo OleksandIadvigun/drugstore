@@ -27,6 +27,10 @@
             <groupId>sigma.software.leovegas.drugstore.accountancy.api</groupId>
             <artifactId>accountancy-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.api</groupId>
+            <artifactId>drugstore-api</artifactId>
+        </dependency>
         <!---->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

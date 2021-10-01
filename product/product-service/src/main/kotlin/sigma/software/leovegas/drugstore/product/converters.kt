@@ -2,11 +2,8 @@ package sigma.software.leovegas.drugstore.product
 
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
-import sigma.software.leovegas.drugstore.product.api.DeliverProductsResponse
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
-import sigma.software.leovegas.drugstore.product.api.ReceiveProductResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 // CreateProductRequest <-> Product entity
@@ -33,16 +30,6 @@ fun Product.toCreateProductResponse() =
 
 fun List<Product>.toCreateProductResponseList() = this.map(Product::toCreateProductResponse)
 
-// Product entity -> UpdateProductRequest
-
-fun Product.toReduceProductQuantityResponse() = DeliverProductsResponse(
-    productNumber = productNumber,
-    quantity = quantity,
-    updatedAt = updatedAt
-)
-
-fun List<Product>.toReduceProductQuantityResponseList() = this.map(Product::toReduceProductQuantityResponse)
-
 // Product entity -> GetProductResponse
 
 fun Product.toGetProductResponse() =
@@ -50,20 +37,6 @@ fun Product.toGetProductResponse() =
         productNumber = productNumber,
         name = name
     )
-
-fun List<Product>.toGetProductResponseList() = this.map(Product::toGetProductResponse)
-
-// Product entity -> ProductDetailsResponse
-
-fun Product.toProductDetailsResponse() =
-    ProductDetailsResponse(
-        productNumber = productNumber,
-        name = name,
-        price = price,
-        quantity = quantity
-    )
-
-fun List<Product>.toProductDetailsResponseList() = this.map(Product::toProductDetailsResponse)
 
 // Product entity -> SearchProductResponse
 
@@ -78,16 +51,6 @@ fun Product.toSearchProductResponse() =
     )
 
 fun List<Product>.toSearchProductResponseList() = this.map(Product::toSearchProductResponse)
-
-// Product entity -> ReduceProductResponse
-
-fun Product.toReceiveProductResponse() =
-    ReceiveProductResponse(
-        productNumber = productNumber,
-        status = status.toDTO()
-    )
-
-fun List<Product>.toReceiveProductResponseList() = this.map(Product::toReceiveProductResponse)
 
 // ProductStatus -> ProductStatusDTO
 

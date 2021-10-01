@@ -7,13 +7,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toBigDecimal
 import sigma.software.leovegas.drugstore.api.toDecimalProto
-import sigma.software.leovegas.drugstore.order.client.OrderClient
+import sigma.software.leovegas.drugstore.order.client.proto.OrderClientProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
@@ -22,8 +21,7 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 @Transactional
 class ProductService(
     private val productRepository: ProductRepository,
-    val orderClient: OrderClient,
-    val accountancyClient: AccountancyClient,
+    val orderClientProto: OrderClientProto,
     val accountancyClientProto: AccountancyClientProto
 ) {
 
@@ -35,7 +33,7 @@ class ProductService(
 
         if (sortField == "popularity") {
             val pageableForPopularity: Pageable = PageRequest.of(page, size)
-            val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
+            val productsQuantity = runCatching { orderClientProto.getProductsIdToQuantity().productQuantityItemMap }
                 .onFailure { error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products quantity $productsQuantity")
@@ -90,7 +88,7 @@ class ProductService(
 
     fun getPopularProducts(page: Int, size: Int): List<GetProductResponse> {
         val pageableForPopularity: Pageable = PageRequest.of(page, size)
-        val productsQuantity = runCatching { orderClient.getProductsIdToQuantity() }
+        val productsQuantity = runCatching { orderClientProto.getProductsIdToQuantity().productQuantityItemMap }
             .onFailure { error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received products quantity $productsQuantity")

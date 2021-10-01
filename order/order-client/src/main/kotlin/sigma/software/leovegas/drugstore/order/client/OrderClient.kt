@@ -33,9 +33,6 @@ interface OrderClient {
         @Param("size") size: Int = 5
     ): List<OrderResponse>
 
-    @RequestLine("GET /api/v1/orders/total-buys")
-    fun getProductsIdToQuantity(): Map<String, Int>
-
     @RequestLine("POST /api/v1/orders/confirm/{orderNumber}")
     fun confirmOrder(@Param("orderNumber") orderNumber: String): String
 }

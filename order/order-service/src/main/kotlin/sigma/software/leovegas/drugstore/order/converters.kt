@@ -24,15 +24,6 @@ fun Order.toOrderResponseDTO(): OrderResponse =
         updatedAt = updatedAt,
     )
 
-fun OrderResponse.toEntity(): Order =
-    Order(
-        orderNumber = orderNumber,
-        orderStatus = orderStatus.toEntity(),
-        orderItems = orderItems.toEntities(),
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-    )
-
 fun List<Order>.toOrderResponseList(): List<OrderResponse> = this.map(Order::toOrderResponseDTO)
 
 // OrderItem: set of entities <-> list of DTOs
@@ -61,9 +52,3 @@ fun OrderItemDTO.toEntity(): OrderItem =
 
 fun OrderStatus.toDTO(): OrderStatusDTO =
     OrderStatusDTO.valueOf(name)
-
-fun OrderStatusDTO.toEntity(): OrderStatus =
-    OrderStatus.valueOf(name)
-
-
-

@@ -54,17 +54,6 @@ data class CreateProductResponse(
     val updatedAt: LocalDateTime? = null
 )
 
-data class DeliverProductsResponse(
-    val productNumber: String = "undefined",
-    val quantity: Int = 0,
-    val updatedAt: LocalDateTime? = null
-)
-
-data class ReceiveProductResponse(
-    val productNumber: String = "undefined",
-    val status: ProductStatusDTO = ProductStatusDTO.NONE
-)
-
 // DTOs
 
 enum class ProductStatusDTO {

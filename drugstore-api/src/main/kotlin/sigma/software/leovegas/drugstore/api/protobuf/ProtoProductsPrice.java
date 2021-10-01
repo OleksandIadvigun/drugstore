@@ -66,6 +66,7 @@ public final class ProtoProductsPrice {
                 internal_static_sigma_software_leovegas_drugstore_api_DecimalValue_descriptor,
                 new java.lang.String[]{"Scale", "Precision", "Value",});
     }
+
     private ProtoProductsPrice() {
     }
 
@@ -83,6 +84,7 @@ public final class ProtoProductsPrice {
     getDescriptor() {
         return descriptor;
     }
+
     public interface ProductsPriceOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.ProductsPrice)
             com.google.protobuf.MessageOrBuilder {
@@ -955,6 +957,7 @@ public final class ProtoProductsPrice {
         private DecimalValue(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
             super(builder);
         }
+
         private DecimalValue() {
             value_ = com.google.protobuf.ByteString.EMPTY;
         }

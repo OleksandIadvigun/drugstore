@@ -1,18 +1,19 @@
-package sigma.software.leovegas.drugstore.order.client
+package sigma.software.leovegas.drugstore.order.client.proto
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.order.client.GetOrderByIdFeignClientWireMockTestApp
+import sigma.software.leovegas.drugstore.order.client.WireMockTest
 
 @SpringBootApplication
 internal class GetOrderItemsByQuantityFeignClientWireMockTestApp
@@ -20,7 +21,7 @@ internal class GetOrderItemsByQuantityFeignClientWireMockTestApp
 @DisplayName("Get total buys Feign Client WireMock test")
 @ContextConfiguration(classes = [GetOrderByIdFeignClientWireMockTestApp::class])
 class GetOrderItemsByQuantityFeignClientWireMockTest @Autowired constructor(
-    val orderClient: OrderClient,
+    val orderClientProto: OrderClientProto,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
@@ -28,34 +29,29 @@ class GetOrderItemsByQuantityFeignClientWireMockTest @Autowired constructor(
     fun `should get total buys of products sorted by quantity DESC`() {
 
         // given
-        val responseExpected = mapOf(
-            "1" to 7,
-            "2" to 5,
-            "3" to 3
-        )
+        val responseExpected = Proto.ProductQuantityMap.newBuilder()
+            .putProductQuantityItem("1", 7)
+            .putProductQuantityItem("2", 5)
+            .putProductQuantityItem("3", 3)
+            .build()
 
         // and
         stubFor(
             get("/api/v1/orders/total-buys")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(responseExpected)
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
                 )
         )
 
         // when
-        val responseActual = orderClient.getProductsIdToQuantity()
+        val responseActual = orderClientProto.getProductsIdToQuantity()
 
         //  then
-        assertThat(responseActual.size).isEqualTo(3)
-        assertThat(responseActual["1"]).isEqualTo(7)
-        assertThat(responseActual["2"]).isEqualTo(5)
-        assertThat(responseActual["3"]).isEqualTo(3)
+        assertThat(responseActual.productQuantityItemMap.size).isEqualTo(3)
+        assertThat(responseActual.productQuantityItemMap.get("1")).isEqualTo(7)
+        assertThat(responseActual.productQuantityItemMap.get("2")).isEqualTo(5)
+        assertThat(responseActual.productQuantityItemMap.get("3")).isEqualTo(3)
     }
 }
