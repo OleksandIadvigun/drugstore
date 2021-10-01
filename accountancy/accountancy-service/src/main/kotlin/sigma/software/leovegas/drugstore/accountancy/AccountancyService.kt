@@ -15,6 +15,9 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
+import sigma.software.leovegas.drugstore.api.toBigDecimal
+import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.client.ProductClient
@@ -55,10 +58,11 @@ class AccountancyService @Autowired constructor(
                                 "${productQuantities.getValue(it.productNumber) - it.quantity}" +
                                 " item(s) from dealer for realization of order $orderNumber"
                     )
+
                 ProductItem(
                     productNumber = it.productNumber,
                     name = it.name,
-                    price = productPrice.getValue(it.productNumber),
+                    price = productPrice.itemsMap.getValue(it.productNumber).toBigDecimal(),
                     quantity = productQuantities.getValue(it.productNumber),
                 )
             }
@@ -194,17 +198,17 @@ class AccountancyService @Autowired constructor(
             return@run invoice.toConfirmOrderResponse()
         }
 
-    fun getSalePrice(productNumbers: List<String>): Map<String, BigDecimal> =
+    fun getSalePrice(productNumbers: List<String>): ProtoProductsPrice.ProductsPrice =
         productNumbers.validate().run {
             val profitTimes = BigDecimal(2.00)
             val prices = runCatching {
                 productClient.getProductPrice(this)
-                    .mapValues { it.value.multiply(profitTimes) }
+                    .mapValues { it.value.multiply(profitTimes).toDecimalPriceProto() }
             }
                 .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received prices $prices")
-            return@run prices
+            return@run ProtoProductsPrice.ProductsPrice.newBuilder().putAllItems(prices).build()
         }
 
 //    fun cancelExpiredInvoice(date: LocalDateTime): List<ConfirmOrderResponse> {

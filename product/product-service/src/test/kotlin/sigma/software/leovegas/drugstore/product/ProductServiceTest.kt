@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
@@ -18,8 +19,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
@@ -119,7 +122,7 @@ class ProductServiceTest @Autowired constructor(
                         name = "aspirin",
                         quantity = 10,
                         status = ProductStatus.RECEIVED,
-                        price = BigDecimal("10.00")
+                        price = BigDecimal("20.00")
                     ),
                     Product(
                         productNumber = "2",
@@ -166,26 +169,27 @@ class ProductServiceTest @Autowired constructor(
         )
 
         // and
+        val price = BigDecimal("40.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems(productNumbers[0], protoPrice)
+            .putItems(productNumbers[1], protoPrice)
+            .build()
+
+        // and
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
                         "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
             )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        Pair(productNumbers[1], BigDecimal("40.00")),
-                                        Pair(productNumbers[0], BigDecimal("20.00"))
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseEProto }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -198,7 +202,7 @@ class ProductServiceTest @Autowired constructor(
         assertThat(all[0].productNumber).isEqualTo(productNumbers[1])
         assertThat(all[1].productNumber).isEqualTo(productNumbers[0])
         assertThat(all[0].price).isEqualTo(BigDecimal("40.00"))
-        assertThat(all[1].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(all[1].price).isEqualTo(BigDecimal("40.00"))
     }
 
     @Test
@@ -246,26 +250,33 @@ class ProductServiceTest @Autowired constructor(
         }.get()
 
         // and
+        val price = BigDecimal("20.00")
+        val price2 = BigDecimal("100.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price2.precision())
+            .setScale(price2.scale())
+            .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
+            .build()
+        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems(saved[1].productNumber, protoPrice2)
+            .putItems(saved[0].productNumber, protoPrice)
+            .build()
+
+        // and
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
                         "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
             )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        Pair(saved[0].productNumber, BigDecimal("100.00")),
-                                        Pair(saved[1].productNumber, BigDecimal("20.00"))
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseEProto }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -276,9 +287,9 @@ class ProductServiceTest @Autowired constructor(
         assertThat(all).isNotNull
         assertThat(all).hasSize(2)
         assertThat(all[0].productNumber).isEqualTo(saved[1].productNumber)
-        assertThat(all[0].price).isEqualTo(BigDecimal("20.00"))
+        assertThat(all[0].price).isEqualTo(BigDecimal("100.00"))
         assertThat(all[1].productNumber).isEqualTo(saved[0].productNumber)
-        assertThat(all[1].price).isEqualTo(BigDecimal("100.00"))
+        assertThat(all[1].price).isEqualTo(BigDecimal("20.00"))
     }
 
     @Test
@@ -327,26 +338,33 @@ class ProductServiceTest @Autowired constructor(
         }.get()
 
         // and
+        val price = BigDecimal("20.00")
+        val price2 = BigDecimal("100.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price2.precision())
+            .setScale(price2.scale())
+            .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
+            .build()
+        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems(saved[1].productNumber, protoPrice2)
+            .putItems(saved[0].productNumber, protoPrice)
+            .build()
+
+        // and
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
                         "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
             )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        Pair(saved[1].productNumber, BigDecimal("100.00")),
-                                        Pair(saved[0].productNumber, BigDecimal("20.00"))
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseEProto }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 

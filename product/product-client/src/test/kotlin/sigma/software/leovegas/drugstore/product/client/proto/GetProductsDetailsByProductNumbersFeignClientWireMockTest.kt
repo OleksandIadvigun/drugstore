@@ -34,8 +34,9 @@ class GetProductsDetailsByProductNumbersFeignClientWireMockTest @Autowired const
                 Proto.ProductDetailsItem.newBuilder()
                     .setProductNumber("1")
                     .setName("test1")
+                    .setPrice(BigDecimal.ONE.toDecimalProto())
                     .setQuantity(1)
-                    .setPrice(BigDecimal.ONE.toDecimalProto()).build()
+                    .build()
             )
         ).build()
 
@@ -58,5 +59,6 @@ class GetProductsDetailsByProductNumbersFeignClientWireMockTest @Autowired const
         assertThat(responseActual.getProducts(0).name).isEqualTo("test1")
         assertThat(responseActual.getProducts(0).price).isEqualTo(BigDecimal.ONE.toDecimalProto())
         assertThat(responseActual.getProducts(0).quantity).isEqualTo(1)
+
     }
 }

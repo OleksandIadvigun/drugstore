@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -29,6 +30,8 @@ import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
+import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
@@ -77,8 +80,7 @@ class AccountancyResourceTest @Autowired constructor(
                 .build(),
 
             )
-
-        // given
+        // and
         stubFor(
             WireMock.get("/api/v1/products/details?productNumbers=1")
                 .willReturn(
@@ -88,6 +90,19 @@ class AccountancyResourceTest @Autowired constructor(
                         }
                 )
         )
+
+        //and
+        val price = BigDecimal("40.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems("1", protoPrice)
+            .build()
+
+        // and
 
         // and
         stubFor(
@@ -103,7 +118,6 @@ class AccountancyResourceTest @Autowired constructor(
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -489,7 +503,7 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2",
             GET,
             null,
-            respTypeRef<Map<String, BigDecimal>>()
+            respTypeRef<ProtoProductsPrice.ProductsPrice>()
         )
 
         // then
@@ -497,7 +511,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body["1"]).isEqualTo(BigDecimal("2.46"))
-        assertThat(body["2"]).isEqualTo(BigDecimal("2.48"))
+        assertThat(body.itemsMap["1"]).isEqualTo(BigDecimal("2.46").toDecimalPriceProto())
+        assertThat(body.itemsMap["2"]).isEqualTo(BigDecimal("2.48").toDecimalPriceProto())
     }
 }

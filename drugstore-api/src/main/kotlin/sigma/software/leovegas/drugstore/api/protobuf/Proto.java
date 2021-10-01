@@ -597,6 +597,7 @@ public final class Proto {
          */
         com.google.protobuf.ByteString getValue();
     }
+
     public interface CheckTransferResponseOrBuilder extends
             // @@protoc_insertion_point(interface_extends:sigma.software.leovegas.drugstore.api.CheckTransferResponse)
             com.google.protobuf.MessageOrBuilder {

@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
+import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
+import sigma.software.leovegas.drugstore.api.toBigDecimal
 import sigma.software.leovegas.drugstore.order.OrderStatus.CONFIRMED
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
 import sigma.software.leovegas.drugstore.order.OrderStatus.UPDATED
@@ -31,6 +33,7 @@ class OrderService @Autowired constructor(
     val orderRepository: OrderRepository,
     val productClientProto: ProductClientProto,
     val accountancyClient: AccountancyClient,
+    val accountancyClientProto: AccountancyClientProto,
     val eventStream: StreamBridge,
 ) {
 
@@ -101,7 +104,7 @@ class OrderService @Autowired constructor(
             logger.info("Received products details $products")
 
             val price = runCatching {
-                accountancyClient.getSalePrice(orderItemsIds)
+                accountancyClientProto.getSalePrice(orderItemsIds)
             }
                 .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
@@ -112,7 +115,7 @@ class OrderService @Autowired constructor(
                     productNumber = it.productNumber,
                     name = it.name,
                     quantity = orderItemsQuantity[it.productNumber] ?: -1,
-                    price = price.getValue(it.productNumber).setScale(2, RoundingMode.HALF_EVEN)
+                    price = price.itemsMap.getValue(it.productNumber).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
                 )
             }
 

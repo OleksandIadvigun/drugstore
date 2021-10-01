@@ -8,8 +8,10 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
+import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toBigDecimal
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.order.client.OrderClient
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
@@ -21,7 +23,8 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 class ProductService(
     private val productRepository: ProductRepository,
     val orderClient: OrderClient,
-    val accountancyClient: AccountancyClient
+    val accountancyClient: AccountancyClient,
+    val accountancyClientProto: AccountancyClientProto
 ) {
 
     val logger: Logger = LoggerFactory.getLogger(ProductService::class.java)
@@ -49,13 +52,17 @@ class ProductService(
             if (products.isEmpty()) return listOf()
 
             val productsPrice = runCatching {
-                accountancyClient.getSalePrice(products.map { it.productNumber })
+                accountancyClientProto.getSalePrice(products.map { it.productNumber })
             }
                 .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received products price $productsPrice")
 
-            val productForSale = products.map { it.copy(price = productsPrice[it.productNumber] ?: BigDecimal.ZERO) }
+            val productForSale = products.map {
+                it.copy(
+                    price = productsPrice.itemsMap[it.productNumber]?.toBigDecimal() ?: BigDecimal.ZERO
+                )
+            }  //todo
             val index = productsQuantity.keys.withIndex().associate { it.value to it.index }
             return productForSale.sortedBy { index[it.productNumber] }.toSearchProductResponseList()
         }
@@ -67,13 +74,17 @@ class ProductService(
         if (products.isEmpty()) return listOf()
 
         val productsPrice = runCatching {
-            accountancyClient.getSalePrice(products.map { it.productNumber })
+            accountancyClientProto.getSalePrice(products.map { it.productNumber })
         }
             .onFailure { error -> throw AccountancyServerException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received products price $productsPrice")
 
-        val productForSale = products.map { it.copy(price = productsPrice[it.productNumber] ?: BigDecimal.ZERO) }
+        val productForSale = products.map {
+            it.copy(
+                price = productsPrice.itemsMap[it.productNumber]?.toBigDecimal() ?: BigDecimal.ZERO
+            )
+        }
         return productForSale.toSearchProductResponseList()
     }
 

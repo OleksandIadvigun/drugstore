@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.extensions
+package sigma.software.leovegas.drugstore.infrastructure.extensions
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder

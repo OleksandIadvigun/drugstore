@@ -25,8 +25,4 @@ interface AccountancyClient {
 
     @RequestLine("PUT /api/v1/accountancy/invoice/refund/{orderNumber}")
     fun refundInvoice(@Param orderNumber: String): ConfirmOrderResponse
-
-    @RequestLine("GET /api/v1/accountancy/sale-price?productNumbers={productNumbers}")
-    fun getSalePrice(@Param productNumbers: List<String>): Map<String, BigDecimal>
-
 }

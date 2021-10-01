@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.`is`
@@ -15,7 +16,9 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.Product
 import sigma.software.leovegas.drugstore.product.ProductProperties
 import sigma.software.leovegas.drugstore.product.ProductRepository
@@ -90,26 +93,33 @@ class RestApiDocGetProductsTest @Autowired constructor(
         )
 
         // and
+        val price = BigDecimal("20.00")
+        val price2 = BigDecimal("100.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price2.precision())
+            .setScale(price2.scale())
+            .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
+            .build()
+        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems(savedProducts[0].productNumber, protoPrice)
+            .putItems(savedProducts[1].productNumber, protoPrice2)
+            .build()
+
+        // and
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
                         "productNumbers=${savedProducts[0].productNumber}&productNumbers=${savedProducts[1].productNumber}"
             )
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        Pair(savedProducts[1].productNumber, BigDecimal("100.00")),
-                                        Pair(savedProducts[0].productNumber, BigDecimal("20.00"))
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseEProto }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 

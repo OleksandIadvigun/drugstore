@@ -14,3 +14,5 @@ fun MappingBuilder.withProtobufRequest(f: () -> MessageLite): MappingBuilder =
 fun ResponseDefinitionBuilder.withProtobufResponse(f: () -> MessageLite): ResponseDefinitionBuilder =
     withHeader("Content-Type", "application/x-protobuf")
         .withBody(f.invoke().toByteArray())
+
+

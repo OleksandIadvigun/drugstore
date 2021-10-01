@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
@@ -30,6 +31,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
@@ -259,22 +261,40 @@ class OrderResourceTest @Autowired constructor(
         )
 
         // and
+        val price = BigDecimal("40.00")
+        val price2 = BigDecimal("40.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price2.precision())
+            .setScale(price2.scale())
+            .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
+            .build()
+        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems("1", protoPrice)
+            .putItems("2", protoPrice2)
+            .build()
+
+        // and
         stubFor(
             WireMock.get("/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseEProto }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                )
+        )
+
+        // and
+        stubFor(
+            WireMock.get("/api/v1/accountancy/sale-price?productNumbers=2&productNumbers=1")
+                .willReturn(
+                    aResponse()
+                        .withProtobufResponse { responseEProto }
+                        .withStatus(HttpStatus.OK.value())
                 )
         )
 
@@ -313,7 +333,7 @@ class OrderResourceTest @Autowired constructor(
         assertThat(body.orderItemDetails.iterator().next().productNumber).isEqualTo("1")
         assertThat(body.orderItemDetails.iterator().next().quantity).isEqualTo(1)
         assertThat(body.orderItemDetails.iterator().next().price).isEqualTo(BigDecimal("40.00").setScale(2))
-        assertThat(body.total).isEqualTo((BigDecimal("160").setScale(2)))
+        assertThat(body.total).isEqualTo((BigDecimal("120").setScale(2)))
     }
 
     @Test
@@ -376,6 +396,7 @@ class OrderResourceTest @Autowired constructor(
         )
 
         // and
+        val http = HttpEntity(order.orderNumber)
 
         // when
         val invoice = restTemplate

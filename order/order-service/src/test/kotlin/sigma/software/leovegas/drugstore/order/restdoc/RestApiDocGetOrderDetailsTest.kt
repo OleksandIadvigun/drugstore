@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
+import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
@@ -103,42 +103,40 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         )
 
         // and
+        val price = BigDecimal("40.00")
+        val price2 = BigDecimal("40.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price2.precision())
+            .setScale(price2.scale())
+            .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
+            .build()
+        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems("1", protoPrice)
+            .putItems("2", protoPrice2)
+            .build()
+
+        // and
         stubFor(
             WireMock.get("/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseEProto }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // and
         stubFor(
             WireMock.get("/api/v1/accountancy/sale-price?productNumbers=2&productNumbers=1")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(
-                                        Pair("1", BigDecimal("40.00")), Pair("2", BigDecimal("60.00"))
-                                    )
-                                )
-                        )
+                        .withProtobufResponse { responseEProto }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -151,6 +149,6 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
             .assertThat().body("orderItemDetails[0].name", equalTo("test1"))
             .assertThat().body("orderItemDetails[0].quantity", equalTo(1))
             .assertThat().body("orderItemDetails[0].price", equalTo(40.00F))
-            .assertThat().body("total", equalTo(160.00F)) // price multiply quantity
+            .assertThat().body("total", equalTo(120.00F)) // price multiply quantity
     }
 }

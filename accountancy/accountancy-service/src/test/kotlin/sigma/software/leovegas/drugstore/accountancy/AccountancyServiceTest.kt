@@ -21,6 +21,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
@@ -74,7 +75,6 @@ class AccountancyServiceTest @Autowired constructor(
         // and
         stubFor(
             WireMock.get("/api/v1/products/1/price")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
                         .withBody(
@@ -85,7 +85,6 @@ class AccountancyServiceTest @Autowired constructor(
                                 )
                         )
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -718,7 +717,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // then
         println(priceMap)
-        assertThat(priceMap["1"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")))
-        assertThat(priceMap["2"]).isEqualTo(BigDecimal("1.24").multiply(BigDecimal("2")))
+        assertThat(priceMap.itemsMap["1"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")).toDecimalPriceProto())
+        assertThat(priceMap.itemsMap["2"]).isEqualTo(BigDecimal("1.24").multiply(BigDecimal("2")).toDecimalPriceProto())
     }
 }
