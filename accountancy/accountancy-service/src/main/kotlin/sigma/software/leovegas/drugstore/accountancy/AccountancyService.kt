@@ -19,13 +19,13 @@ import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.client.ProductClient
 import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
-import sigma.software.leovegas.drugstore.store.client.StoreClient
+import sigma.software.leovegas.drugstore.store.client.proto.StoreClientProto
 
 @Service
 @Transactional
 class AccountancyService @Autowired constructor(
     val invoiceRepository: InvoiceRepository,
-    val storeClient: StoreClient,
+    val storeClientProto: StoreClientProto,
     val productClient: ProductClient,
     val productClientProto: ProductClientProto,
     val eventStream: StreamBridge,
@@ -171,7 +171,7 @@ class AccountancyService @Autowired constructor(
             if (this.status != InvoiceStatus.PAID) throw NotPaidInvoiceException(this.invoiceNumber)
 
             runCatching {
-                storeClient.checkTransfer(this.orderNumber)
+                storeClientProto.checkTransfer(this.orderNumber)
                 logger.info("checked")
             }
                 .onFailure { error -> throw StoreServiceResponseException(error.localizedMessage.messageSpliterator()) }

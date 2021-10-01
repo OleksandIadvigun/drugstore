@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
 @RestController
 @RequestMapping("/api/v1/store")
@@ -50,7 +50,7 @@ class StoreResource(private val storeService: StoreService) {
 
     @GetMapping("/check-transfer/{orderNumber}")
     @ResponseStatus(HttpStatus.OK)
-    fun checkTransfer(@PathVariable orderNumber: String): CheckStatusResponse {
+    fun checkTransfer(@PathVariable orderNumber: String): Proto.CheckTransferResponse {
         return storeService.checkTransfer(orderNumber)
     }
 

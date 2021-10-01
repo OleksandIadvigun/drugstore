@@ -23,6 +23,10 @@
             <groupId>sigma.software.leovegas.drugstore.product.api</groupId>
             <artifactId>product-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>sigma.software.leovegas.drugstore.api</groupId>
+            <artifactId>drugstore-api</artifactId>
+        </dependency>
         <!---->
         <!---->
         <dependency>

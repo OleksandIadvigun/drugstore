@@ -13,7 +13,6 @@ import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
 import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
-import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateRequest
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
@@ -138,6 +137,6 @@ class StoreService @Autowired constructor(
         .validate(storeRepository::getTransferCertificateByOrderNumber)
         .run {
             logger.info("No transfer certificate was found")
-            return@run CheckStatusResponse(this, "Not delivered")
+            return@run Proto.CheckTransferResponse.newBuilder().setOrderNumber(this).setComment("Not delivered").build()
         }
 }

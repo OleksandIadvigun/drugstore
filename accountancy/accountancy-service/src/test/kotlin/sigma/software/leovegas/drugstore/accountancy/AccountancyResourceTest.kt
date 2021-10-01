@@ -35,7 +35,6 @@ import sigma.software.leovegas.drugstore.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
-import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 
 @DisplayName("Accountancy Resource test")
 class AccountancyResourceTest @Autowired constructor(
@@ -334,17 +333,16 @@ class AccountancyResourceTest @Autowired constructor(
             )
         }.get()
 
+        val responseExpected =
+            Proto.CheckTransferResponse.newBuilder().setOrderNumber(savedInvoice.orderNumber)
+                .setComment("Not delivered").build()
+
         // and
         stubFor(
             WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderNumber}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(CheckStatusResponse(savedInvoice.orderNumber))
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
                 )
         )

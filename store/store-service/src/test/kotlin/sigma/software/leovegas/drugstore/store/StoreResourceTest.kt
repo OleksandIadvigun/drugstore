@@ -23,7 +23,6 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufRequest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.DeliverProductsQuantityRequest
-import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
 import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
@@ -362,12 +361,12 @@ class StoreResourceTest @Autowired constructor(
         }
 
         // given
-        val orderNumber = "1"
+        val orderNumber = "1b"
 
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/store/check-transfer/$orderNumber",
-            HttpMethod.GET, null, respTypeRef<CheckStatusResponse>()
+            HttpMethod.GET, null, respTypeRef<Proto.CheckTransferResponse>()
         )
 
         // then

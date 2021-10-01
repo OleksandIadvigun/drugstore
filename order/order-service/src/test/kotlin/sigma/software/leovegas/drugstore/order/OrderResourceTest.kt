@@ -111,7 +111,7 @@ class OrderResourceTest @Autowired constructor(
                     orderItems = setOf(
                         OrderItem(
                             productNumber = "1",
-                            quantity = 3
+                            quantity = 5
                         )
                     )
                 )
@@ -130,7 +130,7 @@ class OrderResourceTest @Autowired constructor(
         println(body)
         assertThat(body.orderNumber).isEqualTo(orderCreated.orderNumber)
         assertThat(body.orderItems.iterator().next().productNumber).isEqualTo("1")
-        assertThat(body.orderItems.iterator().next().quantity).isEqualTo(3)
+        assertThat(body.orderItems.iterator().next().quantity).isEqualTo(5)
         assertThat(body.createdAt).isBeforeOrEqualTo(LocalDateTime.now())
         assertThat(body.updatedAt).isAfterOrEqualTo(body.createdAt)
     }
@@ -483,6 +483,7 @@ class OrderResourceTest @Autowired constructor(
         assertThat(body).isEqualTo("Updated")
 
     }
+
 
     @Disabled
     @Test

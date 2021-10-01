@@ -1,10 +1,8 @@
 package sigma.software.leovegas.drugstore.accountancy.restdoc.invoice
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.DisplayName
@@ -20,12 +18,12 @@ import sigma.software.leovegas.drugstore.accountancy.InvoiceStatus
 import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.extensions.get
-import sigma.software.leovegas.drugstore.store.api.CheckStatusResponse
+import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
 
 @DisplayName("Refund invoice REST API Doc test")
 class RestApiDocRefundInvoiceTest @Autowired constructor(
-    val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
@@ -60,16 +58,15 @@ class RestApiDocRefundInvoiceTest @Autowired constructor(
             )
         }.get()
 
+        val responseExpected =
+            Proto.CheckTransferResponse.newBuilder().setOrderNumber(savedInvoice.orderNumber)
+                .setComment("Not delivered").build()
+
         stubFor(
             WireMock.get("/api/v1/store/check-transfer/${savedInvoice.orderNumber}")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(CheckStatusResponse(savedInvoice.orderNumber))
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
                 )
         )
