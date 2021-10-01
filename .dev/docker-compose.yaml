@@ -148,3 +148,18 @@ services:
         condition: service_started
       db_accountancy:
         condition: service_healthy
+  web:
+    image: library/nginx:1.18
+    container_name: web
+    ports:
+      - "80:80"
+    links:
+      - accountancy-service
+      - product-service
+      - order-service
+      - store-service
+    restart: on-failure
+    networks: [ drugstore ]
+    volumes:
+      - ../fe:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf

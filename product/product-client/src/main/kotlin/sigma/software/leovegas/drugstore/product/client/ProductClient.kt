@@ -4,9 +4,11 @@ import feign.Headers
 import feign.Param
 import feign.RequestLine
 import java.math.BigDecimal
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.api.CreateProductResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
+import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Headers("Content-Type: application/json")
@@ -31,4 +33,7 @@ interface ProductClient {
 
     @RequestLine("GET /api/v1/products/{productNumber}/price")
     fun getProductPrice(@Param productNumber: List<String>): Map<String, BigDecimal>
+
+    @RequestLine("GET /api/v1/products/details/{productNumber}")
+    fun getProductsDetailsByProductNumbers(@Param productNumber: String): ProductDetailsResponse
 }

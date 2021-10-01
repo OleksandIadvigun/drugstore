@@ -17,6 +17,7 @@ import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.order.client.proto.OrderClientProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
+import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
 @Service
@@ -90,18 +91,18 @@ class ProductService(
 
     fun getPopularProducts(page: Int, size: Int): List<GetProductResponse> {
         val pageableForPopularity: Pageable = PageRequest.of(page, size)
-        val productsQuantity = runCatching { orderClientProto.getProductsIdToQuantity().productQuantityItemMap }
+        val productsQuantity = runCatching { orderClientProto.getProductsIdToQuantity() }
             .onFailure { error -> throw OrderServerException(error.localizedMessage.messageSpliterator()) }
             .getOrThrow()
         logger.info("Received products quantity $productsQuantity")
 
         val products = productRepository
             .findAllByProductNumberInAndStatusAndQuantityGreaterThan(
-                productsQuantity.keys, ProductStatus.RECEIVED, 0, pageableForPopularity
+                productsQuantity.productQuantityItemMap.keys, ProductStatus.RECEIVED, 0, pageableForPopularity
             )
             .map(Product::toGetProductResponse)
         logger.info("Received popular products $products")
-        val index = productsQuantity.keys.withIndex().associate { it.value to it.index }
+        val index = productsQuantity.productQuantityItemMap.keys.withIndex().associate { it.value to it.index }
         return products.sortedBy { index[it.productNumber] }
     }
 
@@ -118,6 +119,18 @@ class ProductService(
                     .build()
             }
             return@run Proto.ProductDetailsResponse.newBuilder().addAllProducts(productProto).build()
+        }
+
+    fun getProductsDetailsByProductNumbersJson(productNumber: String): ProductDetailsResponse =
+        productNumber.run {
+            val products = productRepository.findAllByProductNumberInAndStatus(listOf(this), ProductStatus.RECEIVED)
+            logger.info("Products $products")
+            ProductDetailsResponse (
+                    productNumber = this,
+                    quantity = products[0].quantity,
+                    price = products[0].price,
+                    name = products[0].name
+            )
         }
 
     fun createProduct(products: CreateProductsEvent) =

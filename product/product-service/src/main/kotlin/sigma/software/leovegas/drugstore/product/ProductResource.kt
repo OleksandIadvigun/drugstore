@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus.ACCEPTED
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,8 +24,10 @@ import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
+import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/v1/products")
 class ProductResource(private val service: ProductService) {
@@ -72,6 +75,13 @@ class ProductResource(private val service: ProductService) {
     fun getProductsDetailsByIds(@RequestParam("productNumbers") productNumbers: List<String>)
             : Proto.ProductDetailsResponse {
         return service.getProductsDetailsByProductNumbers(productNumbers)
+    }
+
+    @ResponseStatus(OK)
+    @GetMapping("/details/{productNumber}")
+    fun getProductsDetailsByIdJson(@PathVariable("productNumber") productNumber: String)
+            : ProductDetailsResponse {
+        return service.getProductsDetailsByProductNumbersJson(productNumber)
     }
 
     @ExceptionHandler(Throwable::class)

@@ -15,6 +15,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toBigDecimal
 import sigma.software.leovegas.drugstore.order.OrderStatus.CONFIRMED
 import sigma.software.leovegas.drugstore.order.OrderStatus.CREATED
@@ -151,12 +152,14 @@ class OrderService @Autowired constructor(
                 return "Confirmed"
             }
 
-    fun getProductsNumberToQuantity(): Map<String, Int> {
+    fun getProductsNumberToQuantity(): Proto.ProductQuantityMap {
         val productNumbers = orderRepository
             .getAllByOrderStatus(CONFIRMED)
             .map { it.orderItems.map { item -> item.productNumber } }
             .flatten()
         logger.info("Sorted list of ids by most buys $productNumbers")
-        return orderRepository.getProductNumberToQuantity(productNumbers).associate { it.productNumber to it.quantity }
+        val items =
+            orderRepository.getProductNumberToQuantity(productNumbers).associate { it.productNumber to it.quantity }
+        return Proto.ProductQuantityMap.newBuilder().putAllProductQuantityItem(items).build()
     }
 }

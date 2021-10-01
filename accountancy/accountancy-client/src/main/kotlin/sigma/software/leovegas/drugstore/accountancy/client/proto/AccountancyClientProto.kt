@@ -3,6 +3,7 @@ package sigma.software.leovegas.drugstore.accountancy.client.proto
 import feign.Headers
 import feign.Param
 import feign.RequestLine
+import java.math.BigDecimal
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 

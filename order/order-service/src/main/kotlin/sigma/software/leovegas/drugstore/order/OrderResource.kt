@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.MessageHeaders
 import org.springframework.messaging.support.MessageBuilder
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,10 +21,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/v1/orders")
 class OrderResource @Autowired constructor(
@@ -57,7 +60,7 @@ class OrderResource @Autowired constructor(
 
     @GetMapping("/total-buys")
     @ResponseStatus(HttpStatus.OK)
-    fun getProductsIdToQuantity(): Map<String, Int> = orderService.getProductsNumberToQuantity()
+    fun getProductsIdToQuantity(): Proto.ProductQuantityMap = orderService.getProductsNumberToQuantity()
 
     @GetMapping("/{orderNumber}/details")
     @ResponseStatus(HttpStatus.OK)

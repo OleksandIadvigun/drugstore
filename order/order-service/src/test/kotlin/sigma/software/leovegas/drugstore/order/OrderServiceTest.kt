@@ -630,10 +630,10 @@ class OrderServiceTest @Autowired constructor(
         // when
         val sortedItems = orderService.getProductsNumberToQuantity()
         // then
-        assertThat(sortedItems).hasSize(3)
-        assertThat(sortedItems.iterator().next().value).isEqualTo(9)
-        assertThat(sortedItems["1"]).isEqualTo(4)
-        assertThat(sortedItems["3"]).isEqualTo(2)
-        assertThat(sortedItems["5"]).isEqualTo(9)
+        assertThat(sortedItems.productQuantityItemMap).hasSize(3)
+        assertThat(sortedItems.productQuantityItemMap.iterator().next().value).isEqualTo(9)
+        assertThat(sortedItems.productQuantityItemMap["1"]).isEqualTo(4)
+        assertThat(sortedItems.productQuantityItemMap["3"]).isEqualTo(2)
+        assertThat(sortedItems.productQuantityItemMap["5"]).isEqualTo(9)
     }
 }

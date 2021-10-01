@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus.ACCEPTED
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -27,7 +28,7 @@ import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/v1/accountancy")
 class AccountancyResource(private val service: AccountancyService) {
