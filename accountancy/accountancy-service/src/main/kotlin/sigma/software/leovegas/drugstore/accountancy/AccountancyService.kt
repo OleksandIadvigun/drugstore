@@ -202,8 +202,8 @@ class AccountancyService @Autowired constructor(
         productNumbers.validate().run {
             val profitTimes = BigDecimal(2.00)
             val prices = runCatching {
-                productClient.getProductPrice(this)
-                    .mapValues { it.value.multiply(profitTimes).toDecimalPriceProto() }
+                productClientProto.getProductPrice(this).itemsMap
+                    .mapValues { it.value.toBigDecimal().multiply(profitTimes).toDecimalPriceProto() }
             }
                 .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()

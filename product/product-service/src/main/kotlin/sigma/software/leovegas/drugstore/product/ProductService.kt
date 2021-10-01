@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toBigDecimal
+import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.order.client.proto.OrderClientProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
@@ -160,11 +162,12 @@ class ProductService(
             return@run Proto.DeliverProductsDTO.newBuilder().addAllItems(productProto).build()
         }
 
-    fun getProductPrice(productNumbers: List<String>): Map<String, BigDecimal> =
+    fun getProductPrice(productNumbers: List<String>): ProtoProductsPrice.ProductsPrice =
         productNumbers.validate().run {
             val productsPrice = productRepository.findAllByProductNumberInOrderByCreatedAtDesc(productNumbers)
                 .associate { (it.productNumber to it.price) }
+                .mapValues { it.value.toDecimalPriceProto() }
             logger.info("Products price $productsPrice")
-            return@run productsPrice
+            return@run ProtoProductsPrice.ProductsPrice.newBuilder().putAllItems(productsPrice).build()
         }
 }

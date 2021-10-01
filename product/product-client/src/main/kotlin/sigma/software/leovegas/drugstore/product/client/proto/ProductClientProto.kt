@@ -3,7 +3,9 @@ package sigma.software.leovegas.drugstore.product.client.proto
 import feign.Headers
 import feign.Param
 import feign.RequestLine
+import java.math.BigDecimal
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 
 @Headers("Content-Type: application/x-protobuf")
 interface ProductClientProto {
@@ -16,4 +18,7 @@ interface ProductClientProto {
 
     @RequestLine("GET /api/v1/products/details?productNumbers={productNumbers}")
     fun getProductsDetailsByProductNumbers(@Param productNumbers: List<String>): Proto.ProductDetailsResponse
+
+    @RequestLine("GET /api/v1/products/{productNumber}/price")
+    fun getProductPrice(@Param productNumber: List<String>): ProtoProductsPrice.ProductsPrice
 }

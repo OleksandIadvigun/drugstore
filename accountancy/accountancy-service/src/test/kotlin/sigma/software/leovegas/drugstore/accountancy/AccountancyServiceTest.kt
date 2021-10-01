@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.github.tomakehurst.wiremock.matching.EqualToPattern
+import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -21,6 +22,7 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.extensions.get
@@ -72,18 +74,23 @@ class AccountancyServiceTest @Autowired constructor(
                 )
         )
 
+        // given
+        val price = BigDecimal("20.00")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems("1", protoPrice)
+            .build()
+
         // and
         stubFor(
             WireMock.get("/api/v1/products/1/price")
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(Pair("1", BigDecimal("40.00")))
-                                )
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
                 )
         )
@@ -96,7 +103,7 @@ class AccountancyServiceTest @Autowired constructor(
         // then
         assertThat(actual).isNotNull
         assertThat(actual.orderNumber).isEqualTo(orderNumber)
-        assertThat(actual.amount).isEqualTo(BigDecimal("160.00")) // sum of all quantity * price
+        assertThat(actual.amount).isEqualTo(BigDecimal("80.00")) // sum of all quantity * price
     }
 
     @Test
@@ -695,20 +702,24 @@ class AccountancyServiceTest @Autowired constructor(
         val productNumbers = listOf("1", "2")
 
         // and
+        val price = BigDecimal("1.23")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems("1", protoPrice)
+            .putItems("2", protoPrice)
+            .build()
+
+        // and
         stubFor(
             WireMock.get("/api/v1/products/1,2/price")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(Pair("1", BigDecimal("1.23")), Pair("2", BigDecimal("1.24")))
-                                )
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -718,6 +729,6 @@ class AccountancyServiceTest @Autowired constructor(
         // then
         println(priceMap)
         assertThat(priceMap.itemsMap["1"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")).toDecimalPriceProto())
-        assertThat(priceMap.itemsMap["2"]).isEqualTo(BigDecimal("1.24").multiply(BigDecimal("2")).toDecimalPriceProto())
+        assertThat(priceMap.itemsMap["2"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")).toDecimalPriceProto())
     }
 }

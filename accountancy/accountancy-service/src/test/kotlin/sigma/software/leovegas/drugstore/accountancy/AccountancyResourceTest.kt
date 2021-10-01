@@ -103,20 +103,11 @@ class AccountancyResourceTest @Autowired constructor(
             .build()
 
         // and
-
-        // and
         stubFor(
             WireMock.get("/api/v1/products/1/price")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(Pair("1", BigDecimal("40.00")))
-                                )
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
                 )
         )
@@ -481,20 +472,24 @@ class AccountancyResourceTest @Autowired constructor(
     fun `should get sale price`() {
 
         // given
+        val price = BigDecimal("1.23")
+        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+            .setPrecision(price.precision())
+            .setScale(price.scale())
+            .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
+            .build()
+        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+            .putItems("1", protoPrice)
+            .putItems("2", protoPrice)
+            .build()
+
+        // and
         stubFor(
             WireMock.get("/api/v1/products/1,2/price")
-                .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
-                        .withBody(
-                            objectMapper
-                                .writerWithDefaultPrettyPrinter()
-                                .writeValueAsString(
-                                    mapOf(Pair("1", BigDecimal("1.23")), Pair("2", BigDecimal("1.24")))
-                                )
-                        )
+                        .withProtobufResponse { responseExpected }
                         .withStatus(HttpStatus.OK.value())
-                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
@@ -512,6 +507,6 @@ class AccountancyResourceTest @Autowired constructor(
         // and
         val body = response.body.get("body")
         assertThat(body.itemsMap["1"]).isEqualTo(BigDecimal("2.46").toDecimalPriceProto())
-        assertThat(body.itemsMap["2"]).isEqualTo(BigDecimal("2.48").toDecimalPriceProto())
+        assertThat(body.itemsMap["2"]).isEqualTo(BigDecimal("2.46").toDecimalPriceProto())
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
+import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
@@ -59,8 +60,8 @@ class ProductServiceTest @Autowired constructor(
         val actual = service.getProductPrice(productNumbers)
 
         // when
-        assertThat(actual).hasSize(1)
-        assertThat(actual.getValue(product.productNumber)).isEqualTo(BigDecimal.TEN.setScale(2))
+        assertThat(actual.itemsMap).hasSize(1)
+        assertThat(actual.itemsMap.getValue(product.productNumber)).isEqualTo(BigDecimal.TEN.setScale(2).toDecimalPriceProto())
     }
 
 

@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
+import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
@@ -77,7 +78,7 @@ class ProductResourceTest @Autowired constructor(
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/products/{productNumber}/price",
-            GET, null, respTypeRef<Map<String, BigDecimal>>(), productNumber
+            GET, null, respTypeRef<ProtoProductsPrice.ProductsPrice>(), productNumber
         )
 
         // then
@@ -85,7 +86,7 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         val priceMap = response.body.get()
-        assertThat(priceMap.getValue(productNumber)).isEqualTo(BigDecimal("1.23"))
+        assertThat(priceMap.itemsMap.getValue(productNumber)).isEqualTo(BigDecimal("1.23").toDecimalPriceProto())
     }
 
     @Test
