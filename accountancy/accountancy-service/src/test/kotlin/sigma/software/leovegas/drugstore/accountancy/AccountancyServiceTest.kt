@@ -22,8 +22,6 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
-import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
@@ -76,12 +74,12 @@ class AccountancyServiceTest @Autowired constructor(
 
         // given
         val price = BigDecimal("20.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseExpected = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .build()
 
@@ -703,12 +701,12 @@ class AccountancyServiceTest @Autowired constructor(
 
         // and
         val price = BigDecimal("1.23")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseExpected = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .putItems("2", protoPrice)
             .build()
@@ -728,7 +726,7 @@ class AccountancyServiceTest @Autowired constructor(
 
         // then
         println(priceMap)
-        assertThat(priceMap.itemsMap["1"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")).toDecimalPriceProto())
-        assertThat(priceMap.itemsMap["2"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")).toDecimalPriceProto())
+        assertThat(priceMap.itemsMap["1"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")).toDecimalProto())
+        assertThat(priceMap.itemsMap["2"]).isEqualTo(BigDecimal("1.23").multiply(BigDecimal("2")).toDecimalProto())
     }
 }

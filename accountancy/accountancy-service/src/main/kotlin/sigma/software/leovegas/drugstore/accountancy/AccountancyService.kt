@@ -15,12 +15,10 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toBigDecimal
-import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
-import sigma.software.leovegas.drugstore.product.client.ProductClient
 import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
 import sigma.software.leovegas.drugstore.store.client.proto.StoreClientProto
 
@@ -29,7 +27,6 @@ import sigma.software.leovegas.drugstore.store.client.proto.StoreClientProto
 class AccountancyService @Autowired constructor(
     val invoiceRepository: InvoiceRepository,
     val storeClientProto: StoreClientProto,
-    val productClient: ProductClient,
     val productClientProto: ProductClientProto,
     val eventStream: StreamBridge,
 ) {
@@ -198,25 +195,16 @@ class AccountancyService @Autowired constructor(
             return@run invoice.toConfirmOrderResponse()
         }
 
-    fun getSalePrice(productNumbers: List<String>): ProtoProductsPrice.ProductsPrice =
+    fun getSalePrice(productNumbers: List<String>): Proto.ProductsPrice =
         productNumbers.validate().run {
             val profitTimes = BigDecimal(2.00)
             val prices = runCatching {
                 productClientProto.getProductPrice(this).itemsMap
-                    .mapValues { it.value.toBigDecimal().multiply(profitTimes).toDecimalPriceProto() }
+                    .mapValues { it.value.toBigDecimal().multiply(profitTimes).toDecimalProto() }
             }
                 .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
                 .getOrThrow()
             logger.info("Received prices $prices")
-            return@run ProtoProductsPrice.ProductsPrice.newBuilder().putAllItems(prices).build()
+            return@run Proto.ProductsPrice.newBuilder().putAllItems(prices).build()
         }
-
-//    fun cancelExpiredInvoice(date: LocalDateTime): List<ConfirmOrderResponse> {
-//        val invoiceToCancelList = invoiceRepository.findAllByStatusAndCreatedAtLessThan(InvoiceStatus.CREATED, date)
-//        invoiceToCancelList.forEach {
-//            cancelInvoice(it.id ?: -1)
-//            logger.info("Invoice $it.id status was changed to cancel")
-//        }
-//        return invoiceToCancelList.toInvoiceResponseList()
-//    }
 }

@@ -60,3 +60,12 @@ message CheckTransferResponse{
 message ProductQuantityMap{
   map<string, int32> productQuantityItem = 1;
 }
+
+message CreateOutcomeInvoiceEvent{
+  required string orderNumber = 1;
+  repeated Item productItems = 2;
+}
+
+message ProductsPrice {
+  map<string, DecimalValue> items = 1;
+}

@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toBigDecimal
-import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.order.client.proto.OrderClientProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
@@ -125,11 +123,11 @@ class ProductService(
         productNumber.run {
             val products = productRepository.findAllByProductNumberInAndStatus(listOf(this), ProductStatus.RECEIVED)
             logger.info("Products $products")
-            ProductDetailsResponse (
-                    productNumber = this,
-                    quantity = products[0].quantity,
-                    price = products[0].price,
-                    name = products[0].name
+            ProductDetailsResponse(
+                productNumber = this,
+                quantity = products[0].quantity,
+                price = products[0].price,
+                name = products[0].name
             )
         }
 
@@ -175,12 +173,12 @@ class ProductService(
             return@run Proto.DeliverProductsDTO.newBuilder().addAllItems(productProto).build()
         }
 
-    fun getProductPrice(productNumbers: List<String>): ProtoProductsPrice.ProductsPrice =
+    fun getProductPrice(productNumbers: List<String>): Proto.ProductsPrice =
         productNumbers.validate().run {
             val productsPrice = productRepository.findAllByProductNumberInOrderByCreatedAtDesc(productNumbers)
                 .associate { (it.productNumber to it.price) }
-                .mapValues { it.value.toDecimalPriceProto() }
+                .mapValues { it.value.toDecimalProto() }
             logger.info("Products price $productsPrice")
-            return@run ProtoProductsPrice.ProductsPrice.newBuilder().putAllItems(productsPrice).build()
+            return@run Proto.ProductsPrice.newBuilder().putAllItems(productsPrice).build()
         }
 }

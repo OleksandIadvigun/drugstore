@@ -13,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ContextConfiguration
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
-import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.product.client.WireMockTest
 
@@ -33,12 +32,12 @@ class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
 
         // given
         val price = BigDecimal("20.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseExpected = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .build()
 
@@ -56,6 +55,6 @@ class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
         val responseActual = productClientProto.getProductPrice(listOf("1"))
 
         //  then
-        assertThat(responseActual.itemsMap.get("1")).isEqualTo(BigDecimal("20.00").toDecimalPriceProto())
+        assertThat(responseActual.itemsMap.get("1")).isEqualTo(BigDecimal("20.00").toDecimalProto())
     }
 }

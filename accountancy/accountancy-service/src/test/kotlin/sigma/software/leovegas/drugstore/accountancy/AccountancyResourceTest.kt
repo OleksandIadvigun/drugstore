@@ -30,8 +30,6 @@ import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.api.ProductItemDtoRequest
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
-import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.extensions.respTypeRef
@@ -93,12 +91,12 @@ class AccountancyResourceTest @Autowired constructor(
 
         //and
         val price = BigDecimal("40.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseExpected = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .build()
 
@@ -473,12 +471,12 @@ class AccountancyResourceTest @Autowired constructor(
 
         // given
         val price = BigDecimal("1.23")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseExpected = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .putItems("2", protoPrice)
             .build()
@@ -498,7 +496,7 @@ class AccountancyResourceTest @Autowired constructor(
             "$baseUrl/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2",
             GET,
             null,
-            respTypeRef<ProtoProductsPrice.ProductsPrice>()
+            respTypeRef<Proto.ProductsPrice>()
         )
 
         // then
@@ -506,7 +504,7 @@ class AccountancyResourceTest @Autowired constructor(
 
         // and
         val body = response.body.get("body")
-        assertThat(body.itemsMap["1"]).isEqualTo(BigDecimal("2.46").toDecimalPriceProto())
-        assertThat(body.itemsMap["2"]).isEqualTo(BigDecimal("2.46").toDecimalPriceProto())
+        assertThat(body.itemsMap["1"]).isEqualTo(BigDecimal("2.46").toDecimalProto())
+        assertThat(body.itemsMap["2"]).isEqualTo(BigDecimal("2.46").toDecimalProto())
     }
 }

@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.product
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
@@ -23,8 +22,6 @@ import org.springframework.http.HttpMethod.PUT
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
-import sigma.software.leovegas.drugstore.api.toDecimalPriceProto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
@@ -44,7 +41,6 @@ class ProductResourceTest @Autowired constructor(
     val restTemplate: TestRestTemplate,
     val transactionalTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
-    val objectMapper: ObjectMapper,
     val productProperties: ProductProperties
 ) : WireMockTest() {
 
@@ -78,7 +74,7 @@ class ProductResourceTest @Autowired constructor(
         // when
         val response = restTemplate.exchange(
             "$baseUrl/api/v1/products/{productNumber}/price",
-            GET, null, respTypeRef<ProtoProductsPrice.ProductsPrice>(), productNumber
+            GET, null, respTypeRef<Proto.ProductsPrice>(), productNumber
         )
 
         // then
@@ -86,7 +82,7 @@ class ProductResourceTest @Autowired constructor(
 
         // and
         val priceMap = response.body.get()
-        assertThat(priceMap.itemsMap.getValue(productNumber)).isEqualTo(BigDecimal("1.23").toDecimalPriceProto())
+        assertThat(priceMap.itemsMap.getValue(productNumber)).isEqualTo(BigDecimal("1.23").toDecimalProto())
     }
 
     @Test
@@ -349,17 +345,17 @@ class ProductResourceTest @Autowired constructor(
         // and
         val price = BigDecimal("20.00")
         val price2 = BigDecimal("100.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice2 = Proto.DecimalValue.newBuilder()
             .setPrecision(price2.precision())
             .setScale(price2.scale())
             .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
             .build()
-        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseEProto = Proto.ProductsPrice.newBuilder()
             .putItems(saved[1].productNumber, protoPrice2)
             .putItems(saved[0].productNumber, protoPrice)
             .build()
@@ -446,17 +442,17 @@ class ProductResourceTest @Autowired constructor(
         // and
         val price = BigDecimal("20.00")
         val price2 = BigDecimal("100.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice2 = Proto.DecimalValue.newBuilder()
             .setPrecision(price2.precision())
             .setScale(price2.scale())
             .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
             .build()
-        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseEProto = Proto.ProductsPrice.newBuilder()
             .putItems(saved[1].productNumber, protoPrice2)
             .putItems(saved[0].productNumber, protoPrice)
             .build()
@@ -557,17 +553,17 @@ class ProductResourceTest @Autowired constructor(
         // and
         val price = BigDecimal("40.00")
         val price2 = BigDecimal("20.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice2 = Proto.DecimalValue.newBuilder()
             .setPrecision(price2.precision())
             .setScale(price2.scale())
             .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
             .build()
-        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseEProto = Proto.ProductsPrice.newBuilder()
             .putItems(productNumbers[1], protoPrice2)
             .putItems(productNumbers[0], protoPrice)
             .build()

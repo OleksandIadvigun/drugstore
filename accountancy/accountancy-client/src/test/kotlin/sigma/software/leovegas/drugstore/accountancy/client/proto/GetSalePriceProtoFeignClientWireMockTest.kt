@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.client.WireMockTest
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 
 @SpringBootApplication
 internal class GetSalePriceProtoFeignClientWireMockTestApp
@@ -31,12 +31,12 @@ class GetSalePriceProtoFeignClientWireMockTest @Autowired constructor(
 
         // given
         val price = BigDecimal("20.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseExpected = Proto.ProductsPrice.newBuilder()
             .putItems("123", protoPrice)
             .build()
 

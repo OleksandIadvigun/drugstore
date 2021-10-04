@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyClient
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 import sigma.software.leovegas.drugstore.api.messageSpliterator
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
@@ -33,7 +32,6 @@ import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
 class OrderService @Autowired constructor(
     val orderRepository: OrderRepository,
     val productClientProto: ProductClientProto,
-    val accountancyClient: AccountancyClient,
     val accountancyClientProto: AccountancyClientProto,
     val eventStream: StreamBridge,
 ) {

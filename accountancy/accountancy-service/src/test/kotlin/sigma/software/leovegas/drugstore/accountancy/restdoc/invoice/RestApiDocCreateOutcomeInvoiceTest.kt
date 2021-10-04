@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
-import com.github.tomakehurst.wiremock.matching.ContainsPattern
 import com.google.protobuf.ByteString
 import java.math.BigDecimal
 import org.hamcrest.Matchers.equalTo
@@ -21,7 +20,6 @@ import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
 import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
 
@@ -72,12 +70,12 @@ class RestApiDocCreateOutcomeInvoiceTest @Autowired constructor(
 
         // and
         val price = BigDecimal("40.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val responseExpected = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseExpected = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .build()
 

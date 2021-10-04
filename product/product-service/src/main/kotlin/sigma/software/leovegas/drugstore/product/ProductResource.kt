@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.product
 
-import java.math.BigDecimal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
@@ -36,7 +34,7 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(OK)
     @GetMapping("/{productNumbers}/price")
-    fun getProductPrice(@PathVariable("productNumbers") productNumbers: List<String>): ProtoProductsPrice.ProductsPrice =
+    fun getProductPrice(@PathVariable("productNumbers") productNumbers: List<String>): Proto.ProductsPrice =
         service.getProductPrice(productNumbers)
 
     @ResponseStatus(CREATED)

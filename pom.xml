@@ -32,6 +32,7 @@
     </modules>
     <properties>
         <java.version>1.8</java.version>
+        <skipProtoGen>true</skipProtoGen>
         <asciidoctorj>2.5.1</asciidoctorj>
         <feign-jackson>9.3.1</feign-jackson>
         <protobuf-java>3.7.0</protobuf-java>
@@ -41,7 +42,6 @@
         <mockito-inlinex>2.13.0</mockito-inlinex>
         <asciidoctorj-pdf>1.6.0</asciidoctorj-pdf>
         <skipDocumentation>true</skipDocumentation>
-        <skipProtoGen>true</skipProtoGen>
         <spring-cloud-stream>3.1.3</spring-cloud-stream>
         <mysql-connector-java>8.0.25</mysql-connector-java>
         <jackson-datatype-jsr310>2.12.4</jackson-datatype-jsr310>

@@ -26,7 +26,6 @@ import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEve
 import sigma.software.leovegas.drugstore.accountancy.api.InvoiceResponse
 import sigma.software.leovegas.drugstore.api.ApiError
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 
 @CrossOrigin
 @RestController
@@ -67,7 +66,7 @@ class AccountancyResource(private val service: AccountancyService) {
 
     @ResponseStatus(OK)
     @GetMapping("/sale-price")
-    fun getSalePrice(@RequestParam("productNumbers") productNumbers: List<String>): ProtoProductsPrice.ProductsPrice =
+    fun getSalePrice(@RequestParam("productNumbers") productNumbers: List<String>): Proto.ProductsPrice =
         service.getSalePrice(productNumbers)
 
     // protobuf request ----------------------------->

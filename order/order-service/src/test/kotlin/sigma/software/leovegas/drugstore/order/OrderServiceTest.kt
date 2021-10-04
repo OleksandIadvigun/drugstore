@@ -24,7 +24,6 @@ import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
@@ -406,17 +405,17 @@ class OrderServiceTest @Autowired constructor(
         // and
         val price = BigDecimal("40.00")
         val price2 = BigDecimal("40.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice2 = Proto.DecimalValue.newBuilder()
             .setPrecision(price2.precision())
             .setScale(price2.scale())
             .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
             .build()
-        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseEProto = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .putItems("2", protoPrice2)
             .build()

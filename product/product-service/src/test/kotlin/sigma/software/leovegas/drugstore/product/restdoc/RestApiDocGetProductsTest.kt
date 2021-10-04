@@ -14,7 +14,6 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.Product
@@ -88,17 +87,17 @@ class RestApiDocGetProductsTest @Autowired constructor(
         // and
         val price = BigDecimal("20.00")
         val price2 = BigDecimal("100.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice2 = Proto.DecimalValue.newBuilder()
             .setPrecision(price2.precision())
             .setScale(price2.scale())
             .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
             .build()
-        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseEProto = Proto.ProductsPrice.newBuilder()
             .putItems(savedProducts[0].productNumber, protoPrice)
             .putItems(savedProducts[1].productNumber, protoPrice2)
             .build()

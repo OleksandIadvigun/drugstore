@@ -1,6 +1,5 @@
 package sigma.software.leovegas.drugstore.order.restdoc
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
@@ -14,7 +13,6 @@ import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
-import sigma.software.leovegas.drugstore.api.protobuf.ProtoProductsPrice
 import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
@@ -23,14 +21,12 @@ import sigma.software.leovegas.drugstore.order.OrderItem
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderStatus
-import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
 @DisplayName("Get orderDetails REST API Doc test")
 class RestApiDocGetOrderDetailsTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val orderRepository: OrderRepository,
-    val objectMapper: ObjectMapper,
     val orderProperties: OrderProperties
 ) : RestApiDocumentationTest(orderProperties) {
 
@@ -63,22 +59,6 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         }.get()
 
         // and
-        val response = listOf(
-            ProductDetailsResponse(
-                productNumber = "1",
-                name = "test1",
-                quantity = 3,
-                price = BigDecimal.ONE
-            ),
-            ProductDetailsResponse(
-                productNumber = "2",
-                name = "test2",
-                quantity = 4,
-                price = BigDecimal.TEN
-            )
-        )
-
-        // and
         val productsProto = listOf(
             Proto.ProductDetailsItem.newBuilder()
                 .setName("test1").setProductNumber("1").setQuantity(3)
@@ -105,17 +85,17 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
         // and
         val price = BigDecimal("40.00")
         val price2 = BigDecimal("40.00")
-        val protoPrice = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice = Proto.DecimalValue.newBuilder()
             .setPrecision(price.precision())
             .setScale(price.scale())
             .setValue(ByteString.copyFrom(price.unscaledValue().toByteArray()))
             .build()
-        val protoPrice2 = ProtoProductsPrice.DecimalValue.newBuilder()
+        val protoPrice2 = Proto.DecimalValue.newBuilder()
             .setPrecision(price2.precision())
             .setScale(price2.scale())
             .setValue(ByteString.copyFrom(price2.unscaledValue().toByteArray()))
             .build()
-        val responseEProto = ProtoProductsPrice.ProductsPrice.newBuilder()
+        val responseEProto = Proto.ProductsPrice.newBuilder()
             .putItems("1", protoPrice)
             .putItems("2", protoPrice2)
             .build()
