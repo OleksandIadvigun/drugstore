@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.order.OrderItemRepository
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderService
@@ -18,13 +20,13 @@ import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 
-
 @DisplayName("Update order REST API Doc test")
 class RestApiDocUpdateOrderTest @Autowired constructor(
-    val objectMapper: ObjectMapper,
     val transactionTemplate: TransactionTemplate,
-    val orderProperties: OrderProperties,
+    val orderItemRepository: OrderItemRepository,
     val orderRepository: OrderRepository,
+    val orderProperties: OrderProperties,
+    val objectMapper: ObjectMapper,
     val orderService: OrderService,
     @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(orderProperties) {
@@ -33,7 +35,8 @@ class RestApiDocUpdateOrderTest @Autowired constructor(
     fun `should update order`() {
 
         // setup
-        transactionTemplate.execute { orderRepository.deleteAll() }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val orderCreated = transactionTemplate.execute {

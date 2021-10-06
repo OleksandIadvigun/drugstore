@@ -16,11 +16,11 @@ import org.springframework.http.MediaType
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
-import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 
 @DisplayName("Get sale price REST API Doc test")
 class RestApiDocGetSalePriceTest @Autowired constructor(
-    val accountancyProperties: AccountancyProperties,
+    accountancyProperties: AccountancyProperties,
     val transactionTemplate: TransactionTemplate,
     val invoiceRepository: InvoiceRepository,
     val objectMapper: ObjectMapper,

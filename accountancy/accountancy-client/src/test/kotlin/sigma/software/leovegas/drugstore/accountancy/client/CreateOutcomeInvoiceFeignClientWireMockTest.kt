@@ -18,6 +18,7 @@ import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 
 @SpringBootApplication
 internal class CreateOutcomeInvoiceFeignClientWireMockTestApp

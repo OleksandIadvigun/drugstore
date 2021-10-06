@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.MediaType
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.api.CreateOrderEvent
 import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
-
 
 @DisplayName("Create order REST API Doc test")
 class RestApiDocCreateOrderTest @Autowired constructor(
@@ -20,7 +20,6 @@ class RestApiDocCreateOrderTest @Autowired constructor(
     @LocalServerPort val port: Int,
     val orderProperties: OrderProperties
 ) : RestApiDocumentationTest(orderProperties) {
-
 
     @Test
     fun `should create order`() {

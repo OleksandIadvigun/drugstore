@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.accountancy.restdoc
+package sigma.software.leovegas.drugstore.infrastructure
 
 import io.restassured.RestAssured
 import io.restassured.builder.RequestSpecBuilder
@@ -7,22 +7,19 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 import org.springframework.restdocs.RestDocumentationContextProvider
 import org.springframework.restdocs.RestDocumentationExtension
 import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.restassured3.RestAssuredRestDocumentation
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import sigma.software.leovegas.drugstore.accountancy.WireMockTest
-import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
+import sigma.software.leovegas.drugstore.product.ProductProperties
 
 @AutoConfigureRestDocs
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension::class, RestDocumentationExtension::class)
-class RestApiDocumentationTest(
-    private val accountancyProperties: AccountancyProperties
+abstract class RestApiDocumentationTest(
+    private val productProperties: ProductProperties
 ) : WireMockTest() {
-
 
     lateinit var documentationSpec: RequestSpecification
 
@@ -35,7 +32,7 @@ class RestApiDocumentationTest(
 
     fun of(snippet: String): RequestSpecification {
         val processor = Preprocessors.modifyUris().scheme("http")
-            .host(accountancyProperties.host).port(accountancyProperties.port)
+            .host(productProperties.host).port(productProperties.port)
         val prettyPrint = Preprocessors.prettyPrint()
         val requestProcessor = Preprocessors.preprocessRequest(
             prettyPrint,

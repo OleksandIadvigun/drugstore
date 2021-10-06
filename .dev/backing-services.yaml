@@ -14,6 +14,12 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks: [ drugstore ]
+    healthcheck:
+      retries: 99
+      timeout: 15s
+      interval: 5s
+      start_period: 1s
+      test: [ "CMD", "rabbitmqctl", "eval", "application:get_env(rabbit,collect_statistics_interval)." ]
   db_product:
     ulimits:
       memlock:
@@ -31,9 +37,10 @@ services:
     ports: [ '13008:3306' ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
+      retries: 99
+      timeout: 5s
+      interval: 3s
+      start_period: 1s
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
   db_order:
     ulimits:
@@ -52,9 +59,10 @@ services:
     ports: [ "13017:3306" ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
+      retries: 99
+      timeout: 5s
+      interval: 3s
+      start_period: 1s
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
   db_store:
     ulimits:
@@ -73,9 +81,10 @@ services:
     ports: [ "13029:3306" ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
+      retries: 99
+      timeout: 5s
+      interval: 3s
+      start_period: 1s
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
   db_accountancy:
     ulimits:
@@ -94,7 +103,8 @@ services:
     ports: [ "13020:3306" ]
     networks: [ drugstore ]
     healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
+      retries: 99
+      timeout: 5s
+      interval: 3s
+      start_period: 1s
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]

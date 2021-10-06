@@ -9,8 +9,6 @@ import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -19,6 +17,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
@@ -63,7 +62,6 @@ class ProductServiceTest @Autowired constructor(
             BigDecimal.TEN.setScale(2).toDecimalProto()
         )
     }
-
 
     @Test
     fun `should create product`() {
@@ -182,7 +180,7 @@ class ProductServiceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                        "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
+                  "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
             )
                 .willReturn(
                     aResponse()
@@ -269,7 +267,7 @@ class ProductServiceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                        "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
+                  "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
             )
                 .willReturn(
                     aResponse()
@@ -357,7 +355,7 @@ class ProductServiceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                        "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
+                  "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
             )
                 .willReturn(
                     aResponse()
@@ -501,7 +499,6 @@ class ProductServiceTest @Autowired constructor(
         assertThat(products.getProducts(1).price).isEqualTo(BigDecimal("30.00").toDecimalProto())
         assertThat(products.getProducts(1).quantity).isEqualTo(2)
     }
-
 
     @Test
     fun `should deliver products`() {

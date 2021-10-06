@@ -14,10 +14,12 @@ import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
 import sigma.software.leovegas.drugstore.order.Order
 import sigma.software.leovegas.drugstore.order.OrderItem
+import sigma.software.leovegas.drugstore.order.OrderItemRepository
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderStatus
@@ -25,6 +27,7 @@ import sigma.software.leovegas.drugstore.order.OrderStatus
 @DisplayName("Get orderDetails REST API Doc test")
 class RestApiDocGetOrderDetailsTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
+    val orderItemRepository: OrderItemRepository,
     val orderRepository: OrderRepository,
     val orderProperties: OrderProperties,
     @LocalServerPort val port: Int,
@@ -34,9 +37,8 @@ class RestApiDocGetOrderDetailsTest @Autowired constructor(
     fun `should get order details`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val order = transactionTemplate.execute {

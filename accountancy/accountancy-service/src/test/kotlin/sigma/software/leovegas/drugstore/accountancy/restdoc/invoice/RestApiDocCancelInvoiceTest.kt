@@ -19,15 +19,15 @@ import sigma.software.leovegas.drugstore.accountancy.Invoice
 import sigma.software.leovegas.drugstore.accountancy.InvoiceRepository
 import sigma.software.leovegas.drugstore.accountancy.ProductItem
 import sigma.software.leovegas.drugstore.accountancy.client.AccountancyProperties
-import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentationTest
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.extensions.get
 import sigma.software.leovegas.drugstore.order.api.OrderResponse
 import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
 @DisplayName("Cancel invoice REST API Doc test")
 class RestApiDocCancelInvoiceTest @Autowired constructor(
-    val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
+    accountancyProperties: AccountancyProperties,
     val invoiceRepository: InvoiceRepository,
     val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,

@@ -7,9 +7,9 @@ cache:
   paths:
   - .m2/repository
 test:
-  stage: test
   #image: maven:3.8.1-jdk-8-openj9
   image: docker:20.10.8
+  stage: test
   services:
   - docker:20.10.8-dind
   variables:
@@ -23,8 +23,30 @@ test:
   - apk add --no-cache libc6-compat openjdk8 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
   - ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2
   - apk --no-cache add openjdk8 curl jq httpie docker-compose --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+  - docker rm -f -v rabbitmq || echo oops
   - docker pull rabbitmq:3.6.6-management-alpine
-  - docker run --name rabbitmq --rm -d -p 5672:5672 rabbitmq:3.6.6-management-alpine
-  script: SPRING_RABBITMQ_HOST=docker ./mvnw clean test
+  - docker run --rm -d --name rabbitmq
+                -p 5672:5672 -p 15672:15672
+                --health-cmd="rabbitmqctl eval 'application:get_env(rabbit, collect_statistics_interval).'"
+                --health-retries=99
+                --health-timeout=15s
+                --health-interval=5s
+                --health-start-period=1s
+            rabbitmq:3.6.6-management-alpine
+  #- while ! [[ 1 -eq `docker ps -f health=healthy -f status=running --format "{{.Names}}" | wc -l` ]] ; do sleep 1s ; echo -ne '.' ; done ;
+  - function wait_healthy_docker_containers {
+      n=${1:-1} ;
+      while [[ $(docker ps -n ${n} -q -f health=healthy -f status=running | wc -l) -lt ${n} ]] ; do
+        sleep 1s ;
+        echo -ne '.' ;
+      done ;
+      echo '' ;
+    }
+  - wait_healthy_docker_containers 1
+  script:
+  #- rabbitmq_host=`docker inspect rabbitmq | jq -r '.[] | .NetworkSettings.Gateway'`
+  - rabbitmq_host=`docker inspect rabbitmq -f '{{.NetworkSettings.Gateway}}'`
+  - http --ignore-stdin get $rabbitmq_host:15672
+  - SPRING_RABBITMQ_HOST=$rabbitmq_host ./mvnw clean test
   after_script:
   - docker rm -f -v rabbitmq

@@ -8,13 +8,15 @@ import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
-import sigma.software.leovegas.drugstore.product.client.WireMockTest
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 
 @SpringBootApplication
 internal class GetProductsDetailsByProductNumbersFeignProductClientWireMockTestApp

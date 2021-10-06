@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.order.Order
 import sigma.software.leovegas.drugstore.order.OrderItem
+import sigma.software.leovegas.drugstore.order.OrderItemRepository
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderStatus
@@ -17,6 +19,7 @@ import sigma.software.leovegas.drugstore.order.OrderStatus
 @DisplayName("Get items sorted by quantity REST API Doc test")
 class RestApiDocGetItemsByQuantityTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
+    val orderItemRepository: OrderItemRepository,
     val orderRepository: OrderRepository,
     val orderProperties: OrderProperties,
     @LocalServerPort val port: Int,
@@ -27,9 +30,8 @@ class RestApiDocGetItemsByQuantityTest @Autowired constructor(
     fun `should get total buys of each product`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         transactionTemplate.execute {

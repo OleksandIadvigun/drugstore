@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.order.client.GetOrderByIdFeignClientWireMockTestApp
-import sigma.software.leovegas.drugstore.order.client.WireMockTest
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 
 @SpringBootApplication
 internal class GetOrderItemsByQuantityFeignClientWireMockTestApp

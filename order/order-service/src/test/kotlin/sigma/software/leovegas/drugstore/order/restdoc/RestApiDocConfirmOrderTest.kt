@@ -19,31 +19,31 @@ import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.order.Order
 import sigma.software.leovegas.drugstore.order.OrderItem
+import sigma.software.leovegas.drugstore.order.OrderItemRepository
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderStatus
 
-
 @DisplayName("Confirm order REST API Doc test")
 class RestApiDocConfirmOrderTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
+    val orderItemRepository: OrderItemRepository,
     val orderProperties: OrderProperties,
     val orderRepository: OrderRepository,
     val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(orderProperties) {
 
-
     @Test
     fun `should confirm order`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val order = transactionTemplate.execute {

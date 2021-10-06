@@ -4,13 +4,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
+import sigma.software.leovegas.drugstore.order.OrderItemRepository
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderService
@@ -20,7 +20,7 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 @DisplayName("Get order by id REST API Doc test")
 class RestApiDocGetOrderByNumberTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
-    val orderItemRepository: OrderRepository,
+    val orderItemRepository: OrderItemRepository,
     val orderProperties: OrderProperties,
     val orderRepository: OrderRepository,
     @LocalServerPort val port: Int,
@@ -30,12 +30,8 @@ class RestApiDocGetOrderByNumberTest @Autowired constructor(
     @Test
     fun `should get order by orderNumber`() {
         // setup
-        transactionTemplate.execute {
-            orderItemRepository.deleteAllInBatch()
-        }
-        transactionTemplate.execute {
-            orderRepository.deleteAllInBatch()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         val orderCreated = transactionTemplate.execute {

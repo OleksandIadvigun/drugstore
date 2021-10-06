@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.accountancy.api.ConfirmOrderResponse
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 
 @SpringBootApplication
 internal class RefundInvoiceFeignClientWireMockTestApp

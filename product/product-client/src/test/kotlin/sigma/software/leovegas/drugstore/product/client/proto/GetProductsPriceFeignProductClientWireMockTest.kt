@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
-import sigma.software.leovegas.drugstore.product.client.WireMockTest
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 
 @SpringBootApplication
 internal class GetProductsPriceFeignProductClientWireMockTestApp

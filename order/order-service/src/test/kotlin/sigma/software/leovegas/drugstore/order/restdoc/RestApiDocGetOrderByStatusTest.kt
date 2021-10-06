@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.infrastructure.RestApiDocumentationTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
+import sigma.software.leovegas.drugstore.order.OrderItemRepository
 import sigma.software.leovegas.drugstore.order.OrderProperties
 import sigma.software.leovegas.drugstore.order.OrderRepository
 import sigma.software.leovegas.drugstore.order.OrderService
@@ -18,8 +20,9 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 @DisplayName("Get order by status REST API Doc test")
 class RestApiDocGetOrderByStatusTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
-    val orderProperties: OrderProperties,
+    val orderItemRepository: OrderItemRepository,
     val orderRepository: OrderRepository,
+    val orderProperties: OrderProperties,
     val orderService: OrderService,
     @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(orderProperties) {
@@ -28,9 +31,8 @@ class RestApiDocGetOrderByStatusTest @Autowired constructor(
     fun `should get order by status`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         val orderCreated = transactionTemplate.execute {

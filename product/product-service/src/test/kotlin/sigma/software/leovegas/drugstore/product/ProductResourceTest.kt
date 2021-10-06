@@ -10,8 +10,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -25,6 +23,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.api.toDecimalProto
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.respTypeRef
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
@@ -35,7 +34,6 @@ import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
-@TestInstance(PER_CLASS)
 @DisplayName("ProductResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class ProductResourceTest @Autowired constructor(
@@ -201,7 +199,7 @@ class ProductResourceTest @Autowired constructor(
         val response = restTemplate
             .exchange(
                 "$baseUrl/api/v1/products/details?" +
-                        "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}",
+                  "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}",
                 GET,
                 null,
                 respTypeRef<Proto.ProductDetailsResponse>()
@@ -366,7 +364,7 @@ class ProductResourceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                        "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
+                  "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
             )
                 .willReturn(
                     aResponse()
@@ -463,7 +461,7 @@ class ProductResourceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                        "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
+                  "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
             )
                 .willReturn(
                     aResponse()
@@ -574,7 +572,7 @@ class ProductResourceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                        "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
+                  "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
             )
                 .willReturn(
                     aResponse()

@@ -13,7 +13,7 @@ import org.springframework.restdocs.operation.preprocess.Preprocessors
 import org.springframework.restdocs.restassured3.RestAssuredRestDocumentation
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import sigma.software.leovegas.drugstore.store.StoreProperties
-import sigma.software.leovegas.drugstore.store.WireMockTest
+import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 
 @AutoConfigureRestDocs
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
