@@ -7,4 +7,5 @@ data class ApiError(
     val status: String = "Undefined",
     val message: String? = "Error has not been defined.",
     val time: LocalDateTime = LocalDateTime.now()
+
 )
