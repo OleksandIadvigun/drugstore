@@ -8,11 +8,21 @@ cache:
   - .m2/repository
 test:
   stage: test
-  image: maven:3.8.1-jdk-8-openj9
+  #image: maven:3.8.1-jdk-8-openj9
+  image: docker:20.10.8
   services:
-  - name: docker:dind
-    alias: docker
+  - docker:20.10.8-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    #DOCKER_TLS_CERTDIR: "/certs"
+    #REGISTRY_GROUP_PROJECT: $CI_REGISTRY/root/drugstore
+    JAVA_HOME: "/usr/lib/jvm/java-8-openjdk"
   before_script:
+  # Holy shit! it's working!
+  # https://stackoverflow.com/questions/50288034/unsatisfiedlinkerror-tmp-snappy-1-1-4-libsnappyjava-so-error-loading-shared-li/51655643#51655643
+  - apk add --no-cache libc6-compat openjdk8 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+  - ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2
+  - apk --no-cache add openjdk8 curl jq httpie docker-compose --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
   - docker pull rabbitmq:3.6.6-management-alpine
   - docker run --name rabbitmq --rm -d -p 5672:5672 rabbitmq:3.6.6-management-alpine
   script: SPRING_RABBITMQ_HOST=docker ./mvnw clean test
