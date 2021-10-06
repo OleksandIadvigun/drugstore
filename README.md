@@ -12,6 +12,7 @@ docker run --rm -d -p 5672:5672 rabbitmq:3.6.6-management-alpine
 _windows_
 
 ```cmd
+docker run --rm -d -p 5672:5672 rabbitmq:3.6.6-management-alpine
 mvnw
 ```
 
@@ -20,23 +21,27 @@ mvnw
 _unix_
 
 ```bash
+./mvnw -f .dev -P backing-services,up
 rm -rf ~/.m2/repository/sigma/software/leovegas/drugstore
 ./mvnw -DskipTests clean install -pl '!:accountancy-service,!:order-service,!:product-service,!:store-service'
-./mvnw -DskipTests spring-boot:run -f accountancy/accountancy-service &
-./mvnw -DskipTests spring-boot:run -f order/order-service &
-./mvnw -DskipTests spring-boot:run -f product/product-service &
+./mvnw -DskipTests spring-boot:run -f accountancy/accountancy-service & ;\
+./mvnw -DskipTests spring-boot:run -f order/order-service & ;\
+./mvnw -DskipTests spring-boot:run -f product/product-service & ;\
 ./mvnw -DskipTests spring-boot:run -f store/store-service &
+./mvnw -f .dev -P backing-services,down
 ```
 
 _windows_
 
 ```cmd
+mvnw -f .dev -P backing-services,up
 rd /s /q %HOMEPATH%\.m2\repository\sigma\software\leovegas\drugstore
 mvnw -DskipTests clean install -pl !:accountancy-service,!:order-service,!:product-service,!:store-service
 start /b mvnw -DskipTests spring-boot:run -f accountancy/accountancy-service & ^
 start /b mvnw -DskipTests spring-boot:run -f order/order-service & ^
 start /b mvnw -DskipTests spring-boot:run -f product/product-service & ^
 start /b mvnw -DskipTests spring-boot:run -f store/store-service &
+mvnw -f .dev -P backing-services,down
 ```
 
 ## run in docker

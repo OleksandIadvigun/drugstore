@@ -4,17 +4,20 @@ import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.Pageable
 import org.springframework.transaction.support.TransactionTemplate
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 
+@TestInstance(PER_CLASS)
 @DisplayName("Product Repository test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductRepositoryTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
-    val productRepository: ProductRepository
+    val productRepository: ProductRepository,
 ) {
 
     @Test

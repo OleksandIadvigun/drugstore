@@ -25,11 +25,11 @@ import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
 @DisplayName("Create income invoice REST API Doc test")
 class RestApiDocCreateIncomeInvoiceTest @Autowired constructor(
-    val objectMapper: ObjectMapper,
-    @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
-    val invoiceRepository: InvoiceRepository
+    val invoiceRepository: InvoiceRepository,
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test

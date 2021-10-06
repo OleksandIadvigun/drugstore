@@ -17,17 +17,17 @@ import sigma.software.leovegas.drugstore.store.api.TransferCertificateResponse
 import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
 @SpringBootApplication
-internal class ReceiveProductsFeignClientWireMockTestApp
+internal class DeliverProductsStoreFeignClientWireMockTestApp
 
-@DisplayName("Receive Products Feign Client WireMock test")
-@ContextConfiguration(classes = [ReceiveProductsFeignClientWireMockTestApp::class])
-class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
-    val storeClient: StoreClient,
+@DisplayName("Deliver Products Feign StoreClient WireMock test")
+@ContextConfiguration(classes = [DeliverProductsStoreFeignClientWireMockTestApp::class])
+class DeliverProductsStoreFeignClientWireMockTest @Autowired constructor(
     val objectMapper: ObjectMapper,
+    val storeClient: StoreClient,
 ) : WireMockTest() {
 
     @Test
-    fun `should receive products`() {
+    fun `should deliver products`() {
 
         // given
         val orderNumber = "1"
@@ -35,13 +35,13 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
         // and
         val responseExpected = TransferCertificateResponse(
             certificateNumber = "1",
-            orderNumber = orderNumber,
-            status = TransferStatusDTO.RECEIVED,
+            orderNumber = "1",
+            status = TransferStatusDTO.DELIVERED
         )
 
         // and
         stubFor(
-            put("/api/v1/store/receive/$orderNumber")
+            put("/api/v1/store/deliver/$orderNumber")
                 .withHeader("Content-Type", ContainsPattern(MediaType.APPLICATION_JSON_VALUE))
                 .willReturn(
                     aResponse()
@@ -50,17 +50,16 @@ class ReceiveProductsFeignClientWireMockTest @Autowired constructor(
                                 .writerWithDefaultPrettyPrinter()
                                 .writeValueAsString(responseExpected)
                         )
-                        .withStatus(HttpStatus.ACCEPTED.value())
+                        .withStatus(HttpStatus.OK.value())
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
         )
 
         // when
-        val responseActual = storeClient.receiveProducts(orderNumber)
+        val responseActual = storeClient.deliverProducts(orderNumber)
 
         //  then
-        assertThat(responseActual.certificateNumber).isEqualTo("1")
-        assertThat(responseActual.orderNumber).isEqualTo(orderNumber)
-        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.RECEIVED)
+        assertThat(responseActual.certificateNumber).isEqualTo(orderNumber)
+        assertThat(responseActual.status).isEqualTo(TransferStatusDTO.DELIVERED)
     }
 }

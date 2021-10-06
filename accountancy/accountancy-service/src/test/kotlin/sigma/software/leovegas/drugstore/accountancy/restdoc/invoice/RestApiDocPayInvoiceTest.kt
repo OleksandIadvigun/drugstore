@@ -19,11 +19,11 @@ import sigma.software.leovegas.drugstore.extensions.get
 
 @DisplayName("Pay invoice REST API Doc test")
 class RestApiDocPayInvoiceTest @Autowired constructor(
-    val objectMapper: ObjectMapper,
-    @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
-    val invoiceRepository: InvoiceRepository
+    val invoiceRepository: InvoiceRepository,
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test
@@ -58,12 +58,15 @@ class RestApiDocPayInvoiceTest @Autowired constructor(
             .writerWithDefaultPrettyPrinter()
             .writeValueAsString(BigDecimal("90.00"))
 
-        of("pay-invoice").`when`()
+        of("pay-invoice")
+
+        .`when`()
             .pathParam("id", savedInvoice.orderNumber)
             .body(body)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .put("http://${accountancyProperties.host}:$port/api/v1/accountancy/invoice/pay/{id}")
-            .then()
+
+        .then()
             .assertThat().statusCode(202)
             .assertThat().body("orderNumber", equalTo("1"))
             .assertThat().body("amount", equalTo(90.0F))

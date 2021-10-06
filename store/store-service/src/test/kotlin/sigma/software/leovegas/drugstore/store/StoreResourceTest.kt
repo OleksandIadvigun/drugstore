@@ -28,11 +28,11 @@ import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 
 @DisplayName("StoreResource test")
 class StoreResourceTest @Autowired constructor(
-    @LocalServerPort val port: Int,
-    val restTemplate: TestRestTemplate,
     val transactionTemplate: TransactionTemplate,
     val storeRepository: StoreRepository,
-    val storeProperties: StoreProperties
+    val storeProperties: StoreProperties,
+    val restTemplate: TestRestTemplate,
+    @LocalServerPort val port: Int,
 ) : WireMockTest() {
 
     lateinit var baseUrl: String

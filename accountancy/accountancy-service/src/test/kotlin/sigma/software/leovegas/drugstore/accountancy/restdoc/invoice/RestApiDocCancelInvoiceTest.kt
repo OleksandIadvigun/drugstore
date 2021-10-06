@@ -26,11 +26,11 @@ import sigma.software.leovegas.drugstore.order.api.OrderStatusDTO
 
 @DisplayName("Cancel invoice REST API Doc test")
 class RestApiDocCancelInvoiceTest @Autowired constructor(
-    val objectMapper: ObjectMapper,
-    @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
-    val invoiceRepository: InvoiceRepository
+    val invoiceRepository: InvoiceRepository,
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test

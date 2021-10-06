@@ -18,10 +18,10 @@ import sigma.software.leovegas.drugstore.product.ProductStatus
 
 @DisplayName("Receive products REST API Doc test")
 class RestApiDocReceiveProductsTest @Autowired constructor(
-    @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
     val productProperties: ProductProperties,
+    @LocalServerPort val port: Int,
     val objectMapper: ObjectMapper,
 ) : RestApiDocumentationTest(productProperties) {
 

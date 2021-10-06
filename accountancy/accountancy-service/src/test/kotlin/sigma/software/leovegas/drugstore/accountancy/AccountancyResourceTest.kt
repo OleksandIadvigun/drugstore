@@ -39,12 +39,12 @@ import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
 @DisplayName("Accountancy Resource test")
 class AccountancyResourceTest @Autowired constructor(
-    @LocalServerPort val port: Int,
-    val restTemplate: TestRestTemplate,
+    val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
     val invoiceRepository: InvoiceRepository,
-    val accountancyProperties: AccountancyProperties,
-    val objectMapper: ObjectMapper
+    val restTemplate: TestRestTemplate,
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
 ) : WireMockTest() {
 
     lateinit var baseUrl: String

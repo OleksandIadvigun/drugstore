@@ -7,7 +7,8 @@ import feign.jackson.JacksonDecoder
 import feign.jackson.JacksonEncoder
 import feign.slf4j.Slf4jLogger
 import org.springframework.beans.factory.ObjectFactory
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder
@@ -19,14 +20,14 @@ import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter
 import sigma.software.leovegas.drugstore.store.client.proto.StoreClientProto
 
 @Configuration
+@ConditionalOnMissingClass
 @EnableConfigurationProperties(StoreProperties::class)
-class StoreClientConfiguration @Autowired constructor(
-    val messageConverters: ObjectFactory<HttpMessageConverters>,
-) {
+class StoreClientConfiguration(private val messageConverters: ObjectFactory<HttpMessageConverters>) {
 
     @Bean
-    fun StoreClient(props: StoreProperties): StoreClient {
-        return Feign
+    @ConditionalOnMissingBean
+    fun storeClient(props: StoreProperties): StoreClient =
+        Feign
             .builder()
             .logger(Slf4jLogger())
             .logLevel(Logger.Level.FULL)
@@ -36,11 +37,11 @@ class StoreClientConfiguration @Autowired constructor(
                 StoreClient::class.java,
                 "http://${props.host}:${props.port}"
             )
-    }
 
     @Bean
-    fun StoreClientProto(props: StoreProperties): StoreClientProto {
-        return Feign
+    @ConditionalOnMissingBean
+    fun storeClientProto(props: StoreProperties): StoreClientProto =
+        Feign
             .builder()
             .logger(Slf4jLogger())
             .logLevel(Logger.Level.FULL)
@@ -50,10 +51,9 @@ class StoreClientConfiguration @Autowired constructor(
                 StoreClientProto::class.java,
                 "http://${props.host}:${props.port}"
             )
-    }
 
     @Bean
-    fun protobufHttpMessageConverterStore(): ProtobufHttpMessageConverter {
-        return ProtobufHttpMessageConverter();
-    }
+    @ConditionalOnMissingBean
+    fun storeProtobufHttpMessageConverterStore(): ProtobufHttpMessageConverter =
+        ProtobufHttpMessageConverter()
 }

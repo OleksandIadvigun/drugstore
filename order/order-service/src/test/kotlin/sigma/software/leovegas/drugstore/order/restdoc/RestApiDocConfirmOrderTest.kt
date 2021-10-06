@@ -29,11 +29,11 @@ import sigma.software.leovegas.drugstore.order.OrderStatus
 
 @DisplayName("Confirm order REST API Doc test")
 class RestApiDocConfirmOrderTest @Autowired constructor(
-    @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
+    val orderProperties: OrderProperties,
     val orderRepository: OrderRepository,
     val objectMapper: ObjectMapper,
-    val orderProperties: OrderProperties
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(orderProperties) {
 
 

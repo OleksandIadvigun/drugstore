@@ -1,5 +1,6 @@
 package sigma.software.leovegas.drugstore.product.client.proto
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.put
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
@@ -14,33 +15,29 @@ import sigma.software.leovegas.drugstore.api.protobuf.Proto
 import sigma.software.leovegas.drugstore.product.client.WireMockTest
 
 @SpringBootApplication
-internal class DeliverProductsFeignClientWireMockTestApp
+internal class ReceiveProductFeignProductClientWireMockTestApp
 
-@DisplayName("Deliver Product Feign Client WireMock test")
-@ContextConfiguration(classes = [DeliverProductsFeignClientWireMockTestApp::class])
-class DeliverProductsFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Receive Product Feign ProductClient WireMock test")
+@ContextConfiguration(classes = [ReceiveProductFeignProductClientWireMockTestApp::class])
+class ReceiveProductFeignProductClientWireMockTest @Autowired constructor(
     val productClientProto: ProductClientProto,
+    val objectMapper: ObjectMapper
 ) : WireMockTest() {
 
     @Test
-    fun `should deliver product`() {
+    fun `should receive product`() {
 
         // and
-        val request = Proto.DeliverProductsDTO
-            .newBuilder().addItems(
-                Proto.Item.newBuilder().setProductNumber("1").setQuantity(3).build()
-            ).build()
+        val request = Proto.ProductNumberList.newBuilder().addProductNumber("1").build()
 
         //and
-        val responseExpected = Proto.DeliverProductsDTO
-            .newBuilder().addItems(
-                Proto.Item.newBuilder().setProductNumber("1").setQuantity(7).build()
-            ).build()
-
+        val responseExpected = Proto.ReceiveProductResponse.newBuilder().addProducts(
+            Proto.ReceiveProductItemDTO.newBuilder().setProductNumber("1").setStatus(Proto.ProductStatusDTO.RECEIVED)
+        ).build()
 
         //and
         stubFor(
-            put("/api/v1/products/deliver")
+            put("/api/v1/products/receive")
                 .withProtobufRequest { request }
                 .willReturn(
                     aResponse()
@@ -50,10 +47,10 @@ class DeliverProductsFeignClientWireMockTest @Autowired constructor(
         )
 
         // when
-        val responseActual = productClientProto.deliverProducts(request)
+        val responseActual = productClientProto.receiveProducts(request)
 
         //  then
-        assertThat(responseActual.getItems(0).productNumber).isEqualTo("1")
-        assertThat(responseActual.getItems(0).quantity).isEqualTo(7)
+        assertThat(responseActual.getProducts(0).productNumber).isEqualTo("1")
+        assertThat(responseActual.getProducts(0).status).isEqualTo(Proto.ProductStatusDTO.RECEIVED)
     }
 }

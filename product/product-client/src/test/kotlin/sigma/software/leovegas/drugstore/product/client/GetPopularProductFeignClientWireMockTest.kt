@@ -17,11 +17,11 @@ import org.springframework.test.context.ContextConfiguration
 import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 
 @SpringBootApplication
-internal class GetProductsFeignClientWireMockTestApp
+internal class GetProductsFeignProductClientWireMockTestApp
 
-@DisplayName("Get Product Feign Client WireMock tests")
-@ContextConfiguration(classes = [GetProductsFeignClientWireMockTestApp::class])
-class GetProductsFeignClientWireMockTests @Autowired constructor(
+@DisplayName("Get Product Feign ProductClient WireMock tests")
+@ContextConfiguration(classes = [GetProductsFeignProductClientWireMockTestApp::class])
+class GetProductsFeignProductClientWireMockTests @Autowired constructor(
     val productClient: ProductClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {

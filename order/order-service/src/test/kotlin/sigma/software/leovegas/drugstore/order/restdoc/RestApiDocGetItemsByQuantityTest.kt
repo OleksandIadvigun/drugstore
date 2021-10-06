@@ -16,10 +16,10 @@ import sigma.software.leovegas.drugstore.order.OrderStatus
 
 @DisplayName("Get items sorted by quantity REST API Doc test")
 class RestApiDocGetItemsByQuantityTest @Autowired constructor(
-    @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
     val orderRepository: OrderRepository,
-    val orderProperties: OrderProperties
+    val orderProperties: OrderProperties,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(orderProperties) {
 
     @Disabled

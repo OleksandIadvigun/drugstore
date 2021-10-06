@@ -28,8 +28,8 @@ import sigma.software.leovegas.drugstore.store.api.TransferStatusDTO
 @AutoConfigureTestDatabase
 @DisplayName("Store Service test")
 class StoreServiceTest @Autowired constructor(
-    val storeRepository: StoreRepository,
     val transactionTemplate: TransactionTemplate,
+    val storeRepository: StoreRepository,
     val storeService: StoreService,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {

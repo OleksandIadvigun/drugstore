@@ -14,7 +14,7 @@ import sigma.software.leovegas.drugstore.extensions.get
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class InvoiceRepositoryTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
-    val invoiceRepository: InvoiceRepository
+    val invoiceRepository: InvoiceRepository,
 ) {
 
     @Test

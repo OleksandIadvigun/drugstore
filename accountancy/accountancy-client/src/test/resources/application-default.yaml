@@ -1,10 +1,10 @@
 order:
-  host: 127.0.0.2
+  host: 127.0.0.1
   port: 8082
 product:
   host: 127.0.0.1
   port: 8081
 accountancy:
-  host: 127.0.0.4
+  host: 127.0.0.1
   port: 8084
 

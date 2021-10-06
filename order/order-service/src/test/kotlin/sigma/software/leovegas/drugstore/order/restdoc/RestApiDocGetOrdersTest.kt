@@ -14,11 +14,11 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 
 @DisplayName("Get orders REST API Doc test")
 class RestApiDocGetOrdersTest @Autowired constructor(
-    @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
-    val orderService: OrderService,
+    val orderProperties: OrderProperties,
     val orderRepository: OrderRepository,
-    val orderProperties: OrderProperties
+    val orderService: OrderService,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(orderProperties) {
 
 

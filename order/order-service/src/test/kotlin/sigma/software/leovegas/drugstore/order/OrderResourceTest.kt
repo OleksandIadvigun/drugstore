@@ -46,12 +46,12 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 @DisplayName("Order Resource test")
 @Import(CustomTestConfig::class)
 class OrderResourceTest @Autowired constructor(
-    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
     val orderRepository: OrderRepository,
-    val objectMapper: ObjectMapper,
     val orderProperties: OrderProperties,
     val restTemplate: TestRestTemplate,
-    val transactionTemplate: TransactionTemplate,
+    val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
 ) : WireMockTest() {
 
     lateinit var baseUrl: String
@@ -144,7 +144,7 @@ class OrderResourceTest @Autowired constructor(
             orderRepository.deleteAll()
         }
 
-        // given
+        // and
         val orderCreated = transactionTemplate.execute {
             orderRepository.save(
                 Order(

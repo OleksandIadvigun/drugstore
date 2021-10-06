@@ -24,10 +24,10 @@ import sigma.software.leovegas.drugstore.extensions.withProtobufResponse
 
 @DisplayName("Refund invoice REST API Doc test")
 class RestApiDocRefundInvoiceTest @Autowired constructor(
-    @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
     val transactionalTemplate: TransactionTemplate,
-    val invoiceRepository: InvoiceRepository
+    val invoiceRepository: InvoiceRepository,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Test

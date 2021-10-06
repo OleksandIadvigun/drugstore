@@ -9,6 +9,8 @@ import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -27,9 +29,9 @@ import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 @DisplayName("Product service test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductServiceTest @Autowired constructor(
-    val service: ProductService,
     val transactionTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
+    val service: ProductService,
 ) : WireMockTest() {
 
     @Test
@@ -568,6 +570,10 @@ class ProductServiceTest @Autowired constructor(
 
     @Test
     fun `should receive products`() {
+        // setup
+        transactionTemplate.execute {
+            productRepository.deleteAllInBatch()
+        }
 
         // given
         val saved = transactionTemplate.execute {

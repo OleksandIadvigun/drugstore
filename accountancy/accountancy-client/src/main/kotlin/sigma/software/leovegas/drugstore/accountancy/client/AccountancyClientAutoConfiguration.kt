@@ -7,7 +7,8 @@ import feign.jackson.JacksonDecoder
 import feign.jackson.JacksonEncoder
 import feign.slf4j.Slf4jLogger
 import org.springframework.beans.factory.ObjectFactory
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder
@@ -19,37 +20,34 @@ import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
 
 @Configuration
+@ConditionalOnMissingClass
 @EnableConfigurationProperties(AccountancyProperties::class)
-class AccountancyClientConfiguration @Autowired constructor(
-    val messageConverters: ObjectFactory<HttpMessageConverters>,
-) {
+class AccountancyClientAutoConfiguration(private val messageConverters: ObjectFactory<HttpMessageConverters>) {
 
     @Bean
-    fun AccountancyClient(props: AccountancyProperties): AccountancyClient {
-        return Feign
+    @ConditionalOnMissingBean
+    fun accountancyClient(props: AccountancyProperties): AccountancyClient =
+        Feign
             .builder()
             .logger(Slf4jLogger())
             .logLevel(Logger.Level.FULL)
             .encoder(JacksonEncoder(listOf(JavaTimeModule())))
             .decoder(JacksonDecoder(listOf(JavaTimeModule())))
             .target(AccountancyClient::class.java, "http://${props.host}:${props.port}")
-    }
 
     @Bean
-    fun AccountancyClientProto(props: AccountancyProperties): AccountancyClientProto {
-        messageConverters.run { HttpMessageConverters(ProtobufHttpMessageConverter()) }
-
-        return Feign
+    @ConditionalOnMissingBean
+    fun accountancyClientProto(props: AccountancyProperties): AccountancyClientProto =
+        Feign
             .builder()
             .encoder(SpringEncoder(messageConverters))
             .decoder(ResponseEntityDecoder(SpringDecoder(this.messageConverters)))
             .logger(Slf4jLogger())
             .logLevel(Logger.Level.FULL)
             .target(AccountancyClientProto::class.java, "http://${props.host}:${props.port}")
-    }
 
     @Bean
-    fun protobufHttpMessageConverters(): ProtobufHttpMessageConverter {
-        return ProtobufHttpMessageConverter();
-    }
+    @ConditionalOnMissingBean
+    fun accountancyProtobufHttpMessageConverters(): ProtobufHttpMessageConverter =
+        ProtobufHttpMessageConverter()
 }

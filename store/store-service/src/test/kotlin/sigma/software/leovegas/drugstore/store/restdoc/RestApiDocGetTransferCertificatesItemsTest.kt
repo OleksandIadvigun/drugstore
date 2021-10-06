@@ -13,10 +13,10 @@ import sigma.software.leovegas.drugstore.store.TransferStatus
 
 @DisplayName("Get transfer certificates REST API Doc test")
 class RestApiDocGetTransferCertificatesItemsTest @Autowired constructor(
-    @LocalServerPort val port: Int,
+    val transactionTemplate: TransactionTemplate,
     val storeProperties: StoreProperties,
     val storeRepository: StoreRepository,
-    val transactionTemplate: TransactionTemplate
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(storeProperties) {
 
     @Test

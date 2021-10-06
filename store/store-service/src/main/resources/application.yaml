@@ -1,6 +1,8 @@
 spring:
   output.ansi.enabled: always
-  liquibase.enabled: true
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/changelog-master.xml
   application.name: drugstore
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -10,7 +12,6 @@ spring:
     username: admin
     password: admin
     type: com.zaxxer.hikari.HikariDataSource
-  liquibase.change-log: classpath:/db/changelog/changelog-master.xml
   jpa:
     hibernate:
       ddl-auto: validate
@@ -20,7 +21,6 @@ spring:
         dialect: org.hibernate.dialect.MySQL5Dialect
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
     open-in-view: off
-
 product:
   host: ${PRODUCT_HOST:product}
   port: ${PRODUCT_PORT:8081}

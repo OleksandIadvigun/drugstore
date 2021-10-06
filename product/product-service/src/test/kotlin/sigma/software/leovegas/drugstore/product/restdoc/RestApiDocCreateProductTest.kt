@@ -18,11 +18,11 @@ import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 
 @DisplayName("Create product REST API Doc test")
 class RestApiDocCreateProductTest @Autowired constructor(
+    val transactionTemplate: TransactionTemplate,
+    val productProperties: ProductProperties,
+    val productRepository: ProductRepository,
     val objectMapper: ObjectMapper,
     @LocalServerPort val port: Int,
-    val productProperties: ProductProperties,
-    val transactionTemplate: TransactionTemplate,
-    val productRepository: ProductRepository
 ) : RestApiDocumentationTest(productProperties) {
 
     @Test

@@ -19,11 +19,11 @@
 //@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 //@Import(RestBean::class)
 //class ProtobufTest @Autowired constructor(
-//    @LocalServerPort val port: Int,
-//    val restTemplate: TestRestTemplate,
 //    val accountancyProperties: AccountancyProperties,
 //    val transactionalTemplate: TransactionTemplate,
 //    val invoiceRepository: InvoiceRepository,
+//    val restTemplate: TestRestTemplate,
+//    @LocalServerPort val port: Int,
 //) {
 //
 //    lateinit var baseUrl: String

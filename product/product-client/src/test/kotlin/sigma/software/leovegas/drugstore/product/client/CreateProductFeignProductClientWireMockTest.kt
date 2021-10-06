@@ -22,11 +22,11 @@ import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 
 @SpringBootApplication
-internal class CreateProductFeignClientWireMockTestApp
+internal class CreateProductFeignProductClientWireMockTestApp
 
 @DisplayName("Create Product Feign Client WireMock test")
-@ContextConfiguration(classes = [CreateProductFeignClientWireMockTestApp::class])
-class CreateProductFeignClientWireMockTest @Autowired constructor(
+@ContextConfiguration(classes = [CreateProductFeignProductClientWireMockTestApp::class])
+class CreateProductFeignProductClientWireMockTest @Autowired constructor(
     val productClient: ProductClient,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {

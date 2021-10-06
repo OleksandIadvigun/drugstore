@@ -10,6 +10,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -33,15 +35,15 @@ import sigma.software.leovegas.drugstore.product.api.GetProductResponse
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 
-
+@TestInstance(PER_CLASS)
 @DisplayName("ProductResource test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class ProductResourceTest @Autowired constructor(
-    @LocalServerPort val port: Int,
-    val restTemplate: TestRestTemplate,
     val transactionalTemplate: TransactionTemplate,
     val productRepository: ProductRepository,
-    val productProperties: ProductProperties
+    val productProperties: ProductProperties,
+    val restTemplate: TestRestTemplate,
+    @LocalServerPort val port: Int,
 ) : WireMockTest() {
 
     lateinit var baseUrl: String

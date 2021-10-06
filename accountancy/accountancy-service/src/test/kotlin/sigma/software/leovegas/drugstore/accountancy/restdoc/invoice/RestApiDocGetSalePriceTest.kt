@@ -20,11 +20,11 @@ import sigma.software.leovegas.drugstore.accountancy.restdoc.RestApiDocumentatio
 
 @DisplayName("Get sale price REST API Doc test")
 class RestApiDocGetSalePriceTest @Autowired constructor(
-    @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
-    val invoiceRepository: InvoiceRepository,
     val transactionTemplate: TransactionTemplate,
+    val invoiceRepository: InvoiceRepository,
     val objectMapper: ObjectMapper,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Disabled
@@ -49,10 +49,13 @@ class RestApiDocGetSalePriceTest @Autowired constructor(
                 )
         )
 
-        of("get-sale-price").`when`()
+        of("get-sale-price")
+
+        .`when`()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .get("http://${accountancyProperties.host}:$port/api/v1/accountancy/sale-price?productNumbers=1&productNumbers=2")
-            .then()
+
+        .then()
             .assertThat().statusCode(200)
             .assertThat().body("size()", `is`(2))
 

@@ -20,10 +20,10 @@ import sigma.software.leovegas.drugstore.extensions.get
 
 @DisplayName("Get invoice details by order number REST API Doc test")
 class RestApiDocGetInvoiceDetailsByOrderNumberTest @Autowired constructor(
-    @LocalServerPort val port: Int,
     val accountancyProperties: AccountancyProperties,
+    val transactionTemplate: TransactionTemplate,
     val invoiceRepository: InvoiceRepository,
-    val transactionTemplate: TransactionTemplate
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(accountancyProperties) {
 
     @Disabled

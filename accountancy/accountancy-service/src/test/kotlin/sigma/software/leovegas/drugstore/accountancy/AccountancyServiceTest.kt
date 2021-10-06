@@ -30,9 +30,9 @@ import sigma.software.leovegas.drugstore.product.api.ProductDetailsResponse
 
 @DisplayName("Accountancy Service test")
 class AccountancyServiceTest @Autowired constructor(
-    val service: AccountancyService,
     val transactionTemplate: TransactionTemplate,
     val invoiceRepository: InvoiceRepository,
+    val service: AccountancyService,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 

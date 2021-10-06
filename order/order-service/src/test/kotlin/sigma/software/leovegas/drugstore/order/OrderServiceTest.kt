@@ -37,8 +37,8 @@ import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 @Import(CustomTestConfig::class)
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
-    val orderService: OrderService,
     val orderRepository: OrderRepository,
+    val orderService: OrderService,
     val objectMapper: ObjectMapper,
 ) : WireMockTest() {
 
@@ -94,6 +94,11 @@ class OrderServiceTest @Autowired constructor(
 
     @Test
     fun `should get order by order number `() {
+
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
 
         // given
         val created = transactionTemplate.execute {
@@ -262,6 +267,11 @@ class OrderServiceTest @Autowired constructor(
 
     @Test
     fun `should change order status`() {
+
+        // setup
+        transactionTemplate.execute {
+            orderRepository.deleteAll()
+        }
 
         // given
         val orderToChange = transactionTemplate.execute {

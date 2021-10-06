@@ -18,11 +18,11 @@ import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.product.client.WireMockTest
 
 @SpringBootApplication
-internal class GetProductsPriceFeignClientWireMockTestApp
+internal class GetProductsPriceFeignProductClientWireMockTestApp
 
-@DisplayName("Receive Product Feign Client WireMock test")
-@ContextConfiguration(classes = [ReceiveProductFeignClientWireMockTestApp::class])
-class GetProductsPriceFeignClientWireMockTest @Autowired constructor(
+@DisplayName("Receive Product Feign ProductClient WireMock test")
+@ContextConfiguration(classes = [ReceiveProductFeignProductClientWireMockTestApp::class])
+class GetProductsPriceFeignProductClientWireMockTest @Autowired constructor(
     val productClientProto: ProductClientProto,
     val objectMapper: ObjectMapper
 ) : WireMockTest() {

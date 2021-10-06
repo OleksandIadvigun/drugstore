@@ -22,11 +22,11 @@ import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 @DisplayName("Update order REST API Doc test")
 class RestApiDocUpdateOrderTest @Autowired constructor(
     val objectMapper: ObjectMapper,
-    @LocalServerPort val port: Int,
     val transactionTemplate: TransactionTemplate,
-    val orderService: OrderService,
     val orderProperties: OrderProperties,
-    val orderRepository: OrderRepository
+    val orderRepository: OrderRepository,
+    val orderService: OrderService,
+    @LocalServerPort val port: Int,
 ) : RestApiDocumentationTest(orderProperties) {
 
     @Test
