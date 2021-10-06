@@ -5,36 +5,13 @@ networks:
     driver: bridge
 services:
   rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3.6.6-management-alpine
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks: [ drugstore ]
+    extends:
+      service: rabbitmq
+      file: backing-services.yaml
   db_product:
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
-    container_name: db_product
-    image: mysql:8.0.26
-    restart: on-failure
-    environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: db_product
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
-    ports: [ '13008:3306' ]
-    networks: [ drugstore ]
-    healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
+    extends:
+      service: db_product
+      file: backing-services.yaml
   product-service:
     container_name: product
     restart: on-failure
@@ -47,27 +24,14 @@ services:
     depends_on:
       db_product:
         condition: service_healthy
-  db_order:
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
-    container_name: db_order
-    image: mysql:8.0.26
-    restart: on-failure
     environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: db_order
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
-    ports: [ "13017:3306" ]
-    networks: [ drugstore ]
-    healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_DATASOURCE_HOST: db_product
+      SPRING_DATASOURCE_PORT: 3306
+  db_order:
+    extends:
+      service: db_order
+      file: backing-services.yaml
   order-service:
     container_name: order
     image: drugstore/order-service
@@ -80,27 +44,14 @@ services:
     depends_on:
       db_order:
         condition: service_healthy
-  db_store:
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
-    container_name: db_store
-    image: mysql:8.0.26
-    restart: on-failure
     environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: db_store
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
-    ports: [ "13029:3306" ]
-    networks: [ drugstore ]
-    healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_DATASOURCE_HOST: db_order
+      SPRING_DATASOURCE_PORT: 3306
+  db_store:
+    extends:
+      service: db_store
+      file: backing-services.yaml
   store-service:
     container_name: store
     restart: on-failure
@@ -113,27 +64,14 @@ services:
     depends_on:
       db_store:
         condition: service_healthy
-  db_accountancy:
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    mem_limit: 12810241024 # 128 mb = 128 * 1024 * 1024
-    container_name: db_accountancy
-    image: mysql:8.0.26
-    restart: on-failure
     environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: db_accountancy
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
-    ports: [ "13020:3306" ]
-    networks: [ drugstore ]
-    healthcheck:
-      retries: 20
-      timeout: 40s
-      interval: 10s
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD" ]
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_DATASOURCE_HOST: db_store
+      SPRING_DATASOURCE_PORT: 3306
+  db_accountancy:
+    extends:
+      service: db_accountancy
+      file: backing-services.yaml
   accountancy-service:
     container_name: accountancy
     restart: on-failure
@@ -148,6 +86,10 @@ services:
         condition: service_started
       db_accountancy:
         condition: service_healthy
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_DATASOURCE_HOST: db_accountancy
+      SPRING_DATASOURCE_PORT: 3306
   web:
     image: library/nginx:1.18
     container_name: web

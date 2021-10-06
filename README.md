@@ -5,6 +5,7 @@
 _unix_
 
 ```bash
+docker run --rm -d -p 5672:5672 rabbitmq:3.6.6-management-alpine
 ./mvnw
 ```
 

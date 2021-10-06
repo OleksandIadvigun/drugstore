@@ -4,7 +4,9 @@ spring:
   application.name: drugstore
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://db_product:3306/db_product?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    host: 127.0.0.1
+    port: 13008
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/db_product?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
     username: admin
     password: admin
     type: com.zaxxer.hikari.HikariDataSource
@@ -17,6 +19,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5Dialect
         current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+    open-in-view: off
   cloud:
     stream:
       bindings:
