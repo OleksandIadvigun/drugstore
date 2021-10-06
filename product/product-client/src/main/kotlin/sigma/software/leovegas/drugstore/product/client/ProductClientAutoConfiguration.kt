@@ -22,7 +22,7 @@ import sigma.software.leovegas.drugstore.product.client.proto.ProductClientProto
 @Configuration
 @ConditionalOnMissingClass
 @EnableConfigurationProperties(ProductProperties::class)
-class ProductClientConfiguration(val messageConverters: ObjectFactory<HttpMessageConverters>) {
+class ProductClientAutoConfiguration(val messageConverters: ObjectFactory<HttpMessageConverters>) {
 
     @Bean
     @ConditionalOnMissingBean

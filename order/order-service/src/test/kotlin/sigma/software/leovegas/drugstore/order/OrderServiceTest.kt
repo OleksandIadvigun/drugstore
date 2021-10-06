@@ -37,6 +37,7 @@ import sigma.software.leovegas.drugstore.order.api.UpdateOrderEvent
 @Import(CustomTestConfig::class)
 class OrderServiceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
+    val orderItemRepository: OrderItemRepository,
     val orderRepository: OrderRepository,
     val orderService: OrderService,
     val objectMapper: ObjectMapper,
@@ -46,9 +47,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should create order`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val order = CreateOrderEvent(
@@ -79,9 +79,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should not create order without orderItems`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // when
         val exception = assertThrows<InsufficientAmountOfOrderItemException> {
@@ -96,9 +95,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should get order by order number `() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val created = transactionTemplate.execute {
@@ -128,7 +126,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should not get non existing order`() {
 
         // setup
-        transactionTemplate.execute { orderRepository.deleteAll() }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val nonExistingNumber = "not"
@@ -144,9 +143,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should get order by status `() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         val created = transactionTemplate.execute {
@@ -178,9 +176,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should get all orders`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         transactionTemplate.execute {
@@ -221,9 +218,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should update order`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val orderToChange = transactionTemplate.execute {
@@ -269,9 +265,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should change order status`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val orderToChange = transactionTemplate.execute {
@@ -303,9 +298,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should not update order without orderItems`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val orderToUpdate = transactionTemplate.execute {
@@ -335,7 +329,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should not update non existing order`() {
 
         // setup
-        transactionTemplate.execute { orderRepository.deleteAll() }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val nonExitingOrderNumber = "not"
@@ -364,9 +359,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should get order details`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val order = transactionTemplate.execute {
@@ -457,9 +451,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should not get order details for order with status None`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val order = transactionTemplate.execute {
@@ -484,17 +477,14 @@ class OrderServiceTest @Autowired constructor(
 
         // then
         assertThat(exception.message).contains("Order", " must be created")
-
     }
-
 
     @Test
     fun `should confirm order`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val order = transactionTemplate.execute {
@@ -580,9 +570,8 @@ class OrderServiceTest @Autowired constructor(
     fun `should get productId to quantity sorted by quantity`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         transactionTemplate.execute {

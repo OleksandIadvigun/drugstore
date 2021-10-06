@@ -16,6 +16,7 @@
     <name>drugstore</name>
     <description>Spring Boot drugstore project</description>
     <modules>
+        <module>spring-cloud-stream-rabbit-protobuf-starter</module>
         <module>drugstore-api</module>
         <module>order/order-api</module>
         <module>order/order-client</module>

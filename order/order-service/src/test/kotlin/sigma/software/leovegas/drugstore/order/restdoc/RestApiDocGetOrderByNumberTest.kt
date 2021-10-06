@@ -20,6 +20,7 @@ import sigma.software.leovegas.drugstore.order.api.OrderItemDTO
 @DisplayName("Get order by id REST API Doc test")
 class RestApiDocGetOrderByNumberTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
+    val orderItemRepository: OrderRepository,
     val orderProperties: OrderProperties,
     val orderRepository: OrderRepository,
     @LocalServerPort val port: Int,
@@ -29,6 +30,9 @@ class RestApiDocGetOrderByNumberTest @Autowired constructor(
     @Test
     fun `should get order by orderNumber`() {
         // setup
+        transactionTemplate.execute {
+            orderItemRepository.deleteAllInBatch()
+        }
         transactionTemplate.execute {
             orderRepository.deleteAllInBatch()
         }

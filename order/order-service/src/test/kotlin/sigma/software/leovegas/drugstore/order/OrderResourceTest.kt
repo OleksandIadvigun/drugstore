@@ -47,6 +47,7 @@ import sigma.software.leovegas.drugstore.product.api.SearchProductResponse
 @Import(CustomTestConfig::class)
 class OrderResourceTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
+    val orderItemRepository: OrderItemRepository,
     val orderRepository: OrderRepository,
     val orderProperties: OrderProperties,
     val restTemplate: TestRestTemplate,
@@ -65,9 +66,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should create order`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val httpEntity = HttpEntity(
@@ -99,9 +99,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should get order by order number`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val orderCreated = transactionTemplate.execute {
@@ -140,9 +139,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should get order by status`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         val orderCreated = transactionTemplate.execute {
@@ -182,9 +180,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should get order details`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         stubFor(
@@ -339,9 +336,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should confirm order`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val order = transactionTemplate.execute {
@@ -406,9 +402,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should get orders`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         transactionTemplate.execute {
@@ -453,7 +448,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should update order`() {
 
         // setup
-        transactionTemplate.execute { orderRepository.deleteAll() }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val orderCreated = transactionTemplate.execute {
@@ -507,9 +503,8 @@ class OrderResourceTest @Autowired constructor(
     fun `should get productId to quantity sorted by quantity `() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         transactionTemplate.execute {

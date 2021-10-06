@@ -1,4 +1,4 @@
-package sigma.software.leovegas.drugstore.order.client
+package sigma.software.leovegas.drugstore.store.client
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import feign.Feign
@@ -11,56 +11,43 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.cloud.openfeign.support.PageJacksonModule
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder
-import org.springframework.cloud.openfeign.support.SortJacksonModule
 import org.springframework.cloud.openfeign.support.SpringDecoder
 import org.springframework.cloud.openfeign.support.SpringEncoder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter
-import sigma.software.leovegas.drugstore.order.client.proto.OrderClientProto
+import sigma.software.leovegas.drugstore.store.client.proto.StoreClientProto
 
 @Configuration
 @ConditionalOnMissingClass
-@EnableConfigurationProperties(OrderProperties::class)
-class OrderClientConfiguration {
+@EnableConfigurationProperties(StoreProperties::class)
+class StoreClientAutoConfiguration(private val messageConverters: ObjectFactory<HttpMessageConverters>) {
 
     @Bean
     @ConditionalOnMissingBean
-    fun orderClient(props: OrderProperties): OrderClient {
-        return Feign
+    fun storeClient(props: StoreProperties): StoreClient =
+        Feign
             .builder()
             .logger(Slf4jLogger())
             .logLevel(Logger.Level.FULL)
-            .encoder(JacksonEncoder(listOf(JavaTimeModule(), PageJacksonModule(), SortJacksonModule())))
-            .decoder(JacksonDecoder(listOf(JavaTimeModule(), PageJacksonModule(), SortJacksonModule())))
-            .target(
-                OrderClient::class.java,
-                "http://${props.host}:${props.port}"
-            )
-    }
+            .encoder(JacksonEncoder(listOf(JavaTimeModule())))
+            .decoder(JacksonDecoder(listOf(JavaTimeModule())))
+            .target(StoreClient::class.java, "http://${props.host}:${props.port}")
 
     @Bean
     @ConditionalOnMissingBean
-    fun orderClientProto(
-        props: OrderProperties,
-        messageConverters: ObjectFactory<HttpMessageConverters>,
-    ): OrderClientProto {
-        return Feign
+    fun storeClientProto(props: StoreProperties): StoreClientProto =
+        Feign
             .builder()
             .logger(Slf4jLogger())
             .logLevel(Logger.Level.FULL)
             .encoder(SpringEncoder(messageConverters))
-            .decoder(ResponseEntityDecoder(SpringDecoder(messageConverters)))
-            .target(
-                OrderClientProto::class.java,
-                "http://${props.host}:${props.port}"
-            )
-    }
+            .decoder(ResponseEntityDecoder(SpringDecoder(this.messageConverters)))
+            .target(StoreClientProto::class.java, "http://${props.host}:${props.port}")
 
     @Bean
     @ConditionalOnMissingBean
-    fun orderProtobufHttpMessageConverterOrder(): ProtobufHttpMessageConverter =
+    fun storeProtobufHttpMessageConverterStore(): ProtobufHttpMessageConverter =
         ProtobufHttpMessageConverter()
 }

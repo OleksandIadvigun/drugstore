@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  sigma.software.leovegas.drugstore.spring.cloud.stream.rabbit.protobuf.SpringCloudStreamRabbitProtobufAutoConfiguration

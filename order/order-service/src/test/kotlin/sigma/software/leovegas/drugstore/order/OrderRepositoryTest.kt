@@ -13,6 +13,7 @@ import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OrderRepositoryTest @Autowired constructor(
     val transactionTemplate: TransactionTemplate,
+    val orderItemRepository: OrderItemRepository,
     val orderRepository: OrderRepository,
 ) {
 
@@ -20,9 +21,8 @@ class OrderRepositoryTest @Autowired constructor(
     fun `should get order by status`() {
 
         // given
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // and
         transactionTemplate.execute {
@@ -114,9 +114,8 @@ class OrderRepositoryTest @Autowired constructor(
     fun `should get order by order number`() {
 
         // setup
-        transactionTemplate.execute {
-            orderRepository.deleteAll()
-        }
+        transactionTemplate.execute { orderItemRepository.deleteAllInBatch() }
+        transactionTemplate.execute { orderRepository.deleteAllInBatch() }
 
         // given
         val saved = transactionTemplate.execute {
