@@ -49,7 +49,7 @@ spring:
           content-type: application/json
         createOutcomeInvoiceEventPublisher-out-0:
           destination: create.outcome.invoice.event.stream.exchange
-          content-type: application/json
+          content-type: application/x-protobuf
         functionRouter-in-0:
           destination: create.update.order.event.stream.exchange
           group: ${spring.application.name}@create.update.order.event.stream.exchange

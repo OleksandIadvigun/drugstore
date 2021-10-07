@@ -5,6 +5,7 @@ import java.math.BigDecimal
 import org.hamcrest.Matchers.emptyString
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.not
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,6 +28,7 @@ class RestApiDocCreateProductTest @Autowired constructor(
 ) : RestApiDocumentationTest(productProperties) {
 
     @Test
+    @Disabled
     fun `should create product`() {
 
         // setup

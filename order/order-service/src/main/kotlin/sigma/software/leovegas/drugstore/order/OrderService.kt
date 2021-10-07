@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.MimeType
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
 import sigma.software.leovegas.drugstore.accountancy.api.ItemDTO
 import sigma.software.leovegas.drugstore.accountancy.client.proto.AccountancyClientProto
@@ -135,17 +136,21 @@ class OrderService @Autowired constructor(
                 if ((orderStatus != CREATED).and(orderStatus != UPDATED)) {
                     throw OrderStatusException("Order is already confirmed or cancelled")
                 }
-                runCatching {
+                val items = orderItems.map {
+                    Proto.Item.newBuilder().setProductNumber(it.productNumber).setQuantity(it.quantity).build()
+                }
+//               runCatching {
                     eventStream.send(
                         "createOutcomeInvoiceEventPublisher-out-0",
-                        CreateOutcomeInvoiceEvent(
-                            orderItems.map { ItemDTO(productNumber = it.productNumber, quantity = it.quantity) },
-                            orderNumber,
-                        )
+                                Proto.CreateOutcomeInvoiceEvent.newBuilder()
+                            .setOrderNumber(orderNumber)
+                            .addAllProductItems(items)
+                            .build(),
+                        MimeType.valueOf("application/x-protobuf")
                     )
-                }
-                    .onFailure { error -> throw RabbitServerNotAvailable(error.localizedMessage.messageSpliterator()) }
-                    .getOrThrow()
+//                }
+//                    .onFailure { error -> throw RabbitServerNotAvailable(error.localizedMessage.messageSpliterator()) }
+//                    .getOrThrow()
                 changeOrderStatus(orderNumber, OrderStatusDTO.CONFIRMED)
                 return "Confirmed"
             }

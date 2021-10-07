@@ -131,9 +131,15 @@ class ProductService(
             )
         }
 
-    fun createProduct(products: CreateProductsEvent) =
-        products.list.validate().run {
-            val savedProducts = productRepository.saveAll(toEntityList())
+    fun createProduct(products: Proto.CreateProductsEvent) =
+        products.productsList.validate().run {
+          val products = this.map { Product(
+                name = it.name,
+                quantity = it.quantity,
+                price = it.price.toBigDecimal(),
+                productNumber = it.productNumber
+            ) }
+            val savedProducts = productRepository.saveAll(products)
             logger.info("Saved Products $savedProducts")
             savedProducts.toCreateProductResponseList()
         }

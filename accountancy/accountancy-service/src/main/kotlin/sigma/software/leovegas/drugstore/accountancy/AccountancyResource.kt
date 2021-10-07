@@ -42,7 +42,12 @@ class AccountancyResource(private val service: AccountancyService) {
     @ResponseStatus(CREATED)
     @PostMapping("/invoice/outcome")
     fun createOutcomeInvoice(@RequestBody createOutcomeInvoiceEvent: CreateOutcomeInvoiceEvent): ConfirmOrderResponse =
-        service.createOutcomeInvoice(createOutcomeInvoiceEvent)
+    service.createOutcomeInvoice(
+    Proto.CreateOutcomeInvoiceEvent.newBuilder().setOrderNumber(createOutcomeInvoiceEvent.orderNumber)
+    .addAllProductItems(createOutcomeInvoiceEvent.productItems.map {
+        Proto.Item.newBuilder().setProductNumber(it.productNumber).setQuantity(it.quantity).build()
+    }).build()
+    )
 
     @ResponseStatus(ACCEPTED)
     @PutMapping("/invoice/pay/{orderNumber}")

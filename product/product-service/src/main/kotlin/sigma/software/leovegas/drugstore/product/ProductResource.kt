@@ -39,7 +39,7 @@ class ProductResource(private val service: ProductService) {
 
     @ResponseStatus(CREATED)
     @PostMapping("")
-    fun create(@RequestBody productRequest: CreateProductsEvent) = service.createProduct(productRequest)
+    fun create(@RequestBody productRequest: Proto.CreateProductsEvent) = service.createProduct(productRequest)
 
     @ResponseStatus(OK)
     @GetMapping("/search")
