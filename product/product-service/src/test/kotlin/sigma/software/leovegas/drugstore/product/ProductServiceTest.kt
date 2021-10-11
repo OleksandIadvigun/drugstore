@@ -20,8 +20,6 @@ import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.infrastructure.WireMockTest
 import sigma.software.leovegas.drugstore.infrastructure.extensions.get
 import sigma.software.leovegas.drugstore.infrastructure.extensions.withProtobufResponse
-import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
-import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 import sigma.software.leovegas.drugstore.product.api.ProductStatusDTO
 
 @AutoConfigureTestDatabase
@@ -70,27 +68,28 @@ class ProductServiceTest @Autowired constructor(
         transactionTemplate.execute { productRepository.deleteAll() }
 
         // given
-        val productRequest = CreateProductsEvent(
+        val productsToCreate =
             listOf(
-                CreateProductRequest(
-                    productNumber = "1",
-                    name = "test1",
-                    quantity = 1,
-                    price = BigDecimal.ONE
-                ),
-                CreateProductRequest(
-                    productNumber = "2",
-                    name = "test2",
-                    quantity = 2,
-                    price = BigDecimal.TEN
-                )
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber("1")
+                    .setName("test1")
+                    .setQuantity(1)
+                    .setPrice(BigDecimal.ONE.toDecimalProto())
+                    .build(),
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber("2")
+                    .setName("test2")
+                    .setQuantity(2)
+                    .setPrice(BigDecimal.TEN.toDecimalProto())
+                    .build()
             )
-        )
+        // and
+        val createProtoEvent = Proto.CreateProductsEvent.newBuilder().addAllProducts(productsToCreate).build()
 
         // when
-        val actual = service.createProduct(productRequest)
+        val actual = service.createProduct(createProtoEvent)
 
-        // when
+        // then
         assertThat(actual).hasSize(2)
         assertThat(actual[0].name).isEqualTo("test1")
         assertThat(actual[0].name).isEqualTo("test1")
@@ -180,7 +179,7 @@ class ProductServiceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                  "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
+                        "productNumbers=${productNumbers[0]}&productNumbers=${productNumbers[1]}"
             )
                 .willReturn(
                     aResponse()
@@ -267,7 +266,7 @@ class ProductServiceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                  "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
+                        "productNumbers=${saved[1].productNumber}&productNumbers=${saved[0].productNumber}"
             )
                 .willReturn(
                     aResponse()
@@ -355,7 +354,7 @@ class ProductServiceTest @Autowired constructor(
         stubFor(
             WireMock.get(
                 "/api/v1/accountancy/sale-price?" +
-                  "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
+                        "productNumbers=${saved[0].productNumber}&productNumbers=${saved[1].productNumber}"
             )
                 .willReturn(
                     aResponse()

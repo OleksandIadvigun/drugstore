@@ -33,11 +33,11 @@ class AccountancyService @Autowired constructor(
 
     val logger: Logger = LoggerFactory.getLogger(AccountancyService::class.java)
 
-    fun createOutcomeInvoice(event: CreateOutcomeInvoiceEvent): ConfirmOrderResponse =
+    fun createOutcomeInvoice(event: Proto.CreateOutcomeInvoiceEvent): ConfirmOrderResponse =
         event.validate(invoiceRepository::getInvoiceByOrderNumberAndStatusLike).run {
 
-            val productNumbers = productItems.map { it.productNumber }.distinct()
-            val productQuantities = productItems.associate { it.productNumber to it.quantity }
+            val productNumbers = productItemsList.map { it.productNumber }.distinct()
+            val productQuantities = productItemsList.associate { it.productNumber to it.quantity }
             val productPrice = getSalePrice(productNumbers)
 
             val list =
@@ -88,15 +88,18 @@ class AccountancyService @Autowired constructor(
         invoiceRequest.validate().run {
 
             val productsToCreate = productItems.map {
-                CreateProductRequest(
-                    productNumber = UUID.randomUUID().toString(),
-                    name = it.name,
-                    price = it.price.setScale(2, RoundingMode.HALF_EVEN),
-                    quantity = it.quantity
-                )
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber(UUID.randomUUID().toString())
+                    .setName(it.name)
+                    .setQuantity(it.quantity)
+                    .setPrice(it.price.setScale(2, RoundingMode.HALF_EVEN).toDecimalProto())
+                    .build()
             }
 
-            eventStream.send("createProductEventPublisher-out-0", CreateProductsEvent(productsToCreate))
+            val createProtoEvent = Proto.CreateProductsEvent.newBuilder().addAllProducts(productsToCreate).build()
+                runCatching { eventStream.send("createProductEventPublisher-out-0", createProtoEvent) }
+                    .onFailure { error -> throw ProductServiceResponseException(error.localizedMessage.messageSpliterator()) }
+                    .getOrThrow()
 
             val invoice = invoiceRepository.save(
                 Invoice(
@@ -104,14 +107,14 @@ class AccountancyService @Autowired constructor(
                     status = InvoiceStatus.PAID,
                     type = InvoiceType.INCOME,
                     orderNumber = UUID.randomUUID().toString(),
-                    total = productsToCreate.map { it.price.multiply(BigDecimal(it.quantity)) }
+                    total = productsToCreate.map { it.price.toBigDecimal().multiply(BigDecimal(it.quantity)) }
                         .reduce(BigDecimal::plus)
                         .setScale(2, RoundingMode.HALF_EVEN),
                     productItems = productsToCreate.map {
                         ProductItem(
                             productNumber = it.productNumber,
                             name = it.name,
-                            price = it.price,
+                            price = it.price.toBigDecimal(),
                             quantity = it.quantity,
                         )
                     }.toSet(),

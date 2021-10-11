@@ -3,6 +3,7 @@ package sigma.software.leovegas.drugstore.accountancy
 import java.util.Optional
 import sigma.software.leovegas.drugstore.accountancy.api.CreateIncomeInvoiceRequest
 import sigma.software.leovegas.drugstore.accountancy.api.CreateOutcomeInvoiceEvent
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
 
 fun CreateOutcomeInvoiceEvent.validate(functor: (String, InvoiceStatus) -> Optional<Invoice>): CreateOutcomeInvoiceEvent =
     apply {
@@ -23,3 +24,12 @@ fun List<String>.validate(): List<String> =
 fun CreateIncomeInvoiceRequest.validate(): CreateIncomeInvoiceRequest = apply {
     if (productItems.isEmpty()) throw ProductsItemsAreEmptyException()
 }
+
+fun Proto.CreateOutcomeInvoiceEvent.validate(functor: (String, InvoiceStatus) -> Optional<Invoice>):
+        Proto.CreateOutcomeInvoiceEvent =
+    apply {
+        functor(orderNumber, InvoiceStatus.CREATED).ifPresent {
+            throw OrderAlreadyConfirmedException(orderNumber)
+        }
+        if (productItemsList.isEmpty()) throw ProductsItemsAreEmptyException()
+    }

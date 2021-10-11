@@ -34,10 +34,8 @@ client.test("should create income", function() {
 %}
 
 ### Receive product by income invoice
-PUT http://localhost:{{storePort}}/api/v1/store/receive
+PUT http://localhost:{{storePort}}/api/v1/store/receive/{{order_number_income}}
 Content-Type: application/json; charset=UTF-8
-
-{{order_number_income}}
 
 > {%
 client.test("should receive products", function() {
@@ -132,10 +130,9 @@ client.test("should get order details", function() {
 %}
 
 ### Confirm Order
-POST http://localhost:{{orderPort}}/api/v1/orders/confirm
+POST http://localhost:{{orderPort}}/api/v1/orders/confirm/{{order_number_outcome}}
 Content-Type: application/json; charset=UTF-8
 
-{{order_number_outcome}}
 
 > {%
 client.test("should confirm order", function() {
@@ -159,10 +156,9 @@ client.test("should pay order", function() {
 %}
 
 ### Deliver Products by Order
-PUT http://localhost:{{storePort}}/api/v1/store/deliver
+PUT http://localhost:{{storePort}}/api/v1/store/deliver/{{order_number_outcome}}
 Content-Type: application/json; charset=UTF-8
 
-{{order_number_outcome}}
 
 > {%
 client.test("should deliver products", function() {
@@ -222,10 +218,8 @@ client.test("should get order details", function() {
 %}
 
 ### Confirm Order
-POST http://localhost:{{orderPort}}/api/v1/orders/confirm
+POST http://localhost:{{orderPort}}/api/v1/orders/confirm/{{order_number_outcome2}}
 Content-Type: application/json; charset=UTF-8
-
-{{order_number_outcome2}}
 
 > {%
 client.test("should confirm order", function() {

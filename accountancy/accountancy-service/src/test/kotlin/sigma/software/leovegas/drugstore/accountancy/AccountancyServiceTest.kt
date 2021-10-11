@@ -54,6 +54,15 @@ class AccountancyServiceTest @Autowired constructor(
         )
 
         // and
+        val items = Proto.Item.newBuilder().setProductNumber("1").setQuantity(2).build()
+
+        // and
+        val event = Proto.CreateOutcomeInvoiceEvent.newBuilder()
+            .setOrderNumber("1")
+            .addProductItems(items)
+            .build()
+
+        // and
         val productsProto = listOf(
             Proto.ProductDetailsItem.newBuilder()
                 .setName("test1").setProductNumber("1").setQuantity(3)
@@ -97,7 +106,7 @@ class AccountancyServiceTest @Autowired constructor(
         val orderNumber = "1"
 
         // when
-        val actual = service.createOutcomeInvoice(CreateOutcomeInvoiceEvent(invoiceRequest, orderNumber))
+        val actual = service.createOutcomeInvoice(event)
 
         // then
         assertThat(actual).isNotNull

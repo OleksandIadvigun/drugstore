@@ -92,24 +92,25 @@ class ProductResourceTest @Autowired constructor(
         transactionalTemplate.execute { productRepository.deleteAll() }
 
         // given
-        val httpEntity = HttpEntity(
-            CreateProductsEvent(
-                listOf(
-                    CreateProductRequest(
-                        productNumber = "1",
-                        name = "test1",
-                        quantity = 1,
-                        price = BigDecimal.ONE
-                    ),
-                    CreateProductRequest(
-                        productNumber = "2",
-                        name = "test2",
-                        quantity = 2,
-                        price = BigDecimal.TEN
-                    )
-                )
+        val productsToCreate =
+            listOf(
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber("1")
+                    .setName("test1")
+                    .setQuantity(1)
+                    .setPrice(BigDecimal.ONE.toDecimalProto())
+                    .build(),
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber("2")
+                    .setName("test2")
+                    .setQuantity(2)
+                    .setPrice(BigDecimal.TEN.toDecimalProto())
+                    .build()
             )
-        )
+        // and
+
+        val httpEntity = HttpEntity(Proto.CreateProductsEvent.newBuilder().addAllProducts(productsToCreate).build())
+
         // when
         val response = restTemplate
             .exchange("$baseUrl/api/v1/products", POST, httpEntity, respTypeRef<List<CreateProductResponse>>())

@@ -27,10 +27,11 @@ spring:
       bindings:
         createProductEventPublisher-out-0:
           destination: create.product.event.stream.exchange
-          content-type: application/json
+          content-type: application/x-protobuf
         createOutcomeInvoiceEventHandler-in-0:
           destination: create.outcome.invoice.event.stream.exchange
           group: ${spring.application.name}@create.outcome.invoice.event.stream.exchange
+          content-type: application/x-protobuf
           consumer:
             bind-queue: true
             requeue-rejected: false

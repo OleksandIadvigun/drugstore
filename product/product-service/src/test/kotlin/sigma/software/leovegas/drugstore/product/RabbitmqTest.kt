@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.messaging.MessageChannel
 import org.springframework.messaging.support.MessageBuilder
 import org.springframework.transaction.support.TransactionTemplate
+import sigma.software.leovegas.drugstore.api.protobuf.Proto
+import sigma.software.leovegas.drugstore.api.toDecimalProto
 import sigma.software.leovegas.drugstore.product.api.CreateProductRequest
 import sigma.software.leovegas.drugstore.product.api.CreateProductsEvent
 
@@ -30,29 +32,32 @@ class RabbitmqTest @Autowired constructor(
         transactionTemplate.execute { productRepository.deleteAll() }
 
         // given
-        val productRequest = CreateProductsEvent(
+        val productsToCreate =
             listOf(
-                CreateProductRequest(
-                    productNumber = "1",
-                    name = "test1",
-                    quantity = 1,
-                    price = BigDecimal.ONE
-                ),
-                CreateProductRequest(
-                    productNumber = "2",
-                    name = "test2",
-                    quantity = 2,
-                    price = BigDecimal.TEN
-                )
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber("1")
+                    .setName("test1")
+                    .setQuantity(1)
+                    .setPrice(BigDecimal.ONE.toDecimalProto())
+                    .build(),
+                Proto.ProductDetailsItem.newBuilder()
+                    .setProductNumber("2")
+                    .setName("test2")
+                    .setQuantity(2)
+                    .setPrice(BigDecimal.TEN.toDecimalProto())
+                    .build()
             )
-        )
+
+        // and
+        val createProtoEvent = Proto.CreateProductsEvent.newBuilder().addAllProducts(productsToCreate).build()
 
         // when
-        val actual = channel.send(MessageBuilder.withPayload(productRequest).build())
+        val actual = channel.send(MessageBuilder.withPayload(createProtoEvent).build())
 
         // and
         val isEmpty = productRepository.findAllByProductNumberIn(listOf("1", "2")).isEmpty()
-        // when
+
+        // then
         assertThat(actual).isEqualTo(true)
         assertThat(isEmpty).isFalse
     }

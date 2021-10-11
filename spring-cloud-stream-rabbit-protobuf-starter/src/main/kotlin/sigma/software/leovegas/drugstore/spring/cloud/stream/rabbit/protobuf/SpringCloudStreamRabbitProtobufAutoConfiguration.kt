@@ -16,11 +16,11 @@ import org.springframework.util.ConcurrentReferenceHashMap
 import org.springframework.util.MimeType
 
 @Configuration
-@ConditionalOnMissingClass
+//@ConditionalOnMissingClass
 class SpringCloudStreamRabbitProtobufAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean
+   // @ConditionalOnMissingBean
     fun springCloudStreamRabbitProtobufMessageConverter(): MessageConverter = object : MessageConverter {
         override fun fromMessage(message: Message<*>, targetClass: Class<*>): Any? =
             delegate.fromMessage(message, targetClass)

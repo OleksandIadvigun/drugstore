@@ -69,3 +69,7 @@ message CreateOutcomeInvoiceEvent{
 message ProductsPrice {
   map<string, DecimalValue> items = 1;
 }
+
+message CreateProductsEvent {
+  repeated ProductDetailsItem products = 1;
+}
